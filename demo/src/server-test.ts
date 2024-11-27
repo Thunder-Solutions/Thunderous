@@ -1,12 +1,14 @@
-import { derived, css, html, customElement, onServerDefine } from 'thunderous';
+import { derived, css, html, customElement, onServerDefine, createRegistry } from 'thunderous';
 
 onServerDefine((tagName, htmlString) => {
 	console.log(`Server defined: ${tagName}`);
 	console.log(htmlString);
 });
 
+const registry = createRegistry();
+
 const MyElement = customElement<{ count: number }>(
-	({ attrSignals, propSignals, customCallback, internals, adoptStyleSheet }) => {
+	({ attrSignals, propSignals, customCallback, internals, clientOnlyCallback, adoptStyleSheet }) => {
 		const [count, setCount] = propSignals.count;
 		setCount(0);
 		const [heading] = attrSignals.heading;
@@ -16,7 +18,9 @@ const MyElement = customElement<{ count: number }>(
 			return value > 255 ? 255 : value;
 		});
 
-		// internals.setFormValue(String(count()));
+		clientOnlyCallback(() => {
+			internals.setFormValue(String(count()));
+		});
 
 		const increment = customCallback(() => {
 			setCount(count() + 1);
@@ -58,6 +62,7 @@ const MyElement = customElement<{ count: number }>(
 		formAssociated: true,
 		observedAttributes: ['heading'],
 		attributesAsProperties: [['count', Number]],
+		shadowRootOptions: { registry },
 	},
 );
 
