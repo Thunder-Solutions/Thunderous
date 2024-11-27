@@ -23,6 +23,10 @@ const DEFAULT_RENDER_OPTIONS: RenderOptions = {
 	attachShadow: true,
 	shadowRootOptions: {
 		mode: 'closed',
+		delegatesFocus: false,
+		clonable: false,
+		serializable: false,
+		slotAssignment: 'named',
 	},
 };
 
@@ -40,6 +44,16 @@ export const customElement = <Props extends CustomElementProps>(
 	render: RenderFunction<Props>,
 	options?: Partial<RenderOptions>,
 ): ElementResult => {
+	const {
+		formAssociated,
+		observedAttributes: _observedAttributes,
+		attributesAsProperties,
+		attachShadow,
+		shadowRootOptions: _shadowRootOptions,
+	} = { ...DEFAULT_RENDER_OPTIONS, ...options };
+
+	const shadowRootOptions = { ...DEFAULT_RENDER_OPTIONS.shadowRootOptions, ..._shadowRootOptions };
+
 	if (isServer) {
 		return {
 			define(tagName) {
@@ -47,7 +61,7 @@ export const customElement = <Props extends CustomElementProps>(
 					const serverRender = render as unknown as (args: RenderArgs<CustomElementProps>) => string;
 					const initialRenderString = serverRender(getServerRenderArgs(tagName));
 					const cssRenderString = (serverCss.get(tagName) ?? []).map((cssStr) => `<style>${cssStr}</style>`).join('');
-					const finalRenderString = options?.attachShadow
+					const finalRenderString = attachShadow
 						? /* html */ `
 						<template
 							shadowrootmode="${shadowRootOptions.mode}"
@@ -71,15 +85,7 @@ export const customElement = <Props extends CustomElementProps>(
 			},
 		};
 	}
-	const {
-		formAssociated,
-		observedAttributes: _observedAttributes,
-		attributesAsProperties,
-		attachShadow,
-		shadowRootOptions: _shadowRootOptions,
-	} = { ...DEFAULT_RENDER_OPTIONS, ...options };
 
-	const shadowRootOptions = { ...DEFAULT_RENDER_OPTIONS.shadowRootOptions, ..._shadowRootOptions };
 	shadowRootOptions.registry = shadowRootOptions.customElements =
 		shadowRootOptions.registry instanceof CustomElementRegistry
 			? shadowRootOptions.registry
