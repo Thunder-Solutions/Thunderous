@@ -24,7 +24,7 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 			subscribers.add(subscriber);
 		}
 		if (options?.debugMode || getterOptions?.debugMode) {
-			requestAnimationFrame(() => {
+			queueMicrotask(() => {
 				let label = 'anonymous signal';
 				if (options?.label !== undefined) {
 					label = `(${options.label})`;
@@ -49,7 +49,7 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 		}
 		if (!isBatchingUpdates) {
 			isBatchingUpdates = true;
-			requestAnimationFrame(() => {
+			queueMicrotask(() => {
 				for (const fn of updateQueue) {
 					try {
 						fn();

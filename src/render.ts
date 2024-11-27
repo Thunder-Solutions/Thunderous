@@ -1,4 +1,5 @@
 import { parseFragment, ElementParent } from './html-helpers';
+import { isServer } from './server-side';
 import { createEffect, SignalGetter } from './signals';
 
 declare global {
@@ -15,10 +16,14 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 		if (typeof value === 'function') {
 			const uniqueKey = crypto.randomUUID();
 			signalMap.set(uniqueKey, value as SignalGetter<unknown>);
-			value = `{{signal:${uniqueKey}}}`;
+			value = isServer ? value() : `{{signal:${uniqueKey}}}`;
 		}
 		innerHTML += string + String(value);
 	});
+	if (isServer) {
+		// @ts-expect-error // return a plain string for server-side rendering
+		return innerHTML;
+	}
 	const fragment = parseFragment(innerHTML);
 	const callbackBindingRegex = /(\{\{callback:.+\}\})/;
 	const signalBindingRegex = /(\{\{signal:.+\}\})/;
@@ -110,6 +115,10 @@ export const css = (strings: TemplateStringsArray, ...values: unknown[]): Styles
 		}
 		cssText += string + String(value);
 	});
+	if (isServer) {
+		// @ts-expect-error // return a plain string for server-side rendering
+		return cssText;
+	}
 	let stylesheet = adoptedStylesSupported ? new CSSStyleSheet() : document.createElement('style');
 	const textList = cssText.split(signalBindingRegex);
 	createEffect(() => {

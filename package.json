@@ -55,5 +55,8 @@
 	},
 	"peerDependencies": {
 		"@webcomponents/scoped-custom-element-registry": "^0.0.9"
+	},
+	"dependencies": {
+		"tsx": "^4.19.2"
 	}
 }

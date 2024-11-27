@@ -1,56 +1,17 @@
 import { setInnerHTML } from './html-helpers';
 import { isCSSStyleSheet, Styles } from './render';
+import { getServerRenderArgs, isServer, serverCss, serverDefineFns } from './server-side';
 import { createSignal, Signal, SignalGetter, SignalSetter } from './signals';
-
-declare global {
-	interface DocumentFragment {
-		host: HTMLElement;
-	}
-}
-
-type ElementResult = {
-	define: (tagname: `${string}-${string}`) => ElementResult;
-	register: (registry: RegistryResult) => ElementResult;
-	eject: () => CustomElementConstructor;
-};
-
-type AttributeChangedCallback = (name: string, oldValue: string | null, newValue: string | null) => void;
-
-type CustomElementProps = Record<PropertyKey, unknown>;
-
-export type RenderArgs<Props extends CustomElementProps> = {
-	elementRef: HTMLElement;
-	root: ShadowRoot | HTMLElement;
-	internals: ElementInternals;
-	attributeChangedCallback: (fn: AttributeChangedCallback) => void;
-	connectedCallback: (fn: () => void) => void;
-	disconnectedCallback: (fn: () => void) => void;
-	adoptedCallback: (fn: () => void) => void;
-	formDisabledCallback: (fn: () => void) => void;
-	formResetCallback: (fn: () => void) => void;
-	formStateRestoreCallback: (fn: () => void) => void;
-	formAssociatedCallback: (fn: () => void) => void;
-	customCallback: (fn: () => void) => `{{callback:${string}}}`;
-	attrSignals: Record<string, Signal<string | null>>;
-	propSignals: {
-		[K in keyof Props]: Signal<Props[K]>;
-	};
-	refs: Record<string, HTMLElement | null>;
-	adoptStyleSheet: (stylesheet: Styles) => void;
-};
-
-type Coerce<T = unknown> = (value: string) => T;
-
-type RenderOptions = {
-	formAssociated: boolean;
-	observedAttributes: string[];
-	attributesAsProperties: [string, Coerce][];
-	attachShadow: boolean;
-	shadowRootOptions: Partial<ShadowRootInit> & {
-		customElements?: CustomElementRegistry; // necessary with the polyfill
-		registry?: CustomElementRegistry | RegistryResult; // future proofing
-	};
-};
+import './polyfills';
+import type {
+	AttributeChangedCallback,
+	AttrProp,
+	CustomElementProps,
+	ElementResult,
+	RenderArgs,
+	RenderFunction,
+	RenderOptions,
+} from './types';
 
 const DEFAULT_RENDER_OPTIONS: RenderOptions = {
 	formAssociated: false,
@@ -61,33 +22,6 @@ const DEFAULT_RENDER_OPTIONS: RenderOptions = {
 		mode: 'closed',
 	},
 };
-
-type AttrProp<T = unknown> = {
-	prop: string;
-	coerce: Coerce<T>;
-	value: T | null;
-};
-
-export type RenderFunction<Props extends CustomElementProps> = (args: RenderArgs<Props>) => DocumentFragment;
-
-// Extend CustomElementRegistry to track tag names.
-// This is only needed to support scoped elements.
-declare global {
-	interface CustomElementRegistry {
-		__tagNames: Set<string>;
-	}
-}
-if (typeof window !== 'undefined') {
-	class TrackableCustomElementRegistry extends window.CustomElementRegistry {
-		__tagNames = new Set<string>();
-		define(tagName: string, constructor: CustomElementConstructor) {
-			super.define(tagName, constructor);
-			this.__tagNames.add(tagName);
-		}
-	}
-	window.CustomElementRegistry = TrackableCustomElementRegistry;
-}
-// ------ end polyfill ------
 
 const getPropName = (attrName: string) =>
 	attrName
@@ -108,6 +42,26 @@ export const customElement = <Props extends CustomElementProps>(
 	render: RenderFunction<Props>,
 	options?: Partial<RenderOptions>,
 ): ElementResult => {
+	if (isServer) {
+		return {
+			define(tagName) {
+				for (const fn of serverDefineFns) {
+					const serverRender = render as unknown as (args: RenderArgs<CustomElementProps>) => string;
+					const initialRenderString = serverRender(getServerRenderArgs(tagName));
+					const cssRenderString = (serverCss.get(tagName) ?? []).map((cssStr) => `<style>${cssStr}</style>`).join('');
+					const finalRenderString = `<template shadowrootmode="closed">${cssRenderString + initialRenderString}</template>`;
+					fn(tagName, finalRenderString);
+				}
+				return this;
+			},
+			register() {
+				return this;
+			},
+			eject() {
+				throw new Error('Cannot eject a custom element on the server.');
+			},
+		};
+	}
 	const {
 		formAssociated,
 		observedAttributes: _observedAttributes,
