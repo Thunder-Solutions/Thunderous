@@ -43,6 +43,7 @@ export const getServerRenderArgs = (tagName: string): RenderArgs<CustomElementPr
 	formResetCallback: () => {},
 	formStateRestoreCallback: () => {},
 	formAssociatedCallback: () => {},
+	clientOnlyCallback: () => {},
 	customCallback: () => `{{callback:unavailable-on-server}}`,
 	attrSignals: new Proxy({}, { get: () => createSignal(null) }),
 	propSignals: new Proxy({}, { get: () => createSignal(null) }),

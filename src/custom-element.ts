@@ -104,6 +104,7 @@ export const customElement = <Props extends CustomElementProps>(
 		#formDisabledCallbackFns = new Set<() => void>();
 		#formResetCallbackFns = new Set<() => void>();
 		#formStateRestoreCallbackFns = new Set<() => void>();
+		#clientOnlyCallbackFns = new Set<() => void>();
 		__customCallbackFns = new Map<string, () => void>();
 		#shadowRoot = attachShadow ? this.attachShadow(shadowRootOptions as ShadowRootInit) : null;
 		#internals = this.attachInternals();
@@ -139,6 +140,7 @@ export const customElement = <Props extends CustomElementProps>(
 				formDisabledCallback: (fn) => this.#formDisabledCallbackFns.add(fn),
 				formResetCallback: (fn) => this.#formResetCallbackFns.add(fn),
 				formStateRestoreCallback: (fn) => this.#formStateRestoreCallbackFns.add(fn),
+				clientOnlyCallback: (fn) => this.#clientOnlyCallbackFns.add(fn),
 				customCallback: (fn) => {
 					const key = crypto.randomUUID();
 					this.__customCallbackFns.set(key, fn);
@@ -242,6 +244,10 @@ export const customElement = <Props extends CustomElementProps>(
 				}
 			}
 			// ------ end workaround ------
+
+			for (const fn of this.#clientOnlyCallbackFns) {
+				fn();
+			}
 
 			setInnerHTML(root, fragment);
 		}

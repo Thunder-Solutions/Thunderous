@@ -26,6 +26,7 @@ export type RenderArgs<Props extends CustomElementProps> = {
 	formResetCallback: (fn: () => void) => void;
 	formStateRestoreCallback: (fn: () => void) => void;
 	formAssociatedCallback: (fn: () => void) => void;
+	clientOnlyCallback: (fn: () => void) => void;
 	customCallback: (fn: () => void) => `{{callback:${string}}}`;
 	attrSignals: Record<string, Signal<string | null>>;
 	propSignals: {
