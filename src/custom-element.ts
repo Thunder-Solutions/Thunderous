@@ -47,7 +47,18 @@ export const customElement = <Props extends CustomElementProps>(
 					const serverRender = render as unknown as (args: RenderArgs<CustomElementProps>) => string;
 					const initialRenderString = serverRender(getServerRenderArgs(tagName));
 					const cssRenderString = (serverCss.get(tagName) ?? []).map((cssStr) => `<style>${cssStr}</style>`).join('');
-					const finalRenderString = `<template shadowrootmode="closed">${cssRenderString + initialRenderString}</template>`;
+					const finalRenderString = options?.attachShadow
+						? /* html */ `
+						<template
+							shadowrootmode="${shadowRootOptions.mode}"
+							shadowrootdelegatesfocus="${shadowRootOptions.delegatesFocus}"
+							shadowrootclonable="${shadowRootOptions.clonable}"
+							shadowrootserializable="${shadowRootOptions.serializable}"
+						>
+							${cssRenderString + initialRenderString}
+						</template>
+					`
+						: cssRenderString + initialRenderString;
 					fn(tagName, finalRenderString);
 				}
 				return this;

@@ -45,7 +45,8 @@ export type RenderOptions = {
 	attachShadow: boolean;
 	shadowRootOptions: Partial<ShadowRootInit> & {
 		customElements?: CustomElementRegistry; // necessary with the polyfill
-		registry?: CustomElementRegistry | RegistryResult; // future proofing
+		registry?: CustomElementRegistry | RegistryResult; // current state of the proposal
+		clonable?: boolean; // missing from typescript but present in the spec
 	};
 };
 
