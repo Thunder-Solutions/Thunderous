@@ -126,7 +126,7 @@ export const css = (strings: TemplateStringsArray, ...values: unknown[]): Styles
 		if (typeof value === 'function') {
 			const uniqueKey = crypto.randomUUID();
 			signalMap.set(uniqueKey, value);
-			value = `{{signal:${uniqueKey}}}`;
+			value = isServer ? value() : `{{signal:${uniqueKey}}}`;
 		}
 		cssText += string + String(value);
 	});
