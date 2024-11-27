@@ -1,3 +1,4 @@
+import { isServer } from './server-side';
 import { ElementResult, RegistryArgs, RegistryResult } from './types';
 
 /**
@@ -17,28 +18,35 @@ import { ElementResult, RegistryArgs, RegistryResult } from './types';
  */
 export const createRegistry = (args?: RegistryArgs): RegistryResult => {
 	const { scoped = false } = args ?? {};
-	const registryResult = new Map<CustomElementConstructor | ElementResult, string>();
+	const customElementMap = new Map<CustomElementConstructor | ElementResult, string>();
 	const registry = (() => {
+		if (isServer) return null;
 		try {
 			return new CustomElementRegistry();
 		} catch (error) {
-			if (scoped)
+			if (scoped) {
 				console.error(
 					'Scoped custom element registries are not supported in this environment. Please install `@webcomponents/scoped-custom-element-registry` to use this feature.',
 				);
+			}
 			return customElements;
 		}
 	})();
 	return {
 		register: (tagName: string, element: CustomElementConstructor | ElementResult) => {
-			if (registryResult.has(element)) {
+			if (customElementMap.has(element)) {
 				console.warn(`Custom element class "${element.constructor.name}" was already registered. Skipping...`);
 				return;
 			}
-			registryResult.set(element, tagName.toUpperCase());
+			customElementMap.set(element, tagName.toUpperCase());
 		},
-		getTagName: (element: CustomElementConstructor | ElementResult) => registryResult.get(element),
-		eject: () => registry,
+		getTagName: (element: CustomElementConstructor | ElementResult) => customElementMap.get(element),
+		eject: () => {
+			if (registry === null) {
+				throw new Error('Cannot eject a registry on the server.');
+			}
+			return registry;
+		},
 		scoped,
 	};
 };
