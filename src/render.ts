@@ -1,6 +1,5 @@
 import { parseFragment, ElementParent } from './html-helpers';
 import { createEffect, SignalGetter } from './signals';
-import DOMPurify from 'dompurify';
 
 declare global {
 	interface Element {
@@ -20,7 +19,6 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 		}
 		innerHTML += string + String(value);
 	});
-	DOMPurify.sanitize(innerHTML);
 	const fragment = parseFragment(innerHTML);
 	const callbackBindingRegex = /(\{\{callback:.+\}\})/;
 	const signalBindingRegex = /(\{\{signal:.+\}\})/;
