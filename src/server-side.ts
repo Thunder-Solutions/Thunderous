@@ -1,4 +1,4 @@
-import type { CustomElementProps, RenderArgs } from './types';
+import type { CustomElementProps, RegistryResult, RenderArgs } from './types';
 import { createSignal } from './signals';
 
 export const isServer = typeof window === 'undefined';
@@ -13,7 +13,7 @@ export const onServerDefine = (fn: ServerDefineFn) => {
 
 export const serverCss = new Map<string, string[]>();
 
-export const getServerRenderArgs = (tagName: string): RenderArgs<CustomElementProps> => ({
+export const getServerRenderArgs = (tagName: string, registry?: RegistryResult): RenderArgs<CustomElementProps> => ({
 	get elementRef() {
 		return new Proxy({} as RenderArgs<CustomElementProps>['elementRef'], {
 			get: () => {
@@ -50,8 +50,9 @@ export const getServerRenderArgs = (tagName: string): RenderArgs<CustomElementPr
 	refs: {},
 	// @ts-expect-error // this should be a string for server-side rendering
 	adoptStyleSheet: (cssStr: string) => {
-		const cssArr = serverCss.get(tagName) ?? [];
+		const _serverCss = registry !== undefined ? registry.__serverCss : serverCss;
+		const cssArr = _serverCss.get(tagName) ?? [];
 		cssArr.push(cssStr);
-		serverCss.set(tagName, cssArr);
+		_serverCss.set(tagName, cssArr);
 	},
 });

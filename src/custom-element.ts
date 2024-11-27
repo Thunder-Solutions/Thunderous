@@ -11,6 +11,7 @@ import type {
 	RenderArgs,
 	RenderFunction,
 	RenderOptions,
+	ServerRenderFunction,
 	Signal,
 	SignalGetter,
 	SignalSetter,
@@ -55,13 +56,30 @@ export const customElement = <Props extends CustomElementProps>(
 	const shadowRootOptions = { ...DEFAULT_RENDER_OPTIONS.shadowRootOptions, ..._shadowRootOptions };
 
 	if (isServer) {
+		const serverRender = render as unknown as ServerRenderFunction;
+		let _tagName: string | null = null;
+		let _registry: RegistryResult | null = null;
+		let _registered = false;
+		const register = () => {
+			if (_tagName === null || _registry === null || _registered) return;
+			_registry.__serverRenderFns.set(_tagName, serverRender);
+			_registered = true;
+		};
+		const scopedRegistry =
+			shadowRootOptions.registry !== undefined &&
+			'scoped' in shadowRootOptions.registry &&
+			shadowRootOptions.registry.scoped
+				? shadowRootOptions.registry
+				: null;
 		return {
 			define(tagName) {
+				_tagName = tagName;
+				register();
+				if (_registry?.scoped) return this;
 				for (const fn of serverDefineFns) {
-					const serverRender = render as unknown as (args: RenderArgs<CustomElementProps>) => string;
 					const initialRenderString = serverRender(getServerRenderArgs(tagName));
 					const cssRenderString = (serverCss.get(tagName) ?? []).map((cssStr) => `<style>${cssStr}</style>`).join('');
-					const finalRenderString = attachShadow
+					let finalRenderString = attachShadow
 						? /* html */ `
 						<template
 							shadowrootmode="${shadowRootOptions.mode}"
@@ -73,11 +91,41 @@ export const customElement = <Props extends CustomElementProps>(
 						</template>
 					`
 						: cssRenderString + initialRenderString;
+					if (scopedRegistry !== null) {
+						for (const [scopedTagName, scopedRender] of scopedRegistry.__serverRenderFns) {
+							const initialRenderString = scopedRender(getServerRenderArgs(scopedTagName, scopedRegistry));
+							const cssRenderString = (scopedRegistry.__serverCss.get(scopedTagName) ?? [])
+								.map((cssStr) => `<style>${cssStr}</style>`)
+								.join('');
+							const finalScopedRenderString = attachShadow
+								? /* html */ `
+								<template
+									shadowrootmode="${shadowRootOptions.mode}"
+									shadowrootdelegatesfocus="${shadowRootOptions.delegatesFocus}"
+									shadowrootclonable="${shadowRootOptions.clonable}"
+									shadowrootserializable="${shadowRootOptions.serializable}"
+								>
+									${cssRenderString + initialRenderString}
+								</template>
+							`
+								: cssRenderString + initialRenderString;
+							finalRenderString = finalRenderString.replace(
+								new RegExp(`(<\s*${scopedTagName}[^>]*>)`, 'gm'),
+								'$1' + finalScopedRenderString,
+							);
+						}
+					}
 					fn(tagName, finalRenderString);
 				}
 				return this;
 			},
-			register() {
+			register(registry) {
+				if (_tagName !== null && registry.scoped) {
+					console.error('Must call `register()` before `define()` for scoped registries.');
+					return this;
+				}
+				_registry = registry;
+				register();
 				return this;
 			},
 			eject() {

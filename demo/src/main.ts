@@ -1,5 +1,10 @@
-import '@webcomponents/scoped-custom-element-registry';
-import { derived, css, html, customElement, createRegistry } from 'thunderous';
+// import '@webcomponents/scoped-custom-element-registry';
+import { derived, css, html, customElement, createRegistry, onServerDefine } from 'thunderous';
+
+onServerDefine((tagName, htmlString) => {
+	console.log(`Server defined: ${tagName}`);
+	console.log(htmlString);
+});
 
 const globalRegistry = createRegistry();
 
@@ -11,7 +16,7 @@ customElement(() => {
 	.define('nested-element');
 
 const MyElement = customElement<{ count: number }>(
-	({ attrSignals, propSignals, customCallback, internals, adoptStyleSheet }) => {
+	({ attrSignals, propSignals, customCallback, internals, clientOnlyCallback, adoptStyleSheet }) => {
 		const [count, setCount] = propSignals.count;
 		setCount(0);
 		const [heading] = attrSignals.heading;
@@ -21,7 +26,9 @@ const MyElement = customElement<{ count: number }>(
 			return value > 255 ? 255 : value;
 		});
 
-		internals.setFormValue(String(count()));
+		clientOnlyCallback(() => {
+			internals.setFormValue(String(count()));
+		});
 
 		const increment = customCallback(() => {
 			setCount(count() + 1);
@@ -67,16 +74,16 @@ const MyElement = customElement<{ count: number }>(
 	},
 ).register(globalRegistry);
 
-requestAnimationFrame(() => {
-	const tagName = globalRegistry.getTagName(MyElement);
-	console.log(tagName);
-});
+// requestAnimationFrame(() => {
+// 	const tagName = globalRegistry.getTagName(MyElement);
+// 	console.log(tagName);
+// });
 
 MyElement.define('my-element');
 
-const myElement = document.querySelector('my-element')!;
+// const myElement = document.querySelector('my-element')!;
 
-document.querySelector('button')!.addEventListener('click', () => {
-	const prev = myElement.getAttribute('heading');
-	myElement.setAttribute('heading', prev === 'title A' ? 'title B' : 'title A');
-});
+// document.querySelector('button')!.addEventListener('click', () => {
+// 	const prev = myElement.getAttribute('heading');
+// 	myElement.setAttribute('heading', prev === 'title A' ? 'title B' : 'title A');
+// });

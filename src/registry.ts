@@ -1,5 +1,13 @@
 import { isServer } from './server-side';
-import { ElementResult, RegistryArgs, RegistryResult } from './types';
+import {
+	CustomElementProps,
+	ElementResult,
+	RegistryArgs,
+	RegistryResult,
+	RenderArgs,
+	RenderFunction,
+	ServerRenderFunction,
+} from './types';
 
 /**
  * Create a registry for custom elements.
@@ -19,6 +27,7 @@ import { ElementResult, RegistryArgs, RegistryResult } from './types';
 export const createRegistry = (args?: RegistryArgs): RegistryResult => {
 	const { scoped = false } = args ?? {};
 	const customElementMap = new Map<CustomElementConstructor | ElementResult, string>();
+	const customElementTags = new Set<string>();
 	const registry = (() => {
 		if (isServer) return null;
 		try {
@@ -33,14 +42,22 @@ export const createRegistry = (args?: RegistryArgs): RegistryResult => {
 		}
 	})();
 	return {
+		__serverCss: new Map<string, string[]>(),
+		__serverRenderFns: new Map<string, ServerRenderFunction>(),
 		register: (tagName: string, element: CustomElementConstructor | ElementResult) => {
 			if (customElementMap.has(element)) {
 				console.warn(`Custom element class "${element.constructor.name}" was already registered. Skipping...`);
 				return;
 			}
+			if (customElementTags.has(tagName)) {
+				console.warn(`Custom element tag name "${tagName}" was already registered. Skipping...`);
+				return;
+			}
 			customElementMap.set(element, tagName.toUpperCase());
+			customElementTags.add(tagName);
 		},
 		getTagName: (element: CustomElementConstructor | ElementResult) => customElementMap.get(element),
+		getAllTagNames: () => Array.from(customElementTags),
 		eject: () => {
 			if (registry === null) {
 				throw new Error('Cannot eject a registry on the server.');

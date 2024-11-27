@@ -58,9 +58,14 @@ export type AttrProp<T = unknown> = {
 
 export type RenderFunction<Props extends CustomElementProps> = (args: RenderArgs<Props>) => DocumentFragment;
 
+export type ServerRenderFunction = (args: RenderArgs<CustomElementProps>) => string;
+
 export type RegistryResult = {
+	__serverCss: Map<string, string[]>;
+	__serverRenderFns: Map<string, ServerRenderFunction>;
 	register: (tagName: string, CustomElement: CustomElementConstructor | ElementResult) => void;
 	getTagName: (CustomElement: CustomElementConstructor | ElementResult) => string | undefined;
+	getAllTagNames: () => string[];
 	eject: () => CustomElementRegistry;
 	scoped: boolean;
 };
