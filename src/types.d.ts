@@ -55,3 +55,23 @@ export type AttrProp<T = unknown> = {
 };
 
 export type RenderFunction<Props extends CustomElementProps> = (args: RenderArgs<Props>) => DocumentFragment;
+
+export type RegistryResult = {
+	register: (tagName: string, CustomElement: CustomElementConstructor | ElementResult) => void;
+	getTagName: (CustomElement: CustomElementConstructor | ElementResult) => string | undefined;
+	eject: () => CustomElementRegistry;
+	scoped: boolean;
+};
+
+export type RegistryArgs = {
+	scoped: boolean;
+};
+
+export type ElementParent = Element | DocumentFragment | ShadowRoot;
+
+export type Styles = CSSStyleSheet | HTMLStyleElement;
+
+export type SignalOptions = { debugMode: boolean; label?: string };
+export type SignalGetter<T> = (options?: SignalOptions) => T;
+export type SignalSetter<T> = (newValue: T, options?: SignalOptions) => void;
+export type Signal<T = unknown> = [SignalGetter<T>, SignalSetter<T>];

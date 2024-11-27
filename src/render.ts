@@ -1,6 +1,24 @@
-import { parseFragment, ElementParent } from './html-helpers';
 import { isServer } from './server-side';
-import { createEffect, SignalGetter } from './signals';
+import { createEffect } from './signals';
+import { ElementParent, Styles, SignalGetter } from './types';
+
+export const clearHTML = (element: ElementParent) => {
+	while (element.childNodes.length > 0) {
+		element.childNodes[0].remove();
+	}
+};
+
+export const parseFragment = (htmlStr: string): DocumentFragment => {
+	const range = document.createRange();
+	range.selectNode(document.body); // required in Safari
+	return range.createContextualFragment(htmlStr);
+};
+
+export const setInnerHTML = (element: ElementParent, html: string | DocumentFragment) => {
+	clearHTML(element);
+	const fragment = typeof html === 'string' ? parseFragment(html) : html;
+	element.append(fragment);
+};
 
 declare global {
 	interface Element {
@@ -94,9 +112,6 @@ const adoptedStylesSupported: boolean =
 	typeof window !== 'undefined' &&
 	window.ShadowRoot?.prototype.hasOwnProperty('adoptedStyleSheets') &&
 	window.CSSStyleSheet?.prototype.hasOwnProperty('replace');
-
-// This should be a string if constructible stylesheets are not supported
-export type Styles = CSSStyleSheet | HTMLStyleElement;
 
 export const isCSSStyleSheet = (stylesheet?: Styles): stylesheet is CSSStyleSheet => {
 	return typeof CSSStyleSheet !== 'undefined' && stylesheet instanceof CSSStyleSheet;

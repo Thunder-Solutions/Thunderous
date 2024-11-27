@@ -1,7 +1,4 @@
-export type SignalOptions = { debugMode: boolean; label?: string };
-export type SignalGetter<T> = (options?: SignalOptions) => T;
-export type SignalSetter<T> = (newValue: T, options?: SignalOptions) => void;
-export type Signal<T = unknown> = [SignalGetter<T>, SignalSetter<T>];
+import { Signal, SignalGetter, SignalOptions, SignalSetter } from './types';
 
 let subscriber: (() => void) | null = null;
 const updateQueue: Set<() => void> = new Set();

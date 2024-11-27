@@ -47,6 +47,7 @@ export const getServerRenderArgs = (tagName: string): RenderArgs<CustomElementPr
 	attrSignals: new Proxy({}, { get: () => createSignal(null) }),
 	propSignals: new Proxy({}, { get: () => createSignal(null) }),
 	refs: {},
+	// @ts-expect-error // this should be a string for server-side rendering
 	adoptStyleSheet: (cssStr: string) => {
 		const cssArr = serverCss.get(tagName) ?? [];
 		cssArr.push(cssStr);
