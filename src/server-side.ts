@@ -45,7 +45,7 @@ export const getServerRenderArgs = (tagName: string): RenderArgs<CustomElementPr
 	formAssociatedCallback: () => {},
 	clientOnlyCallback: () => {},
 	customCallback: () => `{{callback:unavailable-on-server}}`,
-	attrSignals: new Proxy({}, { get: () => createSignal(null) }),
+	attrSignals: new Proxy({}, { get: (_, attr) => createSignal(`{{attr:${String(attr)}}}`) }),
 	propSignals: new Proxy({}, { get: () => createSignal(null) }),
 	refs: {},
 	// @ts-expect-error // this should be a string for server-side rendering
