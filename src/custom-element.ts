@@ -1,5 +1,5 @@
 import { isCSSStyleSheet, setInnerHTML } from './render';
-import { getServerRenderArgs, isServer, serverCss, serverDefineFns } from './server-side';
+import { getServerRenderArgs, isServer, insertTemplates, serverDefineFns, wrapTemplate } from './server-side';
 import { createSignal } from './signals';
 import './polyfills';
 import type {
@@ -45,15 +45,19 @@ export const customElement = <Props extends CustomElementProps>(
 	render: RenderFunction<Props>,
 	options?: Partial<RenderOptions>,
 ): ElementResult => {
+	const _options = { ...DEFAULT_RENDER_OPTIONS, ...options };
+
 	const {
 		formAssociated,
 		observedAttributes: _observedAttributes,
 		attributesAsProperties,
 		attachShadow,
 		shadowRootOptions: _shadowRootOptions,
-	} = { ...DEFAULT_RENDER_OPTIONS, ...options };
+	} = _options;
 
 	const shadowRootOptions = { ...DEFAULT_RENDER_OPTIONS.shadowRootOptions, ..._shadowRootOptions };
+
+	const allOptions = { ..._options, shadowRootOptions };
 
 	if (isServer) {
 		const serverRender = render as unknown as ServerRenderFunction;
@@ -62,7 +66,7 @@ export const customElement = <Props extends CustomElementProps>(
 		let _registered = false;
 		const register = () => {
 			if (_tagName === null || _registry === null || _registered) return;
-			_registry.__serverRenderFns.set(_tagName, serverRender);
+			_registry.__serverRenderOpts.set(_tagName, { serverRender, ...allOptions });
 			_registered = true;
 		};
 		const scopedRegistry =
@@ -78,41 +82,26 @@ export const customElement = <Props extends CustomElementProps>(
 				if (_registry?.scoped) return this;
 				for (const fn of serverDefineFns) {
 					const initialRenderString = serverRender(getServerRenderArgs(tagName));
-					const cssRenderString = (serverCss.get(tagName) ?? []).map((cssStr) => `<style>${cssStr}</style>`).join('');
-					let finalRenderString = attachShadow
-						? /* html */ `
-						<template
-							shadowrootmode="${shadowRootOptions.mode}"
-							shadowrootdelegatesfocus="${shadowRootOptions.delegatesFocus}"
-							shadowrootclonable="${shadowRootOptions.clonable}"
-							shadowrootserializable="${shadowRootOptions.serializable}"
-						>
-							${cssRenderString + initialRenderString}
-						</template>
-					`
-						: cssRenderString + initialRenderString;
+					let finalRenderString = insertTemplates({
+						inputString: initialRenderString,
+						tagName,
+						serverRender,
+						options: allOptions,
+					});
+					finalRenderString = wrapTemplate({
+						tagName,
+						serverRender,
+						options: allOptions,
+					});
 					if (scopedRegistry !== null) {
-						for (const [scopedTagName, scopedRender] of scopedRegistry.__serverRenderFns) {
-							const initialRenderString = scopedRender(getServerRenderArgs(scopedTagName, scopedRegistry));
-							const cssRenderString = (scopedRegistry.__serverCss.get(scopedTagName) ?? [])
-								.map((cssStr) => `<style>${cssStr}</style>`)
-								.join('');
-							const finalScopedRenderString = attachShadow
-								? /* html */ `
-								<template
-									shadowrootmode="${shadowRootOptions.mode}"
-									shadowrootdelegatesfocus="${shadowRootOptions.delegatesFocus}"
-									shadowrootclonable="${shadowRootOptions.clonable}"
-									shadowrootserializable="${shadowRootOptions.serializable}"
-								>
-									${cssRenderString + initialRenderString}
-								</template>
-							`
-								: cssRenderString + initialRenderString;
-							finalRenderString = finalRenderString.replace(
-								new RegExp(`(<\s*${scopedTagName}[^>]*>)`, 'gm'),
-								'$1' + finalScopedRenderString,
-							);
+						for (const [scopedTagName, scopedRenderOptions] of scopedRegistry.__serverRenderOpts) {
+							const { serverRender, ...scopedOptions } = scopedRenderOptions;
+							finalRenderString = insertTemplates({
+								inputString: finalRenderString,
+								tagName: scopedTagName,
+								serverRender,
+								options: scopedOptions,
+							});
 						}
 					}
 					fn(tagName, finalRenderString);

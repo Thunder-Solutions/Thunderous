@@ -7,6 +7,7 @@ import {
 	RenderArgs,
 	RenderFunction,
 	ServerRenderFunction,
+	ServerRenderOptions,
 } from './types';
 
 /**
@@ -43,7 +44,7 @@ export const createRegistry = (args?: RegistryArgs): RegistryResult => {
 	})();
 	return {
 		__serverCss: new Map<string, string[]>(),
-		__serverRenderFns: new Map<string, ServerRenderFunction>(),
+		__serverRenderOpts: new Map<string, ServerRenderOptions>(),
 		register: (tagName: string, element: CustomElementConstructor | ElementResult) => {
 			if (customElementMap.has(element)) {
 				console.warn(`Custom element class "${element.constructor.name}" was already registered. Skipping...`);

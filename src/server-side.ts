@@ -1,4 +1,4 @@
-import type { CustomElementProps, RegistryResult, RenderArgs } from './types';
+import type { CustomElementProps, RegistryResult, RenderArgs, RenderOptions, ServerRenderFunction } from './types';
 import { createSignal } from './signals';
 
 export const isServer = typeof window === 'undefined';
@@ -56,3 +56,56 @@ export const getServerRenderArgs = (tagName: string, registry?: RegistryResult):
 		_serverCss.set(tagName, cssArr);
 	},
 });
+
+type WrapTemplateArgs = {
+	tagName: string;
+	serverRender: ServerRenderFunction;
+	options: RenderOptions;
+};
+
+export const wrapTemplate = ({ tagName, serverRender, options }: WrapTemplateArgs) => {
+	const { registry } = options.shadowRootOptions;
+	const scopedRegistry = registry !== undefined && 'scoped' in registry ? registry : undefined;
+	const initialRenderString = serverRender(getServerRenderArgs(tagName, scopedRegistry));
+	const _serverCss = scopedRegistry?.__serverCss ?? serverCss;
+	const cssRenderString = (_serverCss.get(tagName) ?? []).map((cssStr) => `<style>${cssStr}</style>`).join('');
+	const finalScopedRenderString = options.attachShadow
+		? /* html */ `
+				<template
+					shadowrootmode="${options.shadowRootOptions.mode}"
+					shadowrootdelegatesfocus="${options.shadowRootOptions.delegatesFocus}"
+					shadowrootclonable="${options.shadowRootOptions.clonable}"
+					shadowrootserializable="${options.shadowRootOptions.serializable}"
+				>
+					${cssRenderString + initialRenderString}
+				</template>
+			`
+		: cssRenderString + initialRenderString;
+	return finalScopedRenderString;
+};
+
+type InsertTemplateArgs = {
+	inputString: string;
+	tagName: string;
+	serverRender: ServerRenderFunction;
+	options: RenderOptions;
+};
+
+export const insertTemplates = ({ inputString, tagName, serverRender, options }: InsertTemplateArgs) => {
+	const finalScopedRenderString = wrapTemplate({ tagName, serverRender, options });
+	return inputString.replace(new RegExp(`(<\s*${tagName}([^>]*)>)`, 'gm'), ($1, _, $3) => {
+		const attrs = $3
+			.split(/(?!=")\s+/)
+			.filter((attr: string) => attr !== '')
+			.map((attr: string) => {
+				const [key, _value] = attr.split('=');
+				const value = _value?.replace(/"/g, '') ?? '';
+				return [key, value];
+			});
+		let result = $1 + finalScopedRenderString;
+		for (const [key, value] of attrs) {
+			result = result.replace(new RegExp(`{{attr:${key}}}`, 'gm'), value);
+		}
+		return result;
+	});
+};

@@ -9,9 +9,15 @@ onServerDefine((tagName, htmlString) => {
 const globalRegistry = createRegistry();
 
 const registry = createRegistry({ scoped: true });
-customElement(() => {
-	return html`<strong>nested element</strong>`;
-})
+customElement(
+	({ attrSignals }) => {
+		const [text] = attrSignals.text;
+		return html`<strong>${text}</strong>`;
+	},
+	{
+		shadowRootOptions: { mode: 'open' },
+	},
+)
 	.register(registry)
 	.define('nested-element');
 
@@ -63,7 +69,7 @@ const MyElement = customElement<{ count: number }>(
 				<slot></slot>
 			</div>
 			<span>this is a scoped element:</span>
-			<nested-element></nested-element>
+			<nested-element text="test"></nested-element>
 		`;
 	},
 	{

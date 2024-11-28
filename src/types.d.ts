@@ -60,9 +60,11 @@ export type RenderFunction<Props extends CustomElementProps> = (args: RenderArgs
 
 export type ServerRenderFunction = (args: RenderArgs<CustomElementProps>) => string;
 
+export type ServerRenderOptions = { serverRender: ServerRenderFunction } & RenderOptions;
+
 export type RegistryResult = {
 	__serverCss: Map<string, string[]>;
-	__serverRenderFns: Map<string, ServerRenderFunction>;
+	__serverRenderOpts: Map<string, ServerRenderOptions>;
 	register: (tagName: string, CustomElement: CustomElementConstructor | ElementResult) => void;
 	getTagName: (CustomElement: CustomElementConstructor | ElementResult) => string | undefined;
 	getAllTagNames: () => string[];
