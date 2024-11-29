@@ -1,9 +1,25 @@
 // import '@webcomponents/scoped-custom-element-registry';
-import { derived, css, html, customElement, createRegistry, onServerDefine } from 'thunderous';
+import { derived, css, html, customElement, createRegistry, onServerDefine, insertTemplates } from 'thunderous';
+
+const mockHTML = /* html */ `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+	<my-element heading="title A"></my-element>
+	<button>toggle heading</button>
+</body>
+</html>
+`;
 
 onServerDefine((tagName, htmlString) => {
-	console.log(`Server defined: ${tagName}`);
-	console.log(htmlString);
+	// console.log(`Server defined: ${tagName}`);
+	// console.log(htmlString);
+	console.log(insertTemplates(tagName, htmlString, mockHTML));
 });
 
 const globalRegistry = createRegistry();
