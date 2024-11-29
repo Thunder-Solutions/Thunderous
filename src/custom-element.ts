@@ -81,14 +81,8 @@ export const customElement = <Props extends CustomElementProps>(
 				register();
 				if (_registry?.scoped) return this;
 				for (const fn of serverDefineFns) {
-					const initialRenderString = serverRender(getServerRenderArgs(tagName));
-					let finalRenderString = insertTemplates({
-						inputString: initialRenderString,
-						tagName,
-						serverRender,
-						options: allOptions,
-					});
-					finalRenderString = wrapTemplate({
+					let result = serverRender(getServerRenderArgs(tagName));
+					result = wrapTemplate({
 						tagName,
 						serverRender,
 						options: allOptions,
@@ -96,15 +90,16 @@ export const customElement = <Props extends CustomElementProps>(
 					if (scopedRegistry !== null) {
 						for (const [scopedTagName, scopedRenderOptions] of scopedRegistry.__serverRenderOpts) {
 							const { serverRender, ...scopedOptions } = scopedRenderOptions;
-							finalRenderString = insertTemplates({
-								inputString: finalRenderString,
+							let template = serverRender(getServerRenderArgs(scopedTagName, scopedRegistry));
+							template = wrapTemplate({
 								tagName: scopedTagName,
 								serverRender,
 								options: scopedOptions,
 							});
+							result = insertTemplates(scopedTagName, template, result);
 						}
 					}
-					fn(tagName, finalRenderString);
+					fn(tagName, result);
 				}
 				return this;
 			},

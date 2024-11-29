@@ -84,15 +84,7 @@ export const wrapTemplate = ({ tagName, serverRender, options }: WrapTemplateArg
 	return finalScopedRenderString;
 };
 
-type InsertTemplateArgs = {
-	inputString: string;
-	tagName: string;
-	serverRender: ServerRenderFunction;
-	options: RenderOptions;
-};
-
-export const insertTemplates = ({ inputString, tagName, serverRender, options }: InsertTemplateArgs) => {
-	const finalScopedRenderString = wrapTemplate({ tagName, serverRender, options });
+export const insertTemplates = (tagName: string, template: string, inputString: string) => {
 	return inputString.replace(new RegExp(`(<\s*${tagName}([^>]*)>)`, 'gm'), ($1, _, $3) => {
 		const attrs = $3
 			.split(/(?!=")\s+/)
@@ -102,10 +94,10 @@ export const insertTemplates = ({ inputString, tagName, serverRender, options }:
 				const value = _value?.replace(/"/g, '') ?? '';
 				return [key, value];
 			});
-		let result = $1 + finalScopedRenderString;
+		let scopedResult = template;
 		for (const [key, value] of attrs) {
-			result = result.replace(new RegExp(`{{attr:${key}}}`, 'gm'), value);
+			scopedResult = scopedResult.replace(new RegExp(`{{attr:${key}}}`, 'gm'), value);
 		}
-		return result;
+		return $1 + scopedResult;
 	});
 };
