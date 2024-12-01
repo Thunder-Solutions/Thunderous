@@ -404,13 +404,13 @@ export const customElement = <Props extends CustomElementProps>(
 		_registered = true;
 	};
 	const elementResult: ElementResult = {
-		define(tagName) {
-			const registry = _registry?.scoped ? _registry.eject() : customElements;
-			if (registry.get(tagName) !== undefined) {
+		define(tagName, options) {
+			const nativeRegistry = _registry?.scoped ? _registry.eject() : customElements;
+			if (nativeRegistry.get(tagName) !== undefined) {
 				console.warn(`Custom element "${tagName}" was already defined. Skipping...`);
 				return this;
 			}
-			registry.define(tagName, CustomElement);
+			nativeRegistry.define(tagName, CustomElement, options);
 			_tagName = tagName;
 			register();
 			return this;

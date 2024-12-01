@@ -4,8 +4,10 @@ declare global {
 	}
 }
 
+export type TagName = `${string}-${string}`;
+
 export type ElementResult = {
-	define: (tagname: `${string}-${string}`) => ElementResult;
+	define: (tagName: TagName, options?: ElementDefinitionOptions) => ElementResult;
 	register: (registry: RegistryResult) => ElementResult;
 	eject: () => CustomElementConstructor;
 };
@@ -65,7 +67,8 @@ export type ServerRenderOptions = { serverRender: ServerRenderFunction } & Rende
 export type RegistryResult = {
 	__serverCss: Map<string, string[]>;
 	__serverRenderOpts: Map<string, ServerRenderOptions>;
-	register: (tagName: string, CustomElement: CustomElementConstructor | ElementResult) => void;
+	define: (tagName: string, options?: ElementDefinitionOptions) => RegistryResult;
+	register: (tagName: string, CustomElement: CustomElementConstructor | ElementResult) => RegistryResult;
 	getTagName: (CustomElement: CustomElementConstructor | ElementResult) => string | undefined;
 	getAllTagNames: () => string[];
 	eject: () => CustomElementRegistry;
