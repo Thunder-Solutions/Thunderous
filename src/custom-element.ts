@@ -1,5 +1,5 @@
 import { isCSSStyleSheet, setInnerHTML } from './render';
-import { getServerRenderArgs, isServer, insertTemplates, serverDefineFns, wrapTemplate } from './server-side';
+import { isServer, serverDefine } from './server-side';
 import { createSignal } from './signals';
 import './polyfills';
 import type {
@@ -61,55 +61,39 @@ export const customElement = <Props extends CustomElementProps>(
 
 	if (isServer) {
 		const serverRender = render as unknown as ServerRenderFunction;
-		let _tagName: string | null = null;
-		let _registry: RegistryResult | null = null;
-		let _registered = false;
-		const register = () => {
-			if (_tagName === null || _registry === null || _registered) return;
-			_registry.__serverRenderOpts.set(_tagName, { serverRender, ...allOptions });
-			_registered = true;
-		};
-		const scopedRegistry =
-			shadowRootOptions.registry !== undefined &&
-			'scoped' in shadowRootOptions.registry &&
-			shadowRootOptions.registry.scoped
-				? shadowRootOptions.registry
-				: null;
+		let _tagName: string | undefined;
+		let _registry: RegistryResult | undefined;
+		const scopedRegistry = (() => {
+			if (
+				shadowRootOptions.registry !== undefined &&
+				'scoped' in shadowRootOptions.registry &&
+				shadowRootOptions.registry.scoped
+			) {
+				return shadowRootOptions.registry;
+			}
+		})();
 		return {
 			define(tagName) {
 				_tagName = tagName;
-				register();
-				if (_registry?.scoped) return this;
-				for (const fn of serverDefineFns) {
-					let result = serverRender(getServerRenderArgs(tagName));
-					result = wrapTemplate({
-						tagName,
-						serverRender,
-						options: allOptions,
-					});
-					if (scopedRegistry !== null) {
-						for (const [scopedTagName, scopedRenderOptions] of scopedRegistry.__serverRenderOpts) {
-							const { serverRender, ...scopedOptions } = scopedRenderOptions;
-							let template = serverRender(getServerRenderArgs(scopedTagName, scopedRegistry));
-							template = wrapTemplate({
-								tagName: scopedTagName,
-								serverRender,
-								options: scopedOptions,
-							});
-							result = insertTemplates(scopedTagName, template, result);
-						}
-					}
-					fn(tagName, result);
-				}
+				serverDefine({
+					tagName,
+					serverRender,
+					options: allOptions,
+					scopedRegistry,
+					parentRegistry: _registry,
+				});
 				return this;
 			},
 			register(registry) {
-				if (_tagName !== null && registry.scoped) {
+				if (_tagName !== undefined && 'eject' in registry && registry.scoped) {
 					console.error('Must call `register()` before `define()` for scoped registries.');
 					return this;
 				}
-				_registry = registry;
-				register();
+				if ('eject' in registry) {
+					_registry = registry;
+				} else {
+					console.error('Registry must be created with `createRegistry()` for SSR.');
+				}
 				return this;
 			},
 			eject() {
@@ -395,33 +379,26 @@ export const customElement = <Props extends CustomElementProps>(
 			}
 		}
 	}
-	let _tagName: string | null = null;
-	let _registry: RegistryResult | null = null;
-	let _registered = false;
-	const register = () => {
-		if (_tagName === null || _registry === null || _registered) return;
-		_registry.register(_tagName, elementResult);
-		_registered = true;
-	};
+	let _tagName: string | undefined;
+	let _registry: RegistryResult | CustomElementRegistry | undefined;
 	const elementResult: ElementResult = {
 		define(tagName, options) {
-			const nativeRegistry = _registry?.scoped ? _registry.eject() : customElements;
+			const registry = _registry !== undefined ? _registry : customElements;
+			const nativeRegistry = 'eject' in registry ? registry.eject() : registry;
 			if (nativeRegistry.get(tagName) !== undefined) {
 				console.warn(`Custom element "${tagName}" was already defined. Skipping...`);
 				return this;
 			}
-			nativeRegistry.define(tagName, CustomElement, options);
+			registry.define(tagName, CustomElement, options);
 			_tagName = tagName;
-			register();
 			return this;
 		},
 		register(registry) {
-			if (_tagName !== null && registry.scoped) {
+			if (_tagName !== undefined && 'eject' in registry && registry.scoped) {
 				console.error('Must call `register()` before `define()` for scoped registries.');
 				return this;
 			}
 			_registry = registry;
-			register();
 			return this;
 		},
 		eject: () => CustomElement,

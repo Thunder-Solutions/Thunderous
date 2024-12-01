@@ -8,7 +8,7 @@ export type TagName = `${string}-${string}`;
 
 export type ElementResult = {
 	define: (tagName: TagName, options?: ElementDefinitionOptions) => ElementResult;
-	register: (registry: RegistryResult) => ElementResult;
+	register: (registry: RegistryResult | CustomElementRegistry) => ElementResult;
 	eject: () => CustomElementConstructor;
 };
 
@@ -64,11 +64,22 @@ export type ServerRenderFunction = (args: RenderArgs<CustomElementProps>) => str
 
 export type ServerRenderOptions = { serverRender: ServerRenderFunction } & RenderOptions;
 
+export type ServerDefineArgs = {
+	tagName: string;
+	serverRender: ServerRenderFunction;
+	options: RenderOptions;
+	scopedRegistry?: RegistryResult;
+	parentRegistry?: RegistryResult;
+};
+
 export type RegistryResult = {
 	__serverCss: Map<string, string[]>;
 	__serverRenderOpts: Map<string, ServerRenderOptions>;
-	define: (tagName: string, options?: ElementDefinitionOptions) => RegistryResult;
-	register: (tagName: string, CustomElement: CustomElementConstructor | ElementResult) => RegistryResult;
+	define: (
+		tagName: TagName,
+		CustomElement: CustomElementConstructor | ElementResult,
+		options?: ElementDefinitionOptions,
+	) => RegistryResult;
 	getTagName: (CustomElement: CustomElementConstructor | ElementResult) => string | undefined;
 	getAllTagNames: () => string[];
 	eject: () => CustomElementRegistry;

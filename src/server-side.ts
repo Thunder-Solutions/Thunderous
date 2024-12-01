@@ -1,4 +1,11 @@
-import type { CustomElementProps, RegistryResult, RenderArgs, RenderOptions, ServerRenderFunction } from './types';
+import type {
+	CustomElementProps,
+	RegistryResult,
+	RenderArgs,
+	RenderOptions,
+	ServerDefineArgs,
+	ServerRenderFunction,
+} from './types';
 import { createSignal } from './signals';
 
 export const isServer = typeof window === 'undefined';
@@ -9,6 +16,34 @@ export const serverDefineFns = new Set<ServerDefineFn>();
 
 export const onServerDefine = (fn: ServerDefineFn) => {
 	serverDefineFns.add(fn);
+};
+
+export const serverDefine = ({ tagName, serverRender, options, scopedRegistry, parentRegistry }: ServerDefineArgs) => {
+	if (parentRegistry !== undefined) {
+		parentRegistry.__serverRenderOpts.set(tagName, { serverRender, ...options });
+		if (parentRegistry.scoped) return;
+	}
+	for (const fn of serverDefineFns) {
+		let result = serverRender(getServerRenderArgs(tagName));
+		result = wrapTemplate({
+			tagName,
+			serverRender,
+			options,
+		});
+		if (scopedRegistry !== undefined) {
+			for (const [scopedTagName, scopedRenderOptions] of scopedRegistry.__serverRenderOpts) {
+				const { serverRender, ...scopedOptions } = scopedRenderOptions;
+				let template = serverRender(getServerRenderArgs(scopedTagName, scopedRegistry));
+				template = wrapTemplate({
+					tagName: scopedTagName,
+					serverRender,
+					options: scopedOptions,
+				});
+				result = insertTemplates(scopedTagName, template, result);
+			}
+		}
+		fn(tagName, result);
+	}
 };
 
 export const serverCss = new Map<string, string[]>();

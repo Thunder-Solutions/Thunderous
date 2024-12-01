@@ -31,8 +31,20 @@ onServerDefine((tagName, htmlString) => {
 
 const globalRegistry = createRegistry();
 
-const registry = createRegistry({ scoped: true });
-customElement(
+// const registry = createRegistry({ scoped: true });
+// customElement(
+// 	({ attrSignals }) => {
+// 		const [text] = attrSignals.text;
+// 		return html`<strong>${text}</strong>`;
+// 	},
+// 	{
+// 		shadowRootOptions: { mode: 'open' },
+// 	},
+// )
+// 	.register(registry)
+// 	.define('nested-element');
+
+const NestedElement = customElement(
 	({ attrSignals }) => {
 		const [text] = attrSignals.text;
 		return html`<strong>${text}</strong>`;
@@ -40,9 +52,10 @@ customElement(
 	{
 		shadowRootOptions: { mode: 'open' },
 	},
-)
-	.register(registry)
-	.define('nested-element');
+);
+
+const registry = createRegistry({ scoped: true });
+registry.define('nested-element', NestedElement);
 
 const MyElement = customElement<{ count: number }>(
 	({ attrSignals, propSignals, customCallback, internals, clientOnlyCallback, adoptStyleSheet }) => {
