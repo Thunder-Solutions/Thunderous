@@ -20,22 +20,31 @@
 				</th-text>
 				<ul>
 					<li>
-						<th-text>
-							<th-code>RegistryResult.register()</th-code> allows you to register a custom element with the registry.
-							Registering an element does not define it; you must define the custom element separately. It's best to
-							avoid calling this directly. Instead, use the <th-code>ElementResult.register()</th-code> method, which
-							will call
-							<th-code>RegistryResult.register()</th-code>
-							for you.
-						</th-text>
-						<th-code-block lang="ts"><%= include('_code-snippets/registry-register.ejs') %></th-code-block>
+						<th-content-group>
+							<th-text>
+								<th-code>RegistryResult.define()</th-code> is functionally equivalent to the native
+								<th-code>customElements.define()</th-code> method, with the added benefits of Thunderous registries.
+							</th-text>
+							<th-text>
+								In most cases, it's better to use the <th-code>ElementResult.register()</th-code> method, which defers
+								tag name definitions until <th-code>ElementResult.define()</th-code> is called. This allows you to
+								delegate custom element definitions to the consumer of your library.
+							</th-text>
+							<th-link href="/docs/defining-custom-elements/"
+								>Read more about the <th-code>ElementResult</th-code> type.</th-link
+							>
+							<th-code-block lang="ts"><%= include('_code-snippets/registry-define.ejs') %></th-code-block>
+						</th-content-group>
 					</li>
 					<li>
-						<th-code>RegistryResult.getTagName()</th-code> returns the tag name of the custom element associated with
-						the provided class. This allows you to delegate custom element definitions to the consumer of your library,
-						by using their associated classes to look up tag names dynamically. This can be useful when you need to
-						select a custom element whose tag name is variable.
-						<th-code-block lang="ts"><%= include('_code-snippets/registry-tag-name.ejs') %></th-code-block>
+						<th-content-group>
+							<th-text>
+								<th-code>RegistryResult.getTagName()</th-code> returns the tag name of the custom element associated
+								with the provided class. This can be useful when you need to select a custom element whose tag name will
+								be defined by the consumer of your library.
+							</th-text>
+							<th-code-block lang="ts"><%= include('_code-snippets/registry-tag-name.ejs') %></th-code-block>
+						</th-content-group>
 					</li>
 					<li>
 						<th-code>RegistryResult.getAllTagNames()</th-code> returns an array of all the tag names in the registry.
@@ -46,11 +55,15 @@
 						scoped, this will return the global <th-code>customElements</th-code> object.
 					</li>
 					<li>
-						<th-code>RegistryResult.scoped</th-code> is a boolean that indicates whether the registry is scoped. To
-						create a scoped registry, pass <th-code>scoped: true</th-code> to the arguments of
-						<th-code>createRegistry()</th-code>. This allows you to define custom elements within the current shadow
-						root only, by passing the registry to the <th-code>shadowRootOptions</th-code>.
-						<th-code-block lang="ts"><%= include('_code-snippets/scoped-registry.ejs') %></th-code-block>
+						<th-content-group>
+							<th-text>
+								<th-code>RegistryResult.scoped</th-code> is a boolean that indicates whether the registry is scoped. To
+								create a scoped registry, pass <th-code>scoped: true</th-code> to the arguments of
+								<th-code>createRegistry()</th-code>. This allows you to define custom elements within the current shadow
+								root only, by passing the registry to the <th-code>shadowRootOptions</th-code>.
+							</th-text>
+							<th-code-block lang="ts"><%= include('_code-snippets/registry-scoped.ejs') %></th-code-block>
+						</th-content-group>
 					</li>
 				</ul>
 				<th-block-quote>

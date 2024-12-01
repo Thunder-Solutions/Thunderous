@@ -31,6 +31,7 @@ export const createRegistry = (args?: RegistryArgs): RegistryResult => {
 		define(tagName, ElementResult, options) {
 			const isResult = 'eject' in ElementResult;
 			if (isServer) {
+				// offload the server definition to the element, as it's responsible for scoped registries and rendering.
 				if (isResult) ElementResult.register(this).define(tagName, options);
 				return this;
 			}

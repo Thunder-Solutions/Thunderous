@@ -6,8 +6,8 @@ const MyElement = customElement(() => {
 
 const registry = createRegistry();
 
-// You could register the element directly like so...
-// registry.register('my-element', MyElement);
+// You could define the element directly like so...
+// registry.define('my-element', MyElement);
 
 // ...but it's often better to use the `ElementResult.register()` method.
 MyElement.register(registry).define('my-element');
