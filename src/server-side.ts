@@ -101,3 +101,7 @@ export const insertTemplates = (tagName: string, template: string, inputString: 
 		return $1 + scopedResult;
 	});
 };
+
+export const clientOnlyCallback = (fn: (() => void) | (() => Promise<void>)) => {
+	if (!isServer) return fn();
+};

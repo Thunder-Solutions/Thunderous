@@ -1,5 +1,13 @@
-// import '@webcomponents/scoped-custom-element-registry';
-import { derived, css, html, customElement, createRegistry, onServerDefine, insertTemplates } from 'thunderous';
+import {
+	derived,
+	css,
+	html,
+	customElement,
+	createRegistry,
+	onServerDefine,
+	insertTemplates,
+	clientOnlyCallback,
+} from 'thunderous';
 
 const mockHTML = /* html */ `
 <!DOCTYPE html>
@@ -17,8 +25,7 @@ const mockHTML = /* html */ `
 `;
 
 onServerDefine((tagName, htmlString) => {
-	// console.log(`Server defined: ${tagName}`);
-	// console.log(htmlString);
+	console.log('onServerDefine:', tagName);
 	console.log(insertTemplates(tagName, htmlString, mockHTML));
 });
 
@@ -96,16 +103,19 @@ const MyElement = customElement<{ count: number }>(
 	},
 ).register(globalRegistry);
 
-// requestAnimationFrame(() => {
-// 	const tagName = globalRegistry.getTagName(MyElement);
-// 	console.log(tagName);
-// });
-
+console.log('defined:', MyElement);
 MyElement.define('my-element');
 
-// const myElement = document.querySelector('my-element')!;
+clientOnlyCallback(() => {
+	requestAnimationFrame(() => {
+		const tagName = globalRegistry.getTagName(MyElement);
+		console.log(tagName);
+	});
 
-// document.querySelector('button')!.addEventListener('click', () => {
-// 	const prev = myElement.getAttribute('heading');
-// 	myElement.setAttribute('heading', prev === 'title A' ? 'title B' : 'title A');
-// });
+	const myElement = document.querySelector('my-element')!;
+
+	document.querySelector('button')!.addEventListener('click', () => {
+		const prev = myElement.getAttribute('heading');
+		myElement.setAttribute('heading', prev === 'title A' ? 'title B' : 'title A');
+	});
+});
