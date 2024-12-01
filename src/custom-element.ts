@@ -400,7 +400,6 @@ export const customElement = <Props extends CustomElementProps>(
 	let _registered = false;
 	const register = () => {
 		if (_tagName === null || _registry === null || _registered) return;
-		_registry.register(_tagName, CustomElement);
 		_registry.register(_tagName, elementResult);
 		_registered = true;
 	};

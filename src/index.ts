@@ -1,3 +1,5 @@
+import '../vendor/@webcomponents/scoped-custom-element-registry';
+
 export { customElement } from './custom-element';
 export { createRegistry } from './registry';
 export { onServerDefine, insertTemplates } from './server-side';
