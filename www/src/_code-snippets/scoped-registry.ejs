@@ -1,9 +1,10 @@
-import '@webcomponents/scoped-custom-element-registry';
 import { createRegistry, customElement, html } from 'thunderous';
 
 // create a scoped custom element registry
 const registry = createRegistry({ scoped: true });
+console.log(registry.scoped); // true
 
+// create a custom element
 const ScopedElement = customElement(() => {
   return html`<div>Scoped Element</div>`;
 });
@@ -11,6 +12,7 @@ const ScopedElement = customElement(() => {
 // define the custom element in the registry
 MyElement.register(registry).define('scoped-element');
 
+// use the custom element in a parent element
 const ParentElement = customElement(() => {
   return html`<scoped-element></scoped-element>`;
 }, {
@@ -18,4 +20,5 @@ const ParentElement = customElement(() => {
   shadowRootOptions: { registry },
 });
 
+// The <scoped-element> inside of ParentElement will render <div>Scoped Element</div>.
 // if <scoped-element> is used outside of ParentElement, it will not render anything.

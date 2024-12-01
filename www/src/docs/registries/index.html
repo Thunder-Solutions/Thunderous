@@ -15,31 +15,55 @@
 			<th-page-header>Registries</th-page-header>
 			<th-content-group>
 				<th-text>
-					The <th-code>createRegistry()</th-code> function is used to create a registry for custom elements.
+					The <th-code>createRegistry()</th-code> function is used to create a registry for custom elements, which
+					returns a <th-code>RegistryResult</th-code> with some helpful methods and properties.
 				</th-text>
-				<th-code-block lang="ts"><%= include('_code-snippets/registry.ejs') %></th-code-block>
-				<th-text>
-					This allows you to delegate custom element definitions to the consumer of your library, by using their
-					associated classes to look up tag names dynamically. This can be useful when you need to select a custom
-					element whose tag name is variable.
-				</th-text>
-				<th-code-block lang="ts"><%= include('_code-snippets/registry-tag-name.ejs') %></th-code-block>
-				<th-text>
-					To enable
+				<ul>
+					<li>
+						<th-text>
+							<th-code>RegistryResult.register()</th-code> allows you to register a custom element with the registry.
+							Registering an element does not define it, but when you define it later, it will be added to the registry.
+							It's best to avoid calling this directly. Instead, use the
+							<th-code>ElementResult.register()</th-code> method, which will call
+							<th-code>RegistryResult.register()</th-code>
+							for you.
+						</th-text>
+						<th-code-block lang="ts"><%= include('_code-snippets/registry-register.ejs') %></th-code-block>
+					</li>
+					<li>
+						<th-code>RegistryResult.getTagName()</th-code> returns the tag name of the custom element associated with
+						the provided class. This allows you to delegate custom element definitions to the consumer of your library,
+						by using their associated classes to look up tag names dynamically. This can be useful when you need to
+						select a custom element whose tag name is variable.
+						<th-code-block lang="ts"><%= include('_code-snippets/registry-tag-name.ejs') %></th-code-block>
+					</li>
+					<li>
+						<th-code>RegistryResult.getAllTagNames()</th-code> returns an array of all the tag names in the registry.
+					</li>
+					<li>
+						<th-code>RegistryResult.eject()</th-code> returns the native
+						<th-code>CustomElementRegistry</th-code> instance that the registry is using. If the registry was not
+						scoped, this will return the global <th-code>customElements</th-code> object.
+					</li>
+					<li>
+						<th-code>RegistryResult.scoped</th-code> is a boolean that indicates whether the registry is scoped. To
+						create a scoped registry, pass <th-code>scoped: true</th-code> to the arguments of
+						<th-code>createRegistry()</th-code>. This allows you to define custom elements within the current shadow
+						root only, by passing the registry to the <th-code>shadowRootOptions</th-code>.
+						<th-code-block lang="ts"><%= include('_code-snippets/scoped-registry.ejs') %></th-code-block>
+					</li>
+				</ul>
+				<th-block-quote>
 					<th-link
 						href="https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Scoped-Custom-Element-Registries.md"
-						>scoped custom element registries</th-link
-					>, you must install and import the polyfill, then pass <th-code>scoped: true</th-code> to the arguments of
-					<th-code>createRegistry()</th-code>. This allows you to define custom elements with the same tag name in
-					different shadow roots by passing the registry to the <th-code>shadowRootOptions</th-code>.
-				</th-text>
-				<th-code-block lang="sh">npm i @webcomponents/scoped-custom-element-registry</th-code-block>
-				<th-code-block lang="ts"><%= include('_code-snippets/scoped-registry.ejs') %></th-code-block>
-				<th-block-quote>
-					NOTE: To access the native <th-code>CustomElementRegistry</th-code> instance, use
-					<th-code>registry.eject()</th-code>. If the registry was not scoped, this will return the global
-					<th-code>customElements</th-code> object. To check if the registry was scoped, use the boolean
-					<th-code>registry.scoped</th-code>.
+						>Scoped custom element registries</th-link
+					>
+					are now supported by Thunderous out of the box, using the official
+					<th-link href="https://github.com/webcomponents/polyfills/tree/master/packages/scoped-custom-element-registry"
+						>scoped custom elements polyfill</th-link
+					>
+					under the hood. This was directly included to address server-side contexts where the native
+					<th-code>CustomElementRegistry</th-code> is not available.
 				</th-block-quote>
 			</th-content-group>
 		</th-doc-page>

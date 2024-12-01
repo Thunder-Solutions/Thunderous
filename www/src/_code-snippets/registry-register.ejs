@@ -1,0 +1,13 @@
+import { createRegistry, customElement, html } from 'thunderous';
+
+const MyElement = customElement(() => {
+  return html`<div>My Element</div>`;
+});
+
+const registry = createRegistry();
+
+// You could register the element directly like so...
+// registry.register('my-element', MyElement);
+
+// ...but it's often better to use the `ElementResult.register()` method.
+MyElement.register(registry).define('my-element');
