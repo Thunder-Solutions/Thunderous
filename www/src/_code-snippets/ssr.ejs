@@ -1,0 +1,25 @@
+import { onServerDefine, insertTemplates } from 'thunderous';
+
+let htmlResponse = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Example</title>
+</head>
+<body>
+  <my-element></my-element>
+</body>
+</html>
+`;
+
+onServerDefine((tagName, innerHTML) => {
+  insertTemplates(tagName, innerHTML, htmlResponse);
+});
+
+export default function handler(req, res) {
+
+  // ----- define custom elements here
+
+  res.setHeader('Content-Type', 'text/html');
+  res.send(htmlResponse);
+}

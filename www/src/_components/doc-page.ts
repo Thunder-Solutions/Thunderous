@@ -76,6 +76,9 @@ export const DocPage = customElement(({ adoptStyleSheet, customCallback, connect
 									<li>
 										<th-link href="/docs/registries/" class="link">Registries</th-link>
 									</li>
+									<li>
+										<th-link href="/docs/server-side-rendering/" class="link">SSR</th-link>
+									</li>
 								</ul>
 							</li>
 							<li>
@@ -210,7 +213,7 @@ const styles = css`
 	}
 	ul {
 		display: grid;
-		gap: 1em;
+		gap: 0.5em;
 		padding: 1em 0;
 	}
 	li > ul {
