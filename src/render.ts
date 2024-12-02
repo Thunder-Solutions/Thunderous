@@ -20,11 +20,12 @@ export const setInnerHTML = (element: ElementParent, html: string | DocumentFrag
 	element.append(fragment);
 };
 
-declare global {
-	interface Element {
-		__findHost: () => Element;
-	}
-}
+const logValueError = (value: unknown) => {
+	console.error(
+		'An invalid value was passed to a template function. Non-primitive values are not supported.\n\nValue:\n',
+		value,
+	);
+};
 
 export const html = (strings: TemplateStringsArray, ...values: unknown[]): DocumentFragment => {
 	let innerHTML = '';
@@ -36,11 +37,8 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 			signalMap.set(uniqueKey, value as SignalGetter<unknown>);
 			value = isServer ? value() : `{{signal:${uniqueKey}}}`;
 		}
-		if (typeof value !== 'string') {
-			console.error(
-				'An invalid value was passed to the `html` template function. Only strings and getter functions are supported.\n\nValue:\n',
-				value,
-			);
+		if (typeof value === 'object' && value !== null) {
+			logValueError(value);
 			value = '';
 		}
 		innerHTML += string + String(value);
@@ -135,11 +133,8 @@ export const css = (strings: TemplateStringsArray, ...values: unknown[]): Styles
 			signalMap.set(uniqueKey, value);
 			value = isServer ? value() : `{{signal:${uniqueKey}}}`;
 		}
-		if (typeof value !== 'string') {
-			console.error(
-				'An invalid value was passed to the `css` template function. Only strings and getter functions are supported.\n\nValue:\n',
-				value,
-			);
+		if (typeof value === 'object' && value !== null) {
+			logValueError(value);
 			value = '';
 		}
 		cssText += string + String(value);

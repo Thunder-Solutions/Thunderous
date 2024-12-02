@@ -2,6 +2,9 @@ declare global {
 	interface DocumentFragment {
 		host: HTMLElement;
 	}
+	interface Element {
+		__findHost: () => Element;
+	}
 	interface CustomElementRegistry {
 		__tagNames: Set<string>;
 	}
