@@ -2,7 +2,12 @@
 <html lang="en">
 	<head>
 		<script>
-			if (location.pathname.length > 1) location.pathname = '/404/';
+			// The home page should only be served at the root URL.
+
+			// If this is not the root URL, it might be a trailing slash issue. Try adding a slash first.
+			if (!location.pathname.endsWith('/')) location.pathname = location.pathname + '/';
+			// if the URL is still not the root URL, it doesn't exist. Redirect to the 404 page.
+			else if (location.pathname.length > 1) location.pathname = '/404/';
 		</script>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />

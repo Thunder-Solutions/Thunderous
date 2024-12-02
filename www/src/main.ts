@@ -27,8 +27,3 @@ BlockQuote.define('th-block-quote');
 Icon.define('th-icon');
 Footer.define('th-footer');
 ErrorMessage.define('th-error-message');
-
-// correct the path since static HTML is served from the root of each directory
-if (!location.pathname.endsWith('/')) {
-	location.pathname = location.pathname + '/';
-}
