@@ -72,6 +72,20 @@
 					<li>
 						<th-content-group>
 							<th-text>
+								The <th-code>html</th-code> and <th-code>css</th-code> template tags no longer stringify all
+								interpolated values. If a non-primitive is found, an error is logged to the console, and the value is
+								replaced by an empty string.
+							</th-text>
+							<th-text>
+								This change should help sniff out bugs in your code, as it's likely that you didn't intend to pass a
+								non-primitive value to the template tag. This may happen when you forget to destructure a signal, for
+								example.
+							</th-text>
+						</th-content-group>
+					</li>
+					<li>
+						<th-content-group>
+							<th-text>
 								Removed the <th-link href="https://github.com/cure53/DOMPurify">DOMPurify</th-link> dependency.
 							</th-text>
 							<th-text>
