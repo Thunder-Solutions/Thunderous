@@ -16,16 +16,11 @@
   "bugs": {
     "url": "https://github.com/webcomponents/polyfills/issues"
   },
-  "main": "scoped-custom-element-registry.min.js",
+  "main": "src/scoped-custom-element-registry.js",
   "scripts": {
     "build": "gulp",
     "test": "web-test-runner"
   },
-  "files": [
-    "CHANGELOG.md",
-    "scoped-custom-element-registry.min.js*",
-    "src/"
-  ],
   "keywords": [
     "custom-elements",
     "customelements",

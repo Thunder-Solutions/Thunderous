@@ -1,7 +1,6 @@
 import { isCSSStyleSheet, setInnerHTML } from './render';
 import { isServer, serverDefine } from './server-side';
 import { createSignal } from './signals';
-import './polyfills';
 import type {
 	AttributeChangedCallback,
 	AttrProp,

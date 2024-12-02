@@ -2,6 +2,9 @@ declare global {
 	interface DocumentFragment {
 		host: HTMLElement;
 	}
+	interface CustomElementRegistry {
+		__tagNames: Set<string>;
+	}
 }
 
 export type TagName = `${string}-${string}`;
