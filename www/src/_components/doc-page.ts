@@ -113,6 +113,9 @@ export const DocPage = customElement(({ adoptStyleSheet, customCallback, connect
 									<li>
 										<th-link href="/docs/releases/1.0.0" class="link">1.0.0</th-link>
 									</li>
+									<li>
+										<th-link href="/docs/releases/" class="link">View All Releases</th-link>
+									</li>
 								</ul>
 							</li>
 						</ul>
