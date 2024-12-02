@@ -1,5 +1,5 @@
 import { isServer } from './server-side';
-import { RegistryArgs, RegistryResult, ServerRenderOptions } from './types';
+import { RegistryArgs, RegistryResult } from './types';
 
 /**
  * Create a registry for custom elements.
@@ -26,8 +26,8 @@ export const createRegistry = (args?: RegistryArgs): RegistryResult => {
 		return customElements;
 	})();
 	return {
-		__serverCss: new Map<string, string[]>(),
-		__serverRenderOpts: new Map<string, ServerRenderOptions>(),
+		__serverCss: new Map(),
+		__serverRenderOpts: new Map(),
 		define(tagName, ElementResult, options) {
 			const isResult = 'eject' in ElementResult;
 			if (isServer) {
