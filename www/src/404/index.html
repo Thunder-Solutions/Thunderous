@@ -14,9 +14,10 @@
 		<link rel="favicon" href="/favicon.ico" />
 	</head>
 	<body>
-		<input type="hidden" value="home" />
 		<th-page>
-			<th-splash></th-splash>
+			<th-error-message heading="404 | Not Found">
+				<p>The page you are looking for does not exist. Please check the URL and try again.</p>
+			</th-error-message>
 			<th-footer splash></th-footer>
 		</th-page>
 		<script type="module" src="/main.ts"></script>

@@ -2,6 +2,7 @@ import { BlockQuote } from './_components/block-quote';
 import { Code, CodeBlock } from './_components/code';
 import { ContentGroup } from './_components/content-group';
 import { DocPage } from './_components/doc-page';
+import { ErrorMessage } from './_components/error-message';
 import { Footer } from './_components/footer';
 import { ContentHeader, PageHeader } from './_components/header';
 import { Icon } from './_components/icon';
@@ -25,8 +26,12 @@ CodeBlock.define('th-code-block');
 BlockQuote.define('th-block-quote');
 Icon.define('th-icon');
 Footer.define('th-footer');
+ErrorMessage.define('th-error-message');
 
 // correct the path since static HTML is served from the root of each directory
 if (!location.pathname.endsWith('/')) {
 	location.pathname = location.pathname + '/';
+} else if (location.pathname.length > 1 && location.pathname !== '/404/') {
+	const isHome = document.querySelector<HTMLInputElement>('input[type="hidden"]')?.value === 'home';
+	if (isHome) location.pathname = '/404/';
 }
