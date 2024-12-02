@@ -31,7 +31,4 @@ ErrorMessage.define('th-error-message');
 // correct the path since static HTML is served from the root of each directory
 if (!location.pathname.endsWith('/')) {
 	location.pathname = location.pathname + '/';
-} else if (location.pathname.length > 1 && location.pathname !== '/404/') {
-	const isHome = document.querySelector<HTMLInputElement>('input[type="hidden"]')?.value === 'home';
-	if (isHome) location.pathname = '/404/';
 }

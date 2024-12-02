@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en">
 	<head>
+		<script>
+			if (location.pathname.length > 1) location.pathname = '/404/';
+		</script>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta
@@ -14,7 +17,6 @@
 		<link rel="favicon" href="/favicon.ico" />
 	</head>
 	<body>
-		<input type="hidden" value="home" />
 		<th-page>
 			<th-splash></th-splash>
 			<th-footer splash></th-footer>
