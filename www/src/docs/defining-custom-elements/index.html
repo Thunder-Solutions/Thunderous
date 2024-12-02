@@ -24,8 +24,12 @@
 						<th-text>
 							<th-code>ElementResult.define()</th-code> is a little safer than
 							<th-code>customElements.define()</th-code> because it first checks if the component was already defined,
-							without throwing an error. It will, however, log a warning. There's no need to pass a class in the second
-							argument, since it already has that context.
+							without throwing an error. It will, however, log a warning. There's no need to pass the element class
+							since it already has that information, but you may pass
+							<th-link href="https://developer.mozilla.org/en-US/docs/Web/API/CustomElementRegistry/define#options">
+								<th-code>ElementDefinitionOptions</th-code>
+							</th-link>
+							as the second argument if necessary.
 						</th-text>
 						<th-code-block lang="ts"><%= include('_code-snippets/defining-custom-elements.ejs') %></th-code-block>
 					</li>
