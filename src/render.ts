@@ -36,6 +36,13 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 			signalMap.set(uniqueKey, value as SignalGetter<unknown>);
 			value = isServer ? value() : `{{signal:${uniqueKey}}}`;
 		}
+		if (typeof value !== 'string') {
+			console.error(
+				'An invalid value was passed to the `html` template function. Only strings and getter functions are supported.\n\nValue:\n',
+				value,
+			);
+			value = '';
+		}
 		innerHTML += string + String(value);
 	});
 	if (isServer) {
@@ -127,6 +134,13 @@ export const css = (strings: TemplateStringsArray, ...values: unknown[]): Styles
 			const uniqueKey = crypto.randomUUID();
 			signalMap.set(uniqueKey, value);
 			value = isServer ? value() : `{{signal:${uniqueKey}}}`;
+		}
+		if (typeof value !== 'string') {
+			console.error(
+				'An invalid value was passed to the `css` template function. Only strings and getter functions are supported.\n\nValue:\n',
+				value,
+			);
+			value = '';
 		}
 		cssText += string + String(value);
 	});
