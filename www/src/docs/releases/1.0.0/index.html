@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="description" content="Documentation for the Thunderous library." />
+		<meta property="og:image" content="/meta.png" />
+		<meta name="twitter:image" content="/meta.png" />
+		<title>Thunderous | v1.0.0</title>
+		<link rel="stylesheet" href="/global.css" />
+		<link rel="favicon" href="/favicon.ico" />
+	</head>
+	<body>
+		<th-doc-page>
+			<th-page-header>Release Version 1.0.0</th-page-header>
+			<th-content-group>
+				<th-text> The following changes were made in version 1.0.0 of Thunderous: </th-text>
+				<ul>
+					<li>
+						<th-content-group>
+							<th-text>
+								Added SSR support using <th-code>onServerDefine()</th-code> and <th-code>insertTemplates()</th-code>.
+							</th-text>
+							<th-text>
+								This also prompted <th-code>clientOnlyCallback()</th-code> to handle code that would throw errors in a
+								server environment.
+							</th-text>
+							<th-link href="/docs/server-side-rendering/">Read more about server-side rendering.</th-link>
+						</th-content-group>
+					</li>
+					<li>
+						<th-content-group>
+							<th-text>
+								Added the
+								<th-link
+									href="https://github.com/webcomponents/polyfills/blob/master/packages/scoped-custom-element-registry"
+									>scoped custom element registry polyfill</th-link
+								>
+								directly to the library, instead of relying on a peer dependency.
+							</th-text>
+							<th-text>
+								This was done to ensure that the polyfill does not
+								<th-link href="https://github.com/webcomponents/polyfills/issues/601">
+									interfere with server-side rendering </th-link
+								>. The polyfill is only loaded when the library is imported in a browser environment.
+							</th-text>
+						</th-content-group>
+					</li>
+					<li>
+						<th-content-group>
+							<th-text> Updated the methods returned by <th-code>createRegistry()</th-code>. </th-text>
+							<th-text>
+								Previously, <th-code>RegistryResult</th-code> exposed a <th-code>register()</th-code> method that was
+								mostly unnecessary (and undocumented.) This method has been removed, and the return type now only
+								exposes a <th-code>define()</th-code> method to better reflect the native behavior of custom elements.
+							</th-text>
+							<th-link href="/docs/registries/">Read more about registries.</th-link>
+						</th-content-group>
+					</li>
+					<li>
+						<th-content-group>
+							<th-text>
+								Removed the <th-link href="https://github.com/cure53/DOMPurify">DOMPurify</th-link> dependency.
+							</th-text>
+							<th-text>
+								A bug was preventing it from working properly, and upon fixing it, custom elements and slot tags were
+								being stripped from the DOM. While not impossible to fix, it may not have been the best approach anyway,
+								as sanitization is only necessary when rendering user-generated content.
+							</th-text>
+							<th-text>
+								It was determined that the concern should instead lie with the component author, as is normally the case
+								for native web components.
+							</th-text>
+						</th-content-group>
+					</li>
+				</ul>
+			</th-content-group>
+		</th-doc-page>
+		<script type="module" src="/main.ts"></script>
+	</body>
+</html>
