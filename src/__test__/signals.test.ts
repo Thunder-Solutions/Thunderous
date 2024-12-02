@@ -1,16 +1,16 @@
-import { createEffect, createSignal, derived } from './signals';
+import { createEffect, createSignal, derived } from '../signals';
 import { type Mock, test, TestContext } from 'node:test';
 import assert from 'assert';
 
 const getLogMock = (testContext: TestContext) => {
-	testContext.mock.method(console, 'log');
+	testContext.mock.method(console, 'log', () => {});
 	type MockFunctionContext = Mock<typeof console.log>['mock'];
 	// @ts-expect-error // typescript doesn't honor the node mock
 	return console.log.mock as MockFunctionContext;
 };
 
 const getErrorMock = (testContext: TestContext) => {
-	testContext.mock.method(console, 'error');
+	testContext.mock.method(console, 'error', () => {});
 	type MockFunctionContext = Mock<typeof console.error>['mock'];
 	// @ts-expect-error // typescript doesn't honor the node mock
 	return console.error.mock as MockFunctionContext;

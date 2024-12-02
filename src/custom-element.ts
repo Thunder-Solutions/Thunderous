@@ -1,3 +1,4 @@
+import { DEFAULT_RENDER_OPTIONS } from './constants';
 import { isCSSStyleSheet, setInnerHTML } from './render';
 import { isServer, serverDefine } from './server-side';
 import { createSignal } from './signals';
@@ -15,20 +16,6 @@ import type {
 	SignalGetter,
 	SignalSetter,
 } from './types';
-
-const DEFAULT_RENDER_OPTIONS: RenderOptions = {
-	formAssociated: false,
-	observedAttributes: [],
-	attributesAsProperties: [],
-	attachShadow: true,
-	shadowRootOptions: {
-		mode: 'closed',
-		delegatesFocus: false,
-		clonable: false,
-		serializable: false,
-		slotAssignment: 'named',
-	},
-};
 
 /**
  * Create a custom element that can be defined for use in the DOM.

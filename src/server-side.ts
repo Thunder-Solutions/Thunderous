@@ -2,15 +2,13 @@ import type {
 	CustomElementProps,
 	RegistryResult,
 	RenderArgs,
-	RenderOptions,
 	ServerDefineArgs,
-	ServerRenderFunction,
+	ServerDefineFn,
+	WrapTemplateArgs,
 } from './types';
 import { createSignal } from './signals';
 
 export const isServer = typeof window === 'undefined';
-
-type ServerDefineFn = (tagName: string, htmlString: string) => void;
 
 export const serverDefineFns = new Set<ServerDefineFn>();
 
@@ -83,7 +81,8 @@ export const getServerRenderArgs = (tagName: string, registry?: RegistryResult):
 	attrSignals: new Proxy({}, { get: (_, attr) => createSignal(`{{attr:${String(attr)}}}`) }),
 	propSignals: new Proxy({}, { get: () => createSignal(null) }),
 	refs: {},
-	// @ts-expect-error // this should be a string for server-side rendering
+	// @ts-expect-error // this will be a string for SSR, but this is true for internal cases only.
+	// The end user will see the public type, which is either a CSSStyleSheet or HTMLStyleElement.
 	adoptStyleSheet: (cssStr: string) => {
 		const _serverCss = registry !== undefined ? registry.__serverCss : serverCss;
 		const cssArr = _serverCss.get(tagName) ?? [];
@@ -91,12 +90,6 @@ export const getServerRenderArgs = (tagName: string, registry?: RegistryResult):
 		_serverCss.set(tagName, cssArr);
 	},
 });
-
-type WrapTemplateArgs = {
-	tagName: string;
-	serverRender: ServerRenderFunction;
-	options: RenderOptions;
-};
 
 export const wrapTemplate = ({ tagName, serverRender, options }: WrapTemplateArgs) => {
 	const { registry } = options.shadowRootOptions;
@@ -122,10 +115,11 @@ export const wrapTemplate = ({ tagName, serverRender, options }: WrapTemplateArg
 export const insertTemplates = (tagName: string, template: string, inputString: string) => {
 	return inputString.replace(new RegExp(`(<\s*${tagName}([^>]*)>)`, 'gm'), ($1, _, $3) => {
 		const attrs = $3
-			.split(/(?!=")\s+/)
-			.filter((attr: string) => attr !== '')
+			.split(/(?<=")\s+/)
+			.filter((attr: string) => attr.trim() !== '')
 			.map((attr: string) => {
-				const [key, _value] = attr.split('=');
+				const [_key, _value] = attr.split('=');
+				const key = _key.trim();
 				const value = _value?.replace(/"/g, '') ?? '';
 				return [key, value];
 			});

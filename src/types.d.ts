@@ -78,6 +78,14 @@ export type ServerDefineArgs = {
 	parentRegistry?: RegistryResult;
 };
 
+export type ServerDefineFn = (tagName: string, htmlString: string) => void;
+
+export type WrapTemplateArgs = {
+	tagName: string;
+	serverRender: ServerRenderFunction;
+	options: RenderOptions;
+};
+
 export type RegistryResult = {
 	__serverCss: Map<string, string[]>;
 	__serverRenderOpts: Map<string, ServerRenderOptions>;
