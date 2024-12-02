@@ -22,7 +22,8 @@
 					<li>
 						<th-code>onServerDefine()</th-code> lets you pass a callback that runs each time a custom element is defined
 						on the server. When an element is defined on the server, its render function will run once to get its
-						initial HTML, which will then trigger this callback.
+						initial HTML, which will then trigger this callback. Assuming you configured the element to use shadow DOM,
+						this will render declarative shadow DOM template tags, using the same options.
 					</li>
 					<li>
 						<th-code>insertTemplates()</th-code> takes the tag name and inner HTML of the custom element and inserts it
