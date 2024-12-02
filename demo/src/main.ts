@@ -31,19 +31,6 @@ onServerDefine((tagName, htmlString) => {
 
 const globalRegistry = createRegistry();
 
-// const registry = createRegistry({ scoped: true });
-// customElement(
-// 	({ attrSignals }) => {
-// 		const [text] = attrSignals.text;
-// 		return html`<strong>${text}</strong>`;
-// 	},
-// 	{
-// 		shadowRootOptions: { mode: 'open' },
-// 	},
-// )
-// 	.register(registry)
-// 	.define('nested-element');
-
 const NestedElement = customElement(
 	({ attrSignals }) => {
 		const [text] = attrSignals.text;

@@ -1,13 +1,10 @@
+import { MyElement } from './my-element';
 import { createRegistry, customElement, html } from 'thunderous';
-
-const MyElement = customElement(() => {
-  return html`<div>My Element</div>`;
-});
 
 const registry = createRegistry();
 
-// You could define the element directly like so...
-// registry.define('my-element', MyElement);
+// You could define the element directly like so:
+registry.define('my-element', MyElement);
 
-// ...but it's often better to use the `ElementResult.register()` method.
+// ...or you could defer the definition until later:
 MyElement.register(registry).define('my-element');

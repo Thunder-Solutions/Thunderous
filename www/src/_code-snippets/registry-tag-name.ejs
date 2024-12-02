@@ -1,11 +1,12 @@
 import { createRegistry, customElement, html } from 'thunderous';
-import { registry, MyElement } from './registry';
+import { MyElement } from './my-element';
+import { registry } from './registry';
 
 const MyOtherElement = customElement(({ connectedCallback }) => {
 
   connectedCallback(() => {
 
-    // get the registered tag name of the custom element
+    // get the defined tag name of the custom element
     const tagName = registry.getTagName(MyElement);
 
     console.log(tagName); // MY-ELEMENT
