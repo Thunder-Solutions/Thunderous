@@ -1,6 +1,6 @@
 import { isServer } from './server-side';
 import { createEffect } from './signals';
-import { type ElementParent, type Styles, type SignalGetter } from './types';
+import type { ElementParent, Styles, SignalGetter } from './types';
 
 export const clearHTML = (element: ElementParent) => {
 	while (element.childNodes.length > 0) {

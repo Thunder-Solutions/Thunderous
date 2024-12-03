@@ -1,4 +1,4 @@
-import { type Signal, type SignalGetter, type SignalOptions, type SignalSetter } from './types';
+import type { Signal, SignalGetter, SignalOptions, SignalSetter } from './types';
 
 let subscriber: (() => void) | null = null;
 const updateQueue = new Set<() => void>();

@@ -1,4 +1,4 @@
-import { type RenderOptions } from './types';
+import type { RenderOptions } from './types';
 
 export const DEFAULT_RENDER_OPTIONS: RenderOptions = {
 	formAssociated: false,
