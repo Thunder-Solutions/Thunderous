@@ -12,7 +12,8 @@ import { mock, test } from 'node:test';
 import assert from 'assert';
 import { createRegistry } from '../registry';
 import { DEFAULT_RENDER_OPTIONS } from '../constants';
-import { ServerRenderOptions } from '../types';
+import { type ServerRenderOptions } from '../types';
+import { NOOP } from '../utilities';
 
 const stripWhitespace = (template: string) => template.trim().replace(/\s\s+/g, ' ');
 
@@ -29,10 +30,7 @@ await test('getServerRenderArgs', async () => {
 	});
 	await test('customCallback returns a placeholder on the server', () => {
 		const args = getServerRenderArgs('my-element-2');
-		assert.strictEqual(
-			args.customCallback(() => {}),
-			'{{callback:unavailable-on-server}}',
-		);
+		assert.strictEqual(args.customCallback(NOOP), '{{callback:unavailable-on-server}}');
 	});
 	await test('adoptStyleSheet tracks CSS strings on the server', () => {
 		const args = getServerRenderArgs('my-element-3');
@@ -157,7 +155,7 @@ await test('insertTemplates', async () => {
 
 await test('onServerDefine', async () => {
 	await test('adds the function to the set', () => {
-		const fn = () => {};
+		const fn = NOOP;
 		onServerDefine(fn);
 		assert.strictEqual(serverDefineFns.size, 1);
 		assert.strictEqual(serverDefineFns.has(fn), true);

@@ -1,7 +1,7 @@
-import { Signal, SignalGetter, SignalOptions, SignalSetter } from './types';
+import { type Signal, type SignalGetter, type SignalOptions, type SignalSetter } from './types';
 
 let subscriber: (() => void) | null = null;
-const updateQueue: Set<() => void> = new Set();
+const updateQueue = new Set<() => void>();
 let isBatchingUpdates = false;
 
 /**
@@ -20,7 +20,7 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 		if (subscriber !== null) {
 			subscribers.add(subscriber);
 		}
-		if (options?.debugMode || getterOptions?.debugMode) {
+		if (options?.debugMode === true || getterOptions?.debugMode === true) {
 			queueMicrotask(() => {
 				let label = 'anonymous signal';
 				if (options?.label !== undefined) {
@@ -54,7 +54,7 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 						console.error('Error in subscriber:', { error, oldValue, newValue, fn });
 					}
 				}
-				if (options?.debugMode || setterOptions?.debugMode) {
+				if (options?.debugMode === true || setterOptions?.debugMode === true) {
 					let label = 'anonymous signal';
 					if (options?.label !== undefined) {
 						label = `(${options.label})`;

@@ -1,6 +1,6 @@
 import { isServer } from './server-side';
 import { createEffect } from './signals';
-import { ElementParent, Styles, SignalGetter } from './types';
+import { type ElementParent, type Styles, type SignalGetter } from './types';
 
 export const clearHTML = (element: ElementParent) => {
 	while (element.childNodes.length > 0) {
@@ -31,7 +31,7 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 	let innerHTML = '';
 	const signalMap = new Map<string, SignalGetter<unknown>>();
 	strings.forEach((string, i) => {
-		let value = values[i] ?? '';
+		let value: unknown = values[i] ?? '';
 		if (typeof value === 'function') {
 			const uniqueKey = crypto.randomUUID();
 			signalMap.set(uniqueKey, value as SignalGetter<unknown>);
@@ -87,7 +87,7 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 								const signal = uniqueKey !== text ? signalMap.get(uniqueKey) : undefined;
 								const value = signal !== undefined ? signal() : text;
 								if (value === null) hasNull = true;
-								newText += value;
+								newText += String(value);
 							}
 							if (hasNull && newText === 'null') {
 								child.removeAttribute(attr.name);
@@ -124,13 +124,13 @@ export const isCSSStyleSheet = (stylesheet?: Styles): stylesheet is CSSStyleShee
 
 export const css = (strings: TemplateStringsArray, ...values: unknown[]): Styles => {
 	let cssText = '';
-	const signalMap = new Map();
+	const signalMap = new Map<string, () => unknown>();
 	const signalBindingRegex = /(\{\{signal:.+\}\})/;
 	strings.forEach((string, i) => {
-		let value = values[i] ?? '';
+		let value: unknown = values[i] ?? '';
 		if (typeof value === 'function') {
 			const uniqueKey = crypto.randomUUID();
-			signalMap.set(uniqueKey, value);
+			signalMap.set(uniqueKey, value as () => unknown);
 			value = isServer ? value() : `{{signal:${uniqueKey}}}`;
 		}
 		if (typeof value === 'object' && value !== null) {
@@ -143,19 +143,20 @@ export const css = (strings: TemplateStringsArray, ...values: unknown[]): Styles
 		// @ts-expect-error // return a plain string for server-side rendering
 		return cssText;
 	}
-	let stylesheet = adoptedStylesSupported ? new CSSStyleSheet() : document.createElement('style');
+	const stylesheet = adoptedStylesSupported ? new CSSStyleSheet() : document.createElement('style');
 	const textList = cssText.split(signalBindingRegex);
 	createEffect(() => {
 		const newCSSTextList: string[] = [];
 		for (const text of textList) {
 			const uniqueKey = text.replace(/\{\{signal:(.+)\}\}/, '$1');
-			const signal = uniqueKey !== text ? signalMap.get(uniqueKey) : null;
-			const newText = signal !== null ? signal() : text;
+			const signal = uniqueKey !== text ? signalMap.get(uniqueKey)! : null;
+			const newValue = signal !== null ? signal() : text;
+			const newText = typeof newValue === 'string' ? newValue : '';
 			newCSSTextList.push(newText);
 		}
 		const newCSSText = newCSSTextList.join('');
 		if (isCSSStyleSheet(stylesheet)) {
-			stylesheet.replace(newCSSText);
+			stylesheet.replace(newCSSText).catch(console.error);
 		} else {
 			stylesheet.textContent = newCSSText;
 		}

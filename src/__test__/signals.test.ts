@@ -1,16 +1,17 @@
 import { createEffect, createSignal, derived } from '../signals';
-import { type Mock, test, TestContext } from 'node:test';
+import { type Mock, test, type TestContext } from 'node:test';
 import assert from 'assert';
+import { assumeObj, NOOP } from '../utilities';
 
 const getLogMock = (testContext: TestContext) => {
-	testContext.mock.method(console, 'log', () => {});
+	testContext.mock.method(console, 'log', NOOP);
 	type MockFunctionContext = Mock<typeof console.log>['mock'];
 	// @ts-expect-error // typescript doesn't honor the node mock
 	return console.log.mock as MockFunctionContext;
 };
 
 const getErrorMock = (testContext: TestContext) => {
-	testContext.mock.method(console, 'error', () => {});
+	testContext.mock.method(console, 'error', NOOP);
 	type MockFunctionContext = Mock<typeof console.error>['mock'];
 	// @ts-expect-error // typescript doesn't honor the node mock
 	return console.error.mock as MockFunctionContext;
@@ -250,7 +251,7 @@ await test('createSignal', async () => {
 			assert.strictEqual(errorMock.callCount(), 1);
 			assert.deepStrictEqual(errorMock.calls[0].arguments, [
 				'Error in subscriber:',
-				{ error, oldValue: 0, newValue: 1, fn: errorMock.calls[0].arguments[1].fn },
+				{ error, oldValue: 0, newValue: 1, fn: assumeObj(errorMock.calls[0].arguments[1]).fn },
 			]);
 		});
 	});
@@ -308,7 +309,7 @@ await test('createEffect', async () => {
 		assert.strictEqual(errorMock.callCount(), 1);
 		assert.deepStrictEqual(errorMock.calls[0].arguments, [
 			'Error in effect:',
-			{ error, fn: errorMock.calls[0].arguments[1].fn },
+			{ error, fn: assumeObj(errorMock.calls[0].arguments[1]).fn },
 		]);
 	});
 });
@@ -345,7 +346,7 @@ await test('derived', async () => {
 		assert.strictEqual(errorMock.callCount(), 1);
 		assert.deepStrictEqual(errorMock.calls[0].arguments, [
 			'Error in derived signal:',
-			{ error, fn: errorMock.calls[0].arguments[1].fn },
+			{ error, fn: assumeObj(errorMock.calls[0].arguments[1]).fn },
 		]);
 	});
 });

@@ -7,6 +7,7 @@ import type {
 	WrapTemplateArgs,
 } from './types';
 import { createSignal } from './signals';
+import { NOOP } from './utilities';
 
 export const isServer = typeof window === 'undefined';
 
@@ -68,15 +69,15 @@ export const getServerRenderArgs = (tagName: string, registry?: RegistryResult):
 			},
 		});
 	},
-	attributeChangedCallback: () => {},
-	connectedCallback: () => {},
-	disconnectedCallback: () => {},
-	adoptedCallback: () => {},
-	formDisabledCallback: () => {},
-	formResetCallback: () => {},
-	formStateRestoreCallback: () => {},
-	formAssociatedCallback: () => {},
-	clientOnlyCallback: () => {},
+	attributeChangedCallback: NOOP,
+	connectedCallback: NOOP,
+	disconnectedCallback: NOOP,
+	adoptedCallback: NOOP,
+	formDisabledCallback: NOOP,
+	formResetCallback: NOOP,
+	formStateRestoreCallback: NOOP,
+	formAssociatedCallback: NOOP,
+	clientOnlyCallback: NOOP,
 	customCallback: () => `{{callback:unavailable-on-server}}`,
 	attrSignals: new Proxy({}, { get: (_, attr) => createSignal(`{{attr:${String(attr)}}}`) }),
 	propSignals: new Proxy({}, { get: () => createSignal(null) }),
@@ -113,7 +114,7 @@ export const wrapTemplate = ({ tagName, serverRender, options }: WrapTemplateArg
 };
 
 export const insertTemplates = (tagName: string, template: string, inputString: string) => {
-	return inputString.replace(new RegExp(`(<\s*${tagName}([^>]*)>)`, 'gm'), ($1, _, $3) => {
+	return inputString.replace(new RegExp(`(<\s*${tagName}([^>]*)>)`, 'gm'), ($1: string, _, $3: string) => {
 		const attrs = $3
 			.split(/(?<=")\s+/)
 			.filter((attr: string) => attr.trim() !== '')

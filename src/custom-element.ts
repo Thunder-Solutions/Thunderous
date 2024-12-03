@@ -101,8 +101,8 @@ export const customElement = <Props extends CustomElementProps>(
 		attributesAsPropertiesMap.set(attrName, {
 			// convert kebab-case attribute names to camelCase property names
 			prop: attrName
-				.replace(/^([A-Z]+)/, (_, letter) => letter.toLowerCase())
-				.replace(/(-|_| )([a-zA-Z])/g, (_, letter) => letter.toUpperCase()),
+				.replace(/^([A-Z]+)/, (_, letter: string) => letter.toLowerCase())
+				.replace(/(-|_| )([a-zA-Z])/g, (_, letter: string) => letter.toUpperCase()),
 			coerce,
 			value: null,
 		});
@@ -135,9 +135,8 @@ export const customElement = <Props extends CustomElementProps>(
 							const attrName = mutation.attributeName;
 							if (mutation.type !== 'attributes' || attrName === null) continue;
 							if (!(attrName in this.#attrSignals)) this.#attrSignals[attrName] = createSignal<string | null>(null);
-							const [getter, setter] = this.#attrSignals[attrName] as Signal<string | null>;
-							const _oldValue = getter();
-							const oldValue = _oldValue === null ? null : _oldValue;
+							const [getter, setter] = this.#attrSignals[attrName]!;
+							const oldValue = getter();
 							const newValue = this.getAttribute(attrName);
 							setter(newValue);
 							for (const fn of this.#attributeChangedFns) {
@@ -170,7 +169,7 @@ export const customElement = <Props extends CustomElementProps>(
 					{
 						get: (_, prop: string) => {
 							if (!(prop in this.#attrSignals)) this.#attrSignals[prop] = createSignal<string | null>(null);
-							const [getter] = this.#attrSignals[prop] as Signal<string | null>;
+							const [getter] = this.#attrSignals[prop]!;
 							const setter = (newValue: string) => this.setAttribute(prop, newValue);
 							return [getter, setter];
 						},
@@ -207,7 +206,7 @@ export const customElement = <Props extends CustomElementProps>(
 				refs: new Proxy(
 					{},
 					{
-						get: (_, prop: string) => root.querySelector(`[ref=${prop}]`),
+						get: (_, prop: string) => root.querySelector<HTMLElement>(`[ref=${prop}]`),
 						set: () => {
 							console.error('Refs are readonly and cannot be assigned.');
 							return false;
@@ -252,7 +251,7 @@ export const customElement = <Props extends CustomElementProps>(
 			const fragmentContent = tempContainer.innerHTML;
 			root.innerHTML = fragmentContent;
 
-			if (registry !== undefined && registry.__tagNames !== undefined) {
+			if (registry?.__tagNames !== undefined) {
 				for (const tagName of registry.__tagNames) {
 					const upgradedElements = root.querySelectorAll(tagName);
 					const nonUpgradedElements = fragment.querySelectorAll(tagName);
@@ -283,7 +282,7 @@ export const customElement = <Props extends CustomElementProps>(
 				Object.defineProperty(this, attr.prop, {
 					get: () => {
 						if (!(attrName in this.#attrSignals)) this.#attrSignals[attrName] = createSignal<string | null>(null);
-						const [getter] = this.#attrSignals[attrName] as Signal<string | null>;
+						const [getter] = this.#attrSignals[attrName]!;
 						const raw = getter();
 						const rawOnly = raw !== null && attr.value === null;
 						const value = rawOnly ? attr.coerce(raw) : attr.value; // avoid coercion when possible
@@ -293,7 +292,7 @@ export const customElement = <Props extends CustomElementProps>(
 						const oldValue = attr.value;
 						attr.value = newValue;
 						if (!(attrName in this.#attrSignals)) this.#attrSignals[attrName] = createSignal<string | null>(null);
-						const [, attrSetter] = this.#attrSignals[attrName] as Signal<string | null>;
+						const [, attrSetter] = this.#attrSignals[attrName]!;
 						const [, propSetter] = this.#propSignals[attrName] as Signal;
 						const attrValue = newValue === null ? null : String(newValue);
 						if (String(oldValue) === attrValue) return;
@@ -369,7 +368,7 @@ export const customElement = <Props extends CustomElementProps>(
 	let _registry: RegistryResult | CustomElementRegistry | undefined;
 	const elementResult: ElementResult = {
 		define(tagName, options) {
-			const registry = _registry !== undefined ? _registry : customElements;
+			const registry = _registry ?? customElements;
 			const nativeRegistry = 'eject' in registry ? registry.eject() : registry;
 			if (nativeRegistry.get(tagName) !== undefined) {
 				console.warn(`Custom element "${tagName}" was already defined. Skipping...`);

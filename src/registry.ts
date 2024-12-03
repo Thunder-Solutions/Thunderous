@@ -1,5 +1,5 @@
 import { isServer } from './server-side';
-import { RegistryArgs, RegistryResult } from './types';
+import { type RegistryArgs, type RegistryResult } from './types';
 
 /**
  * Create a registry for custom elements.
