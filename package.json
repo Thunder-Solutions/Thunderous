@@ -33,14 +33,15 @@
 		"demo": "cd demo && npm start",
 		"www": "cd www && npm run dev",
 		"build": "tsup src/index.ts --format cjs,esm --dts --no-clean",
-		"test": "find src -name '*.test.ts' | xargs c8 node --import tsx --test"
+		"test": "find src -name '*.test.ts' | xargs c8 node --import tsx --test",
+		"lint": "eslint ."
 	},
 	"devDependencies": {
 		"@types/dompurify": "^3.2.0",
 		"@types/eslint": "^8.56.10",
 		"@types/node": "^22.10.1",
-		"@typescript-eslint/eslint-plugin": "^7.1.1",
-		"@typescript-eslint/parser": "^7.1.1",
+		"@typescript-eslint/eslint-plugin": "^8.17.0",
+		"@typescript-eslint/parser": "^8.17.0",
 		"c8": "^10.1.2",
 		"eslint": "^8.57.0",
 		"eslint-plugin-import": "^2.31.0",
@@ -50,6 +51,6 @@
 		"prettier": "^3.3.3",
 		"tsup": "^8.3.0",
 		"tsx": "^4.19.2",
-		"typescript": "^5.6.3"
+		"typescript": "^5.7.2"
 	}
 }
