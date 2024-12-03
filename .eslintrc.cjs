@@ -45,6 +45,6 @@ const config = {
 			},
 		},
 	],
-	ignorePatterns: ['demo', 'dist', 'vendor', 'www', '**/*.ejs', '**.config.js', '**.config.ts'],
+	ignorePatterns: ['demo', 'dist', 'vendor', 'www', '**/*.ejs', '**config.js', '**config.ts'],
 };
 module.exports = config;
