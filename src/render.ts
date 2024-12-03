@@ -151,7 +151,7 @@ export const css = (strings: TemplateStringsArray, ...values: unknown[]): Styles
 			const uniqueKey = text.replace(/\{\{signal:(.+)\}\}/, '$1');
 			const signal = uniqueKey !== text ? signalMap.get(uniqueKey)! : null;
 			const newValue = signal !== null ? signal() : text;
-			const newText = typeof newValue === 'string' ? newValue : '';
+			const newText = String(newValue);
 			newCSSTextList.push(newText);
 		}
 		const newCSSText = newCSSTextList.join('');
