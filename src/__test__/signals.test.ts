@@ -1,23 +1,8 @@
 import { createEffect, createSignal, derived } from '../signals';
-import { type Mock, test, type TestContext } from 'node:test';
+import { test } from 'node:test';
 import assert from 'assert';
-import { assumeObj, NOOP } from '../utilities';
-
-const getLogMock = (testContext: TestContext) => {
-	testContext.mock.method(console, 'log', NOOP);
-	type MockFunctionContext = Mock<typeof console.log>['mock'];
-	// @ts-expect-error // typescript doesn't honor the node mock
-	return console.log.mock as MockFunctionContext;
-};
-
-const getErrorMock = (testContext: TestContext) => {
-	testContext.mock.method(console, 'error', NOOP);
-	type MockFunctionContext = Mock<typeof console.error>['mock'];
-	// @ts-expect-error // typescript doesn't honor the node mock
-	return console.error.mock as MockFunctionContext;
-};
-
-const nextMicrotask = () => new Promise<void>((resolve) => queueMicrotask(resolve));
+import { assumeObj } from '../utilities';
+import { getErrorMock, getLogMock, nextMicrotask } from './_test-utils';
 
 await test('createSignal', async () => {
 	await test('initial value', () => {
