@@ -34,7 +34,7 @@
 		"www": "cd www && npm run dev",
 		"build": "tsup src/index.ts --format cjs,esm --dts --no-clean",
 		"test": "find src -name '*.test.ts' | xargs c8 node --import tsx --test",
-		"lint": "eslint ."
+		"lint": "tsc && eslint ."
 	},
 	"devDependencies": {
 		"@types/dompurify": "^3.2.0",

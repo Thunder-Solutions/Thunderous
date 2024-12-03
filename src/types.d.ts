@@ -71,31 +71,32 @@ export type ServerRenderFunction = (args: RenderArgs<CustomElementProps>) => str
 export type ServerRenderOptions = { serverRender: ServerRenderFunction } & RenderOptions;
 
 export type ServerDefineArgs = {
-	tagName: string;
+	tagName: TagName;
 	serverRender: ServerRenderFunction;
 	options: RenderOptions;
+	elementResult: ElementResult;
 	scopedRegistry?: RegistryResult;
 	parentRegistry?: RegistryResult;
 };
 
-export type ServerDefineFn = (tagName: string, htmlString: string) => void;
+export type ServerDefineFn = (tagName: TagName, htmlString: string) => void;
 
 export type WrapTemplateArgs = {
-	tagName: string;
+	tagName: TagName;
 	serverRender: ServerRenderFunction;
 	options: RenderOptions;
 };
 
 export type RegistryResult = {
-	__serverCss: Map<string, string[]>;
-	__serverRenderOpts: Map<string, ServerRenderOptions>;
+	__serverCss: Map<TagName, string[]>;
+	__serverRenderOpts: Map<TagName, ServerRenderOptions>;
 	define: (
 		tagName: TagName,
 		CustomElement: CustomElementConstructor | ElementResult,
 		options?: ElementDefinitionOptions,
 	) => RegistryResult;
-	getTagName: (CustomElement: CustomElementConstructor | ElementResult) => string | undefined;
-	getAllTagNames: () => string[];
+	getTagName: (CustomElement: CustomElementConstructor | ElementResult) => TagName | undefined;
+	getAllTagNames: () => TagName[];
 	eject: () => CustomElementRegistry;
 	scoped: boolean;
 };

@@ -67,6 +67,7 @@ export const customElement = <Props extends CustomElementProps>(
 					options: allOptions,
 					scopedRegistry,
 					parentRegistry: _registry,
+					elementResult: this,
 				});
 				return this;
 			},

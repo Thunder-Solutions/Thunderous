@@ -17,8 +17,18 @@ export const onServerDefine = (fn: ServerDefineFn) => {
 	serverDefineFns.add(fn);
 };
 
-export const serverDefine = ({ tagName, serverRender, options, scopedRegistry, parentRegistry }: ServerDefineArgs) => {
+export const serverDefine = ({
+	tagName,
+	serverRender,
+	options,
+	elementResult,
+	scopedRegistry,
+	parentRegistry,
+}: ServerDefineArgs) => {
 	if (parentRegistry !== undefined) {
+		if (parentRegistry.getTagName(elementResult) !== tagName.toUpperCase()) {
+			parentRegistry.define(tagName, elementResult);
+		}
 		parentRegistry.__serverRenderOpts.set(tagName, { serverRender, ...options });
 		if (parentRegistry.scoped) return;
 	}
