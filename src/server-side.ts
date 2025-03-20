@@ -88,7 +88,7 @@ export const getServerRenderArgs = (tagName: string, registry?: RegistryResult):
 	formStateRestoreCallback: NOOP,
 	formAssociatedCallback: NOOP,
 	clientOnlyCallback: NOOP,
-	customCallback: () => `{{callback:unavailable-on-server}}`,
+	customCallback: () => '',
 	attrSignals: new Proxy({}, { get: (_, attr) => createSignal(`{{attr:${String(attr)}}}`) }),
 	propSignals: new Proxy({}, { get: () => createSignal(null) }),
 	refs: {},

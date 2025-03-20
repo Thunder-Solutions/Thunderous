@@ -164,7 +164,7 @@ export const customElement = <Props extends CustomElementProps>(
 				customCallback: (fn) => {
 					const key = crypto.randomUUID();
 					this.__customCallbackFns.set(key, fn);
-					return `{{callback:${key}}}`;
+					return `this.getRootNode().host.__customCallbackFns.get('${key}')(event)`;
 				},
 				attrSignals: new Proxy(
 					{},

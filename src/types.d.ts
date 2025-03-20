@@ -39,7 +39,7 @@ export type RenderArgs<Props extends CustomElementProps> = {
 	formStateRestoreCallback: (fn: () => void) => void;
 	formAssociatedCallback: (fn: () => void) => void;
 	clientOnlyCallback: (fn: () => void) => void;
-	customCallback: (fn: () => void) => `{{callback:${string}}}`;
+	customCallback: (fn: () => void) => `this.getRootNode().host.__customCallbackFns.get('${string}')(event)` | '';
 	attrSignals: Record<string, Signal<string | null>>;
 	propSignals: {
 		[K in keyof Props]: Signal<Props[K]>;

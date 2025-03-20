@@ -113,7 +113,7 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 		return innerHTML;
 	}
 	const fragment = parseFragment(innerHTML);
-	const callbackBindingRegex = /(\{\{callback:.+\}\})/;
+	const callbackBindingRegex = /(this.getRootNode\(\).host.__customCallbackFns.get\('[^']+'\)\(event\))/;
 	const signalBindingRegex = /(\{\{signal:.+\}\})/;
 	const parseChildren = (element: ElementParent) => {
 		for (const child of element.childNodes) {
@@ -186,8 +186,6 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 							const rootNode = getRootNode();
 							return rootNode instanceof ShadowRoot ? rootNode : fragment;
 						};
-						const uniqueKey = attr.value.replace(/\{\{callback:(.+)\}\}/, '$1');
-						child.setAttribute(attr.name, `this.getRootNode().host.__customCallbackFns.get('${uniqueKey}')(event)`);
 					}
 				}
 				parseChildren(child);
