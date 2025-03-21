@@ -59,8 +59,20 @@
 					<li>
 						<th-content-group>
 							<th-text>
-								<th-code>RegistryResult.scoped</th-code> is a boolean that indicates whether the registry is scoped. To
-								create a scoped registry, pass <th-code>scoped: true</th-code> to the arguments of
+								<th-code>RegistryResult.scoped</th-code> is a boolean that indicates whether the registry is scoped.
+							</th-text>
+							<th-block-quote>
+								Scoped registries are not yet supported in all browsers. To use this feature today, you must install the
+								<th-link
+									href="https://github.com/webcomponents/polyfills/tree/master/packages/scoped-custom-element-registry"
+									>scoped custom elements polyfill</th-link
+								>
+								as a peer dependency. Please note this polyfill script must only be run on the client; it will throw an
+								error on the server. The simplest way to guarantee this is to add the script to your HTML file.
+								<th-code-block lang="html"><%= include('_code-snippets/scoped-polyfill.ejs') %></th-code-block>
+							</th-block-quote>
+							<th-text>
+								To create a scoped registry, pass <th-code>scoped: true</th-code> to the arguments of
 								<th-code>createRegistry()</th-code>. This allows you to support the proposed
 								<th-link
 									href="https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Scoped-Custom-Element-Registries.md"
@@ -71,14 +83,6 @@
 						</th-content-group>
 					</li>
 				</ul>
-				<th-block-quote>
-					Scoped registries are now supported by Thunderous out of the box, using the official
-					<th-link href="https://github.com/webcomponents/polyfills/tree/master/packages/scoped-custom-element-registry"
-						>scoped custom elements polyfill</th-link
-					>
-					under the hood. This was directly included to support server-side environments where the native
-					<th-code>CustomElementRegistry</th-code> is not available.
-				</th-block-quote>
 			</th-content-group>
 		</th-doc-page>
 		<script type="module" src="/main.ts"></script>
