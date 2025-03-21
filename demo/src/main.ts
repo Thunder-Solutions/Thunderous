@@ -46,7 +46,7 @@ const registry = createRegistry({ scoped: true });
 registry.define('nested-element', NestedElement);
 
 const MyElement = customElement<{ count: number }>(
-	({ attrSignals, propSignals, customCallback, internals, clientOnlyCallback, adoptStyleSheet }) => {
+	({ attrSignals, propSignals, customCallback, getter, internals, clientOnlyCallback, adoptStyleSheet }) => {
 		const [count, setCount] = propSignals.count;
 		setCount(0);
 		const [heading] = attrSignals.heading;
@@ -61,10 +61,10 @@ const MyElement = customElement<{ count: number }>(
 			internals.setFormValue(String(count()));
 		});
 
-		const increment = customCallback(() => {
+		const increment = () => {
 			setCount(count() + 1);
 			internals.setFormValue(String(count()));
-		});
+		};
 
 		adoptStyleSheet(css`
 			:host {
@@ -108,6 +108,8 @@ const MyElement = customElement<{ count: number }>(
 				${derived(() => list().map((item, i) => html`<li key="${item}-${i}" onclick="${addListItem}">${item}</li>`))}
 				${list().map((item) => html`<li key="${item}">${item} after</li>`)}
 			</ul>
+			<h2>Test</h2>
+			<div><span>test custom getter: </span>${getter(() => 'TESTING CUSTOM GETTER')}</div>
 		`;
 	},
 	{

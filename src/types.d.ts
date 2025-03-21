@@ -3,7 +3,7 @@ declare global {
 		host: HTMLElement;
 	}
 	interface Element {
-		__findHost: () => Element;
+		__customCallbackFns?: Map<string, AnyFn>;
 	}
 	interface CustomElementRegistry {
 		__tagNames: Set<string>;
@@ -39,6 +39,7 @@ export type RenderArgs<Props extends CustomElementProps> = {
 	formStateRestoreCallback: (fn: () => void) => void;
 	formAssociatedCallback: (fn: () => void) => void;
 	clientOnlyCallback: (fn: () => void) => void;
+	getter: <T>(fn: () => T) => SignalGetter<T>;
 	customCallback: (fn: () => void) => `this.getRootNode().host.__customCallbackFns.get('${string}')(event)` | '';
 	attrSignals: Record<string, Signal<string | null>>;
 	propSignals: {
@@ -114,6 +115,13 @@ export type ElementParent = Element | DocumentFragment | ShadowRoot;
 export type Styles = CSSStyleSheet | HTMLStyleElement;
 
 export type SignalOptions = { debugMode: boolean; label?: string };
-export type SignalGetter<T> = (options?: SignalOptions) => T;
+export type SignalGetter<T> = {
+	(options?: SignalOptions): T;
+	getter: true;
+};
 export type SignalSetter<T> = (newValue: T, options?: SignalOptions) => void;
 export type Signal<T = unknown> = [SignalGetter<T>, SignalSetter<T>];
+
+// Flexible typing is necessary to support generic functions
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyFn = (...args: any[]) => any;

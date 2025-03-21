@@ -1,6 +1,6 @@
 import { isServer } from './server-side';
 import { createEffect } from './signals';
-import type { ElementParent, Styles, SignalGetter } from './types';
+import type { ElementParent, Styles, SignalGetter, AnyFn } from './types';
 
 export const renderState = {
 	currentShadowRoot: null as ShadowRoot | null,
@@ -77,13 +77,14 @@ const getNewNode = (value: unknown, parent: ElementParent) => {
 export const html = (strings: TemplateStringsArray, ...values: unknown[]): DocumentFragment => {
 	let innerHTML = '';
 	const signalMap = new Map<string, SignalGetter<unknown>>();
+	const callbackMap = new Map<string, AnyFn>();
 	const processValue = (value: unknown): string => {
 		if (!isServer && value instanceof DocumentFragment) {
 			const tempDiv = document.createElement('div');
 			tempDiv.append(value.cloneNode(true));
 			return tempDiv.innerHTML;
 		}
-		if (typeof value === 'function') {
+		if (typeof value === 'function' && 'getter' in value && value.getter === true) {
 			const getter = value as SignalGetter<unknown>;
 			const uniqueKey = crypto.randomUUID();
 			signalMap.set(uniqueKey, getter);
@@ -92,6 +93,11 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 				result = result.map((item: unknown) => processValue(item)).join('');
 			}
 			return isServer ? String(result) : `{{signal:${uniqueKey}}}`;
+		}
+		if (typeof value === 'function') {
+			const uniqueKey = crypto.randomUUID();
+			callbackMap.set(uniqueKey, value as AnyFn);
+			return isServer ? String(value()) : `{{callback:${uniqueKey}}}`;
 		}
 		if (typeof value === 'object' && value !== null) {
 			logValueError(value);
@@ -113,7 +119,8 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 		return innerHTML;
 	}
 	const fragment = parseFragment(innerHTML);
-	const callbackBindingRegex = /(this.getRootNode\(\).host.__customCallbackFns.get\('[^']+'\)\(event\))/;
+	const callbackBindingRegex = /(\{\{callback:.+\}\})/;
+	const legacyCallbackBindingRegex = /(this.getRootNode\(\).host.__customCallbackFns.get\('.+'\)\(event\))/;
 	const signalBindingRegex = /(\{\{signal:.+\}\})/;
 	const parseChildren = (element: ElementParent) => {
 		for (const child of element.childNodes) {
@@ -180,12 +187,29 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 								child.setAttribute(attr.name, newText);
 							}
 						});
-					} else if (callbackBindingRegex.test(attr.value)) {
+					} else if (legacyCallbackBindingRegex.test(attr.value)) {
 						const getRootNode = child.getRootNode.bind(child);
 						child.getRootNode = () => {
 							const rootNode = getRootNode();
 							return rootNode instanceof ShadowRoot ? rootNode : fragment;
 						};
+					} else if (callbackBindingRegex.test(attr.value)) {
+						const textList = attr.value.split(callbackBindingRegex);
+						createEffect(() => {
+							child.__customCallbackFns = child.__customCallbackFns ?? new Map();
+							let uniqueKey = '';
+							for (const text of textList) {
+								const _uniqueKey = text.replace(/\{\{callback:(.+)\}\}/, '$1');
+								if (_uniqueKey !== text) uniqueKey = _uniqueKey;
+								const callback = uniqueKey !== text ? callbackMap.get(uniqueKey) : undefined;
+								if (callback !== undefined) {
+									child.__customCallbackFns.set(uniqueKey, callback);
+								}
+							}
+							if (uniqueKey !== '') {
+								child.setAttribute(attr.name, `this.__customCallbackFns.get('${uniqueKey}')(event)`);
+							}
+						});
 					}
 				}
 				parseChildren(child);

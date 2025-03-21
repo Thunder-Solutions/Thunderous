@@ -36,6 +36,7 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 		}
 		return value;
 	};
+	getter.getter = true;
 	const setter: SignalSetter<T> = (newValue, setterOptions) => {
 		const isObject = typeof newValue === 'object' && newValue !== null;
 		if (!isObject && value === newValue) return;
