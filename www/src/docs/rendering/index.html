@@ -21,6 +21,12 @@
 					with <th-link href="/docs/event-binding">event listeners</th-link> and
 					<th-link href="/docs/binding-signals">signals</th-link>.
 				</th-text>
+				<th-block-quote>
+					Note that Thunderous does not sanitize the input of the <th-code>html``</th-code> function. It is up to the
+					developer to ensure that the input is safe to render. Please use a package like
+					<th-link href="https://github.com/cure53/DOMPurify">DOMPurify</th-link> or similar to sanitize any dangerous
+					input.
+				</th-block-quote>
 				<th-text>
 					It's important to remember that Thunderous will only run the component function once, when the custom element
 					gets upgraded. This is different from other libraries that re-render the component on every state change.
