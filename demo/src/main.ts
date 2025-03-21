@@ -63,7 +63,9 @@ const MyElement = customElement<{ count: number }>(
 
 		const increment = () => {
 			setCount(count() + 1);
-			internals.setFormValue(String(count()));
+			clientOnlyCallback(() => {
+				internals.setFormValue(String(count()));
+			});
 		};
 
 		adoptStyleSheet(css`
