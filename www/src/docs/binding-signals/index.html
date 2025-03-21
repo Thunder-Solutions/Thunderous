@@ -35,6 +35,13 @@
 					string.
 				</th-text>
 				<th-code-block lang="ts"><%= include('_code-snippets/binding-signals-null.ejs') %></th-code-block>
+				<th-content-header>Arbitrary Getters</th-content-header>
+				<th-text>
+					In order to differentiate callback functions from value getters, a
+					<th-code>getter()</th-code> method is provided in the arguments of the component function. When you pass a
+					getter to the template, it will be treated as a signal and run the getter to return the value.
+				</th-text>
+				<th-code-block lang="ts"><%= include('_code-snippets/binding-signals-getter.ejs') %></th-code-block>
 				<th-block-quote>
 					<th-content-group>
 						<th-text>

@@ -17,18 +17,23 @@
 				<th-text>
 					While you could bind events in the <th-code>connectedCallback()</th-code> with
 					<th-code>refs.button.addEventListener('click', handleClick)</th-code> for example, it may be more convenient
-					to register a custom callback and bind it to the template.
+					to bind a callback directly to the template.
 				</th-text>
 				<th-code-block lang="ts"><%= include('_code-snippets/event-binding.ejs') %></th-code-block>
 				<th-block-quote>
 					<th-content-group>
 						<th-text>
 							NOTICE: This uses the native HTML inline event-binding syntax. There is no special syntax for
-							<th-code>on...</th-code> attributes, because it simply renders the reference to the host element.
+							<th-code>on...</th-code> attributes, because it simply renders a reference to the callback using
+							<th-code>this</th-code>.
 						</th-text>
 						<th-text>You will see something like this when you inspect the element in the browser:</th-text>
 						<th-code-block lang="html"> <%= include('_code-snippets/event-binding-inspect.ejs') %> </th-code-block>
 					</th-content-group>
+				</th-block-quote>
+				<th-block-quote>
+					As of version 2.0.0, Thunderous has deprecated the <th-code>customCallback()</th-code> method, which was used
+					to register callbacks on the class instance. Instead, callbacks are now bound directly to DOM nodes.
 				</th-block-quote>
 			</th-content-group>
 		</th-doc-page>

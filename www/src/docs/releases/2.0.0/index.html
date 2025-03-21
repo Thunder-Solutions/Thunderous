@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="description" content="Documentation for the Thunderous library." />
+		<meta property="og:image" content="/meta.png" />
+		<meta name="twitter:image" content="/meta.png" />
+		<title>v1.0.0 | Thunderous</title>
+		<link rel="stylesheet" href="/global.css" />
+		<link rel="favicon" href="/favicon.ico" />
+	</head>
+	<body>
+		<th-doc-page>
+			<th-page-header>Release Version 2.0.0 (Latest: 2.0.0)</th-page-header>
+			<th-content-group>
+				<th-text> The following changes were made in version 2.0.0 of Thunderous: </th-text>
+				<ul>
+					<li>
+						<th-content-group>
+							<th-text>
+								Removed deprecated type <th-code>RenderProps</th-code> in favor of <th-code>RenderArgs</th-code>.
+							</th-text>
+						</th-content-group>
+					</li>
+					<li>
+						<th-content-group>
+							<th-text> Added <th-code>getter()</th-code> method to <th-code>RenderArgs</th-code>. </th-text>
+							<th-link href="/docs/binding-signals">Read more about getters.</th-link>
+						</th-content-group>
+					</li>
+					<li>
+						<th-content-group>
+							<th-text>
+								Deprecated the <th-code>customCallback()</th-code> method, which was used to register callbacks on the
+								class instance. Now, callbacks are now bound directly to DOM nodes.
+							</th-text>
+							<th-link href="/docs/event-binding">Read more about event binding.</th-link>
+						</th-content-group>
+					</li>
+				</ul>
+			</th-content-group>
+		</th-doc-page>
+		<script type="module" src="/main.ts"></script>
+	</body>
+</html>
