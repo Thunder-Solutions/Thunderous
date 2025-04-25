@@ -57,7 +57,7 @@ export type Coerce<T = unknown> = (value: string) => T;
 export type RenderOptions = {
 	formAssociated: boolean;
 	observedAttributes: string[];
-	attributesAsProperties: [string, Coerce][];
+	attributesAsProperties: ([string, Coerce, boolean] | [string, Coerce])[];
 	attachShadow: boolean;
 	shadowRootOptions: Partial<ShadowRootInit> & {
 		customElements?: CustomElementRegistry; // necessary with the polyfill
@@ -69,6 +69,7 @@ export type RenderOptions = {
 export type AttrProp<T = unknown> = {
 	prop: string;
 	coerce: Coerce<T>;
+	sprout: boolean;
 	value: T | null;
 };
 

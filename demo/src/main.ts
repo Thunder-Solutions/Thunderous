@@ -154,4 +154,9 @@ clientOnlyCallback(() => {
 		const prev = myElement.getAttribute('heading');
 		myElement.setAttribute('heading', prev === 'title A' ? 'title B' : 'title A');
 	});
+	document.querySelector('#outer-count')!.addEventListener('click', () => {
+		// @ts-expect-error // ts doesn't know about the count property
+		// myElement.count = myElement.count + 1;
+		myElement.setAttribute('count', String(myElement.count + 1));
+	});
 });

@@ -97,7 +97,7 @@ export const customElement = <Props extends CustomElementProps>(
 	// must set observedAttributes prior to defining the class
 	const observedAttributesSet = new Set(_observedAttributes);
 	const attributesAsPropertiesMap = new Map<string, AttrProp>();
-	for (const [attrName, coerce] of attributesAsProperties) {
+	for (const [attrName, coerce, sprout] of attributesAsProperties) {
 		observedAttributesSet.add(attrName);
 		attributesAsPropertiesMap.set(attrName, {
 			// convert kebab-case attribute names to camelCase property names
@@ -105,6 +105,7 @@ export const customElement = <Props extends CustomElementProps>(
 				.replace(/^([A-Z]+)/, (_, letter: string) => letter.toLowerCase())
 				.replace(/(-|_| )([a-zA-Z])/g, (_, letter: string) => letter.toUpperCase()),
 			coerce,
+			sprout: sprout ?? false,
 			value: null,
 		});
 	}
@@ -280,10 +281,12 @@ export const customElement = <Props extends CustomElementProps>(
 						const [, propSetter] = this.#propSignals[attrName] as Signal;
 						const attrValue = newValue === null ? null : String(newValue);
 						if (String(oldValue) === attrValue) return;
-						attrSetter(attrValue);
+						if (attr.sprout) attrSetter(attrValue);
 						propSetter(newValue);
-						if (attrValue === null) this.removeAttribute(attrName);
-						else this.setAttribute(attrName, attrValue);
+						if (attr.sprout) {
+							if (attrValue === null) this.removeAttribute(attrName);
+							else this.setAttribute(attrName, attrValue);
+						}
 					},
 					configurable: true,
 					enumerable: true,
