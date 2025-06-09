@@ -278,9 +278,10 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 	const template = document.createElement('template');
 	template.innerHTML = innerHTML;
 	const fragment =
-		renderState.currentShadowRoot === null
-			? template.content
-			: (renderState.currentShadowRoot.importNode?.(template.content, true) ?? template.content);
+		renderState.currentShadowRoot?.importNode?.(template.content, true) ?? document.importNode(template.content, true);
+
+	// Ensure the DocumentFragment is upgraded before binding to properties
+	customElements.upgrade(fragment);
 
 	// Bind signals and callbacks to the DocumentFragment
 	evaluateBindings(fragment, fragment);
