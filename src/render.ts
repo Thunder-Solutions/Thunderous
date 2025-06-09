@@ -13,6 +13,7 @@ export const renderState = {
 	signalMap: new Map<string, SignalGetter<unknown>>(),
 	callbackMap: new Map<string, AnyFn>(),
 	fragmentMap: new Map<string, DocumentFragment>(),
+	registry: customElements,
 };
 
 const logValueError = (value: unknown) => {
@@ -281,7 +282,7 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 		renderState.currentShadowRoot?.importNode?.(template.content, true) ?? document.importNode(template.content, true);
 
 	// Ensure the DocumentFragment is upgraded before binding to properties
-	customElements.upgrade(fragment);
+	renderState.registry.upgrade(fragment);
 
 	// Bind signals and callbacks to the DocumentFragment
 	evaluateBindings(fragment, fragment);

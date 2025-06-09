@@ -150,6 +150,7 @@ export const customElement = <Props extends CustomElementProps>(
 		#render() {
 			const root = this.#shadowRoot ?? this;
 			renderState.currentShadowRoot = this.#shadowRoot;
+			renderState.registry = shadowRootOptions.customElements ?? customElements;
 			const fragment = render({
 				elementRef: this,
 				root,
@@ -271,6 +272,9 @@ export const customElement = <Props extends CustomElementProps>(
 			}
 
 			root.replaceChildren(fragment);
+
+			renderState.currentShadowRoot = null;
+			renderState.registry = customElements;
 		}
 		static get formAssociated() {
 			return formAssociated;
