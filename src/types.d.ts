@@ -46,7 +46,7 @@ export type RenderArgs<Props extends CustomElementProps> = {
 	customCallback: (fn: () => void) => `this.getRootNode().host.__customCallbackFns.get('${string}')(event)` | '';
 	attrSignals: Record<string, Signal<string | null>>;
 	propSignals: {
-		[K in keyof Props]: SignalWithInit<Props[K]>;
+		[K in keyof Props]-?: SignalWithInit<Props[K]>;
 	};
 	refs: Record<string, HTMLElement | null>;
 	adoptStyleSheet: (stylesheet: Styles) => void;
