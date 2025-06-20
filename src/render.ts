@@ -13,7 +13,7 @@ export const renderState = {
 	signalMap: new Map<string, SignalGetter<unknown>>(),
 	callbackMap: new Map<string, AnyFn>(),
 	fragmentMap: new Map<string, DocumentFragment>(),
-	registry: customElements,
+	registry: typeof customElements !== 'undefined' ? customElements : ({} as CustomElementRegistry),
 };
 
 const logValueError = (value: unknown) => {
