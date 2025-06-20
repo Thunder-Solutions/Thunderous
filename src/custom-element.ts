@@ -18,6 +18,8 @@ import type {
 	SignalWithInit,
 } from './types';
 
+const ANY_BINDING_REGEX = /(\{\{.+:.+\}\})/;
+
 /**
  * Create a custom element that can be defined for use in the DOM.
  * @example
@@ -346,6 +348,7 @@ export const customElement = <Props extends CustomElementProps>(
 			}
 		}
 		attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
+			if (ANY_BINDING_REGEX.test(newValue ?? '')) return; // skip any bindings
 			const [, attrSetter] = this.#attrSignals[name] ?? [];
 			attrSetter?.(newValue);
 			const prop = this.#attributesAsPropertiesMap.get(name);
