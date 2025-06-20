@@ -24,7 +24,19 @@
 				<ul>
 					<li>
 						<th-content-group>
-							<th-text> <th-code>2.3.5</th-code> (Latest)</th-text>
+							<th-text> <th-code>2.3.6</th-code> (Latest)</th-text>
+							<th-content-group>
+								<th-text>
+									Fixed the attribute binding, which was recently broken by another fix that prevented attributes from
+									being modified while iterating them. Instead of using a queue, the list of attributes is now cloned
+									for iteration, because the updates must occur in effects to properly bind the signals.
+								</th-text>
+							</th-content-group>
+						</th-content-group>
+					</li>
+					<li>
+						<th-content-group>
+							<th-text> <th-code>2.3.5</th-code> </th-text>
 							<th-content-group>
 								<th-text>
 									Fixed issues with signal batching, where new updates triggered by the existing batch were not being
