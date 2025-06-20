@@ -19,18 +19,16 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 			subscribers.add(subscriber);
 		}
 		if (options?.debugMode === true || getterOptions?.debugMode === true) {
-			queueMicrotask(() => {
-				let label = 'anonymous signal';
-				if (options?.label !== undefined) {
-					label = `(${options.label})`;
-					if (getterOptions?.label !== undefined) {
-						label += ` ${getterOptions.label}`;
-					}
-				} else if (getterOptions?.label !== undefined) {
-					label = getterOptions.label;
+			let label = 'anonymous signal';
+			if (options?.label !== undefined) {
+				label = `(${options.label})`;
+				if (getterOptions?.label !== undefined) {
+					label += ` ${getterOptions.label}`;
 				}
-				console.log('Signal retrieved:', { value, subscribers, label });
-			});
+			} else if (getterOptions?.label !== undefined) {
+				label = getterOptions.label;
+			}
+			console.log('Signal retrieved:', { value, subscribers, label });
 		}
 		return value;
 	};
@@ -46,18 +44,18 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 			} catch (error) {
 				console.error('Error in subscriber:', { error, oldValue, newValue, fn });
 			}
-			if (options?.debugMode === true || setterOptions?.debugMode === true) {
-				let label = 'anonymous signal';
-				if (options?.label !== undefined) {
-					label = `(${options.label})`;
-					if (setterOptions?.label !== undefined) {
-						label += ` ${setterOptions.label}`;
-					}
-				} else if (setterOptions?.label !== undefined) {
-					label = setterOptions.label;
+		}
+		if (options?.debugMode === true || setterOptions?.debugMode === true) {
+			let label = 'anonymous signal';
+			if (options?.label !== undefined) {
+				label = `(${options.label})`;
+				if (setterOptions?.label !== undefined) {
+					label += ` ${setterOptions.label}`;
 				}
-				console.log('Signal set:', { oldValue, newValue, subscribers, label });
+			} else if (setterOptions?.label !== undefined) {
+				label = setterOptions.label;
 			}
+			console.log('Signal set:', { oldValue, newValue, subscribers, label });
 		}
 	};
 	return [getter, setter];
