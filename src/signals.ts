@@ -48,11 +48,15 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 		if (!isBatchingUpdates) {
 			isBatchingUpdates = true;
 			queueMicrotask(() => {
-				for (const fn of updateQueue) {
-					try {
-						fn();
-					} catch (error) {
-						console.error('Error in subscriber:', { error, oldValue, newValue, fn });
+				while (updateQueue.size > 0) {
+					const updates = Array.from(updateQueue);
+					updateQueue.clear();
+					for (const fn of updates) {
+						try {
+							fn();
+						} catch (error) {
+							console.error('Error in subscriber:', { error, oldValue, newValue, fn });
+						}
 					}
 				}
 				if (options?.debugMode === true || setterOptions?.debugMode === true) {
@@ -67,7 +71,6 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 					}
 					console.log('Signal set:', { oldValue, newValue, subscribers, label });
 				}
-				updateQueue.clear();
 				isBatchingUpdates = false;
 			});
 		}
