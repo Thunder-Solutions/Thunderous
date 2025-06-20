@@ -185,9 +185,7 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 				child.replaceWith(childFragment);
 			}
 		} else if (child instanceof Element) {
-			const attrRemoveQueue: string[] = [];
-			const attrSetQueue: [string, string][] = [];
-			for (const attr of child.attributes) {
+			for (const attr of [...child.attributes]) {
 				const attrName = attr.name;
 				if (SIGNAL_BINDING_REGEX.test(attr.value)) {
 					const textList = attr.value.split(SIGNAL_BINDING_REGEX);
@@ -207,12 +205,12 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 							}
 						}
 						if ((hasNull && newText === 'null') || attrName.startsWith('prop:')) {
-							attrRemoveQueue.push(attrName);
+							child.removeAttribute(attrName);
 						} else {
-							attrSetQueue.push([attrName, newText]);
+							child.setAttribute(attrName, newText);
 						}
 						if (attrName.startsWith('prop:')) {
-							attrRemoveQueue.push(attrName);
+							child.removeAttribute(attrName);
 							const propName = attrName.replace('prop:', '');
 							const newValue = hasNull && newText === 'null' ? null : newText;
 							if (!(propName in child)) logPropertyWarning(propName, child);
@@ -240,9 +238,9 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 							}
 						}
 						if (uniqueKey !== '' && !attrName.startsWith('prop:')) {
-							attrSetQueue.push([attrName, `this.__customCallbackFns.get('${uniqueKey}')(event)`]);
+							child.setAttribute(attrName, `this.__customCallbackFns.get('${uniqueKey}')(event)`);
 						} else if (attrName.startsWith('prop:')) {
-							attrRemoveQueue.push(attrName);
+							child.removeAttribute(attrName);
 							const propName = attrName.replace('prop:', '');
 							if (!(propName in child)) logPropertyWarning(propName, child);
 							// @ts-expect-error // the above warning should suffice for developers
@@ -250,7 +248,7 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 						}
 					});
 				} else if (attrName.startsWith('prop:')) {
-					attrRemoveQueue.push(attrName);
+					child.removeAttribute(attrName);
 					const propName = attrName.replace('prop:', '');
 					if (!(propName in child)) logPropertyWarning(propName, child);
 					// @ts-expect-error // the above warning should suffice for developers
@@ -258,13 +256,6 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 				}
 			}
 
-			// Avoid modifying the attribute list while iterating over it
-			for (const attrName of attrRemoveQueue) {
-				child.removeAttribute(attrName);
-			}
-			for (const [name, value] of attrSetQueue) {
-				child.setAttribute(name, value);
-			}
 			evaluateBindings(child, fragment);
 		}
 	}
