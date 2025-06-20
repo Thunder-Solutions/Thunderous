@@ -24,7 +24,18 @@
 				<ul>
 					<li>
 						<th-content-group>
-							<th-text> <th-code>2.3.6</th-code> (Latest)</th-text>
+							<th-text> <th-code>2.3.7</th-code> (Latest)</th-text>
+							<th-content-group>
+								<th-text>
+									Removed batch updates for signals altogether, as asynchronous updates were creating multiple issues,
+									and the performance impact is negligible. Signals are now updated immediately.
+								</th-text>
+							</th-content-group>
+						</th-content-group>
+					</li>
+					<li>
+						<th-content-group>
+							<th-text> <th-code>2.3.6</th-code> </th-text>
 							<th-content-group>
 								<th-text>
 									Fixed the attribute binding, which was recently broken by another fix that prevented attributes from
