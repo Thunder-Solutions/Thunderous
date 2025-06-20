@@ -1,8 +1,6 @@
 import type { Signal, SignalGetter, SignalOptions, SignalSetter } from './types';
 
 let subscriber: (() => void) | null = null;
-const updateQueue = new Set<() => void>();
-let isBatchingUpdates = false;
 
 /**
  * Create a signal with an initial value.
@@ -43,36 +41,23 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 		const oldValue = value;
 		value = newValue;
 		for (const fn of subscribers) {
-			updateQueue.add(fn);
-		}
-		if (!isBatchingUpdates) {
-			isBatchingUpdates = true;
-			queueMicrotask(() => {
-				while (updateQueue.size > 0) {
-					const updates = Array.from(updateQueue);
-					updateQueue.clear();
-					for (const fn of updates) {
-						try {
-							fn();
-						} catch (error) {
-							console.error('Error in subscriber:', { error, oldValue, newValue, fn });
-						}
+			try {
+				fn();
+			} catch (error) {
+				console.error('Error in subscriber:', { error, oldValue, newValue, fn });
+			}
+			if (options?.debugMode === true || setterOptions?.debugMode === true) {
+				let label = 'anonymous signal';
+				if (options?.label !== undefined) {
+					label = `(${options.label})`;
+					if (setterOptions?.label !== undefined) {
+						label += ` ${setterOptions.label}`;
 					}
+				} else if (setterOptions?.label !== undefined) {
+					label = setterOptions.label;
 				}
-				if (options?.debugMode === true || setterOptions?.debugMode === true) {
-					let label = 'anonymous signal';
-					if (options?.label !== undefined) {
-						label = `(${options.label})`;
-						if (setterOptions?.label !== undefined) {
-							label += ` ${setterOptions.label}`;
-						}
-					} else if (setterOptions?.label !== undefined) {
-						label = setterOptions.label;
-					}
-					console.log('Signal set:', { oldValue, newValue, subscribers, label });
-				}
-				isBatchingUpdates = false;
-			});
+				console.log('Signal set:', { oldValue, newValue, subscribers, label });
+			}
 		}
 	};
 	return [getter, setter];
