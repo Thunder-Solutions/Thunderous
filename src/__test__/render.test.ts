@@ -1,61 +1,63 @@
-import { test } from 'node:test';
+import { describe, it, type Mock } from 'node:test';
 import assert from 'assert';
 import { html, css } from '../render';
-import { getErrorMock } from './_test-utils';
+import { NOOP } from '../utilities';
 
-await test('html', async () => {
-	await test('renders a simple string', () => {
+await describe('html', async () => {
+	await it('renders a simple string', () => {
 		const result = html`<div></div>`;
 		assert.strictEqual(result, '<div></div>');
 	});
-	await test('renders a string with interpolated values', () => {
+	await it('renders a string with interpolated values', () => {
 		const result = html`<div>${'Hello, world!'} ${1} ${true}</div>`;
 		assert.strictEqual(result, '<div>Hello, world! 1 true</div>');
 	});
-	await test('logs an error if a non-primitive value is interpolated', (t) => {
-		const mockError = getErrorMock(t);
+	await it('logs an error if a non-primitive value is interpolated', (testContext) => {
+		testContext.mock.method(console, 'error', NOOP);
+		const errorMock = (console.error as Mock<typeof console.error>).mock;
 		const obj = {};
 		const result = html`<div>${obj}</div>`;
 		assert.strictEqual(result, '<div></div>');
-		assert.strictEqual(mockError.callCount(), 1);
+		assert.strictEqual(errorMock.callCount(), 1);
 		assert.strictEqual(
-			mockError.calls[0].arguments[0],
+			errorMock.calls[0].arguments[0],
 			'An invalid value was passed to a template function. Non-primitive values are not supported.\n\nValue:\n',
 		);
-		assert.strictEqual(mockError.calls[0].arguments[1], obj);
+		assert.strictEqual(errorMock.calls[0].arguments[1], obj);
 	});
-	await test('renders a string with signals', () => {
+	await it('renders a string with signals', () => {
 		const mockGetter = () => 'Hello, world!';
 		const result = html`<div>${mockGetter}</div>`;
 		assert.strictEqual(result, '<div>Hello, world!</div>');
 	});
 });
 
-await test('css', async () => {
-	await test('renders a simple string', () => {
+await describe('css', async () => {
+	await it('renders a simple string', () => {
 		// prettier-ignore
 		const result = css`div { color: red; }`;
 		assert.strictEqual(result, 'div { color: red; }');
 	});
-	await test('renders a string with interpolated values', () => {
+	await it('renders a string with interpolated values', () => {
 		// prettier-ignore
 		const result = css`div { --str: ${'str'}; --num: ${1}; --bool: ${true}; }`;
 		assert.strictEqual(result, 'div { --str: str; --num: 1; --bool: true; }');
 	});
-	await test('logs an error if a non-primitive value is interpolated', (t) => {
-		const mockError = getErrorMock(t);
+	await it('logs an error if a non-primitive value is interpolated', (testContext) => {
+		testContext.mock.method(console, 'error', NOOP);
+		const errorMock = (console.error as Mock<typeof console.error>).mock;
 		const obj = {};
 		// prettier-ignore
 		const result = css`div { --obj: ${obj}; }`;
 		assert.strictEqual(result, 'div { --obj: ; }');
-		assert.strictEqual(mockError.callCount(), 1);
+		assert.strictEqual(errorMock.callCount(), 1);
 		assert.strictEqual(
-			mockError.calls[0].arguments[0],
+			errorMock.calls[0].arguments[0],
 			'An invalid value was passed to a template function. Non-primitive values are not supported.\n\nValue:\n',
 		);
-		assert.strictEqual(mockError.calls[0].arguments[1], obj);
+		assert.strictEqual(errorMock.calls[0].arguments[1], obj);
 	});
-	await test('renders a string with signals', () => {
+	await it('renders a string with signals', () => {
 		const mockGetter = () => 'red';
 		// prettier-ignore
 		const result = css`div { color: ${mockGetter}; }`;

@@ -8,7 +8,7 @@ import {
 	serverDefineFns,
 	wrapTemplate,
 } from '../server-side';
-import { mock, test } from 'node:test';
+import { describe, mock, it } from 'node:test';
 import assert from 'assert';
 import { createRegistry } from '../registry';
 import { DEFAULT_RENDER_OPTIONS } from '../constants';
@@ -19,8 +19,8 @@ import { html } from '../render';
 
 const stripWhitespace = (template: string) => template.trim().replace(/\s\s+/g, ' ');
 
-await test('getServerRenderArgs', async () => {
-	await test('client-only properties throw on the server', () => {
+await describe('getServerRenderArgs', async () => {
+	await it('throws on the server when accessing client-only properties', () => {
 		const args = getServerRenderArgs('my-element-1');
 		assert.throws(() => args.elementRef.children, {
 			message: 'The `elementRef` property is not available on the server.',
@@ -30,11 +30,11 @@ await test('getServerRenderArgs', async () => {
 			message: 'The `internals` property is not available on the server.',
 		});
 	});
-	await test('customCallback returns nothing on the server', () => {
+	await it('returns nothing from customCallback on the server', () => {
 		const args = getServerRenderArgs('my-element-2');
 		assert.strictEqual(args.customCallback(NOOP), '');
 	});
-	await test('adoptStyleSheet tracks CSS strings on the server', () => {
+	await it('tracks CSS strings on the server using adoptStyleSheet', () => {
 		const args = getServerRenderArgs('my-element-3');
 
 		// build the expected result
@@ -46,7 +46,7 @@ await test('getServerRenderArgs', async () => {
 		args.adoptStyleSheet(':host { color: red; }');
 		assert.deepStrictEqual(serverCss, expectedServerCss);
 	});
-	await test('adoptStyleSheet tracks CSS strings on the server, with registries', () => {
+	await it('tracks CSS strings on the server with registries using adoptStyleSheet', () => {
 		const registry = createRegistry();
 		const args = getServerRenderArgs('my-element-4', registry);
 
@@ -61,8 +61,8 @@ await test('getServerRenderArgs', async () => {
 	});
 });
 
-await test('wrapTemplate', async () => {
-	await test('wraps the render result in a template tag', () => {
+await describe('wrapTemplate', async () => {
+	await it('wraps the render result in a template tag', () => {
 		const template = stripWhitespace(
 			wrapTemplate({
 				tagName: 'my-element-5',
@@ -84,7 +84,7 @@ await test('wrapTemplate', async () => {
 
 		assert.strictEqual(template, expectedTemplate);
 	});
-	await test('wraps the render result in a template tag with CSS', () => {
+	await it('wraps the render result in a template tag with CSS', () => {
 		const args = getServerRenderArgs('my-element-6');
 		// @ts-expect-error // this will be a string on the server.
 		args.adoptStyleSheet(':host { color: green; }');
@@ -110,7 +110,7 @@ await test('wrapTemplate', async () => {
 
 		assert.strictEqual(template, expectedTemplate);
 	});
-	await test('wraps the render result in a template tag without shadow root', () => {
+	await it('wraps the render result in a template tag when shadow root is not attached', () => {
 		const template = stripWhitespace(
 			wrapTemplate({
 				tagName: 'my-element-7',
@@ -128,8 +128,8 @@ await test('wrapTemplate', async () => {
 	});
 });
 
-await test('insertTemplates', async () => {
-	await test('inserts the template into the input string', () => {
+await describe('insertTemplates', async () => {
+	await it('inserts the template into the input string', () => {
 		const inputString = /* html */ `<my-element-7></my-element-7>`;
 		const template = /* html */ `<div>Hello, world!</div>`;
 
@@ -141,7 +141,7 @@ await test('insertTemplates', async () => {
 
 		assert.strictEqual(result, expectedResult);
 	});
-	await test('inserts the template into the input string, parsing attribute references', () => {
+	await it('inserts the template into the input string and parses attribute references', () => {
 		const inputString = /* html */ `<my-element-8 test="Hello, world!"></my-element-8>`;
 		const template = /* html */ `<div>{{attr:test}}</div>`;
 
@@ -155,8 +155,8 @@ await test('insertTemplates', async () => {
 	});
 });
 
-await test('onServerDefine', async () => {
-	await test('adds the function to the set', () => {
+await describe('onServerDefine', async () => {
+	await it('adds the function to the set', () => {
 		const fn = NOOP;
 		onServerDefine(fn);
 		assert.strictEqual(serverDefineFns.size, 1);
@@ -165,8 +165,8 @@ await test('onServerDefine', async () => {
 	});
 });
 
-await test('serverDefine', async () => {
-	await test('calls the serverDefineFns with the result of the serverRender', () => {
+await describe('serverDefine', async () => {
+	await it('calls the serverDefineFns with the result of serverRender', () => {
 		const fn = mock.fn((tagName: string, template: string) => {
 			assert.strictEqual(tagName, 'my-element-9');
 			assert.strictEqual(template, 'Hello, world!');
@@ -188,7 +188,7 @@ await test('serverDefine', async () => {
 
 		serverDefineFns.clear();
 	});
-	await test('sets the server render options on the parent registry', () => {
+	await it('sets the server render options on the parent registry', () => {
 		const parentRegistry = createRegistry();
 
 		const serverRender = () => 'Hello, world!';
@@ -207,7 +207,7 @@ await test('serverDefine', async () => {
 		assert.strictEqual(parentRegistry.__serverRenderOpts.size, 1);
 		assert.deepStrictEqual(parentRegistry.__serverRenderOpts, expectedServerRenderOpts);
 	});
-	await test('correctly renders scoped registries', () => {
+	await it('renders scoped registries correctly', () => {
 		const scopedRegistry = createRegistry({ scoped: true });
 
 		onServerDefine((tagName, template) => {
@@ -235,8 +235,8 @@ await test('serverDefine', async () => {
 	});
 });
 
-await test('clientOnlyCallback', async () => {
-	await test('direct function call does nothing on the server', () => {
+await describe('clientOnlyCallback', async () => {
+	await it('does nothing on the server when called directly', () => {
 		let runCount = 0;
 		clientOnlyCallback(() => {
 			runCount++;

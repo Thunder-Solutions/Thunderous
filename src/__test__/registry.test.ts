@@ -1,28 +1,29 @@
-import { test } from 'node:test';
+import { describe, it, type Mock } from 'node:test';
 import assert from 'assert';
 import { createRegistry } from '../registry';
 import { customElement } from '../custom-element';
 import { html } from '../render';
-import { getWarnMock } from './_test-utils';
+import { NOOP } from '../utilities';
 
-await test('createRegistry', async () => {
-	await test('creates a global registry', () => {
+await describe('createRegistry', async () => {
+	await it('creates a global registry', () => {
 		const registry = createRegistry();
 		assert.ok(registry);
 		assert.strictEqual(registry.scoped, false);
 	});
-	await test('creates a scoped registry', () => {
+	await it('creates a scoped registry', () => {
 		const registry = createRegistry({ scoped: true });
 		assert.ok(registry);
 		assert.strictEqual(registry.scoped, true);
 	});
-	await test('defines a custom element', () => {
+	await it('defines a custom element', () => {
 		const registry = createRegistry();
 		const MyElement = customElement(() => html`<div></div>`);
 		assert.doesNotThrow(() => registry.define('my-element', MyElement));
 	});
-	await test('warns about duplicate custom elements', (t) => {
-		const warnMock = getWarnMock(t);
+	await it('warns about duplicate custom elements', (testContext) => {
+		testContext.mock.method(console, 'warn', NOOP);
+		const warnMock = (console.warn as Mock<typeof console.warn>).mock;
 		const registry = createRegistry();
 		const MyElement = customElement(() => html`<div></div>`);
 		const MyElement2 = customElement(() => html`<div></div>`);
@@ -37,7 +38,7 @@ await test('createRegistry', async () => {
 		assert.strictEqual(warnMock.callCount(), 2);
 		assert.strictEqual(warnMock.calls[1].arguments[0], 'MY-ELEMENT-2 was already defined. Skipping...');
 	});
-	await test('gets the tag name of a custom element', () => {
+	await it('gets the tag name of a custom element', () => {
 		const registry = createRegistry();
 		const tagName = 'my-element';
 		const MyElement = customElement(() => html`<div></div>`);
@@ -45,7 +46,7 @@ await test('createRegistry', async () => {
 		const result = registry.getTagName(MyElement);
 		assert.strictEqual(result, tagName.toUpperCase());
 	});
-	await test('gets all tag names defined in the registry', () => {
+	await it('gets all tag names defined in the registry', () => {
 		const registry = createRegistry();
 		const MyElement = customElement(() => html`<div></div>`);
 		const MyElement2 = customElement(() => html`<div></div>`);
@@ -54,7 +55,7 @@ await test('createRegistry', async () => {
 		const result = registry.getAllTagNames();
 		assert.deepStrictEqual(result, ['MY-ELEMENT', 'MY-ELEMENT-2']);
 	});
-	await test('throws an error if ejected on the server', () => {
+	await it('throws an error if ejected on the server', () => {
 		const registry = createRegistry();
 		const MyElement = customElement(() => html`<div></div>`);
 		registry.define('my-element', MyElement);
