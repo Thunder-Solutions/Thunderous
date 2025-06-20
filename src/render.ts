@@ -197,10 +197,14 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 						let signal: SignalGetter<unknown> | undefined;
 						for (const text of textList) {
 							const uniqueKey = text.replace(/\{\{signal:(.+)\}\}/, '$1');
-							signal = uniqueKey !== text ? renderState.signalMap.get(uniqueKey) : undefined;
-							const value = signal !== undefined ? signal() : text;
-							if (value === null) hasNull = true;
-							newText += String(value);
+							if (signal === undefined) {
+								signal = uniqueKey !== text ? renderState.signalMap.get(uniqueKey) : undefined;
+								const value = signal !== undefined ? signal() : text;
+								if (value === null) hasNull = true;
+								newText += String(value);
+							} else {
+								newText += text;
+							}
 						}
 						if ((hasNull && newText === 'null') || attrName.startsWith('prop:')) {
 							attrRemoveQueue.push(attrName);
