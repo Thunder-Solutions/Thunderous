@@ -338,7 +338,7 @@ Element: <${this.tagName.toLowerCase()}>
 					busy = true;
 					const value = getter();
 					if (value === undefined) return;
-					if (value !== null) {
+					if (value !== null && value !== false) {
 						this.setAttribute(attrName, String(value));
 					} else {
 						this.removeAttribute(attrName);
