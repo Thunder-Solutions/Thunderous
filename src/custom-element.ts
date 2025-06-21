@@ -14,6 +14,7 @@ import type {
 	ServerRenderFunction,
 	Signal,
 	SignalGetter,
+	SignalOptions,
 	SignalSetter,
 	SignalWithInit,
 } from './types';
@@ -151,15 +152,45 @@ export const customElement = <Props extends CustomElementProps>(
 					});
 		#getPropSignal = ((prop: Extract<keyof Props, string>, { allowUndefined = false } = {}) => {
 			if (!(prop in this.#propSignals)) this.#propSignals[prop] = createSignal<Props[typeof prop] | undefined>();
-			const [_getter, _setter] = this.#propSignals[prop];
-			let setFromProp = false;
-			const setter: SignalSetter<Props[typeof prop]> = (newValue: Props[typeof prop]) => {
-				// @ts-expect-error // TODO: look into this
-				if (!setFromProp) this[prop] = newValue;
-				_setter(newValue);
+			const [_getter, __setter] = this.#propSignals[prop];
+			let stackLength = 0;
+			const _setter = (newValue: Props[typeof prop], options?: SignalOptions) => {
+				stackLength++;
+				queueMicrotask(() => stackLength--);
+				if (stackLength > 999) {
+					console.error(
+						new Error(
+							`Property signal setter stack overflow detected. Possible infinite loop. Bailing out.
+
+Property: ${prop}
+
+New value: ${JSON.stringify(newValue, null, 2)}
+
+Element: <${this.tagName.toLowerCase()}>
+`,
+						),
+					);
+					stackLength = 0;
+					return;
+				}
+				__setter(newValue, options);
 			};
-			const getter = (() => {
-				const value = _getter();
+			const descriptor = Object.getOwnPropertyDescriptor(this, prop);
+			if (descriptor === undefined) {
+				Object.defineProperty(this, prop, {
+					get: _getter,
+					set: _setter,
+					configurable: false,
+					enumerable: true,
+				});
+			}
+			const setter: SignalSetter<Props[typeof prop]> = (newValue: Props[typeof prop], options?: SignalOptions) => {
+				// @ts-expect-error // TODO: look into this
+				this[prop] = newValue;
+				_setter(newValue, options);
+			};
+			const getter = ((options?: SignalOptions) => {
+				const value = _getter(options);
 				if (value === undefined && !allowUndefined) {
 					const error = new Error(
 						`Error accessing property: "${prop}"\nYou must set an initial value before calling a property signal's getter.\n`,
@@ -170,17 +201,6 @@ export const customElement = <Props extends CustomElementProps>(
 				return value;
 			}) as SignalGetter<Props[typeof prop]>;
 			getter.getter = true;
-			const descriptor = Object.getOwnPropertyDescriptor(this, prop);
-			if (descriptor === undefined) {
-				Object.defineProperty(this, prop, {
-					get: getter,
-					set: (newValue: Props[typeof prop]) => {
-						setFromProp = true;
-						_setter(newValue);
-						setFromProp = false;
-					},
-				});
-			}
 			const publicSignal = [getter, setter] as SignalWithInit<Props[typeof prop]>;
 			publicSignal.init = (value) => {
 				_setter(value);
@@ -188,7 +208,7 @@ export const customElement = <Props extends CustomElementProps>(
 			};
 			return publicSignal;
 		}).bind(this);
-		#render() {
+		#render = (() => {
 			const root = this.#shadowRoot ?? this;
 			renderState.currentShadowRoot = this.#shadowRoot;
 			renderState.registry = shadowRootOptions.customElements ?? customElements;
@@ -281,7 +301,7 @@ export const customElement = <Props extends CustomElementProps>(
 
 			renderState.currentShadowRoot = null;
 			renderState.registry = customElements;
-		}
+		}).bind(this);
 		static get formAssociated() {
 			return formAssociated;
 		}

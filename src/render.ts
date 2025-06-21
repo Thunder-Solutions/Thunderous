@@ -16,13 +16,6 @@ export const renderState = {
 	registry: typeof customElements !== 'undefined' ? customElements : ({} as CustomElementRegistry),
 };
 
-const logValueError = (value: unknown) => {
-	console.error(
-		'An invalid value was passed to a template function. Non-primitive values are not supported.\n\nValue:\n',
-		value,
-	);
-};
-
 const logPropertyWarning = (propName: string, element: Element) => {
 	console.warn(
 		`Property "${propName}" does not exist on element:`,
@@ -101,10 +94,6 @@ const processValue = (value: unknown): string => {
 		const uniqueKey = crypto.randomUUID();
 		renderState.callbackMap.set(uniqueKey, value as AnyFn);
 		return isServer ? String(value()) : `{{callback:${uniqueKey}}}`;
-	}
-	if (typeof value === 'object' && value !== null) {
-		logValueError(value);
-		return '';
 	}
 	return String(value);
 };
@@ -189,6 +178,7 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 				const attrName = attr.name;
 				if (SIGNAL_BINDING_REGEX.test(attr.value)) {
 					const textList = attr.value.split(SIGNAL_BINDING_REGEX);
+					let prevText = attr.value;
 					createEffect(() => {
 						let newText = '';
 						let hasNull = false;
@@ -205,18 +195,19 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 							}
 						}
 						if ((hasNull && newText === 'null') || attrName.startsWith('prop:')) {
-							child.removeAttribute(attrName);
+							if (child.hasAttribute(attrName)) child.removeAttribute(attrName);
 						} else {
-							child.setAttribute(attrName, newText);
+							if (newText !== prevText) child.setAttribute(attrName, newText);
 						}
 						if (attrName.startsWith('prop:')) {
-							child.removeAttribute(attrName);
+							if (child.hasAttribute(attrName)) child.removeAttribute(attrName);
 							const propName = attrName.replace('prop:', '');
 							const newValue = hasNull && newText === 'null' ? null : newText;
 							if (!(propName in child)) logPropertyWarning(propName, child);
 							// @ts-expect-error // the above warning should suffice for developers
 							child[propName] = signal !== undefined ? signal() : newValue;
 						}
+						prevText = newText;
 					});
 				} else if (LEGACY_CALLBACK_BINDING_REGEX.test(attr.value)) {
 					const getRootNode = child.getRootNode.bind(child);
@@ -316,7 +307,7 @@ export const css = (strings: TemplateStringsArray, ...values: unknown[]): Styles
 			value = isServer ? value() : `{{signal:${uniqueKey}}}`;
 		}
 		if (typeof value === 'object' && value !== null) {
-			logValueError(value);
+			console.error('Objects are not valid in CSS values. Received:', value);
 			value = '';
 		}
 		cssText += string + String(value);

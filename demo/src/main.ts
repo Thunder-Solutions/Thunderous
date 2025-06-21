@@ -24,6 +24,7 @@ type MyElementProps = {
 
 type NestedElementProps = {
 	count: number;
+	test: Record<string, unknown>;
 };
 
 const mockHTML = /* html */ `
@@ -51,7 +52,12 @@ const globalRegistry = createRegistry();
 const NestedElement = customElement<NestedElementProps>(
 	({ attrSignals, propSignals }) => {
 		const [count] = propSignals.count.init(0);
+		const [test] = propSignals.test.init({});
 		const [text] = attrSignals.text;
+		const prop = derived(() => test().prop);
+		createEffect(() => {
+			console.log('NestedElement prop changed:', prop());
+		});
 		return html`<strong>${text}</strong> <span>count: ${count}</span>`;
 	},
 	{
@@ -79,6 +85,8 @@ const MyElement = customElement<MyElementProps>(
 			const value = count() * 10;
 			return value > 255 ? 255 : value;
 		});
+
+		const test = derived(() => ({ prop: count() }));
 
 		clientOnlyCallback(() => {
 			internals.setFormValue(String(count()));
@@ -137,7 +145,7 @@ const MyElement = customElement<MyElementProps>(
 				<slot></slot>
 			</div>
 			<span>this is a scoped element:</span>
-			<nested-element text="test" prop:count="${count}"></nested-element>
+			<nested-element text="test" prop:count="${count}" prop:test="${test}"></nested-element>
 			<h2>nested templates and loops:</h2>
 			<ul>
 				${html`<li onclick="${addListItem}">item</li>`}

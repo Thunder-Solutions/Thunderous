@@ -12,19 +12,6 @@ await describe('html', async () => {
 		const result = html`<div>${'Hello, world!'} ${1} ${true}</div>`;
 		assert.strictEqual(result, '<div>Hello, world! 1 true</div>');
 	});
-	await it('logs an error if a non-primitive value is interpolated', (testContext) => {
-		testContext.mock.method(console, 'error', NOOP);
-		const errorMock = (console.error as Mock<typeof console.error>).mock;
-		const obj = {};
-		const result = html`<div>${obj}</div>`;
-		assert.strictEqual(result, '<div></div>');
-		assert.strictEqual(errorMock.callCount(), 1);
-		assert.strictEqual(
-			errorMock.calls[0].arguments[0],
-			'An invalid value was passed to a template function. Non-primitive values are not supported.\n\nValue:\n',
-		);
-		assert.strictEqual(errorMock.calls[0].arguments[1], obj);
-	});
 	await it('renders a string with signals', () => {
 		const mockGetter = () => 'Hello, world!';
 		const result = html`<div>${mockGetter}</div>`;
@@ -51,10 +38,7 @@ await describe('css', async () => {
 		const result = css`div { --obj: ${obj}; }`;
 		assert.strictEqual(result, 'div { --obj: ; }');
 		assert.strictEqual(errorMock.callCount(), 1);
-		assert.strictEqual(
-			errorMock.calls[0].arguments[0],
-			'An invalid value was passed to a template function. Non-primitive values are not supported.\n\nValue:\n',
-		);
+		assert.strictEqual(errorMock.calls[0].arguments[0], 'Objects are not valid in CSS values. Received:');
 		assert.strictEqual(errorMock.calls[0].arguments[1], obj);
 	});
 	await it('renders a string with signals', () => {

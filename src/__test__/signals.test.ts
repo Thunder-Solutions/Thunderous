@@ -25,7 +25,7 @@ await describe('createSignal', async () => {
 
 		assert.strictEqual(runCount, 1);
 	});
-	await it('recalculates for complex data', () => {
+	await it('does not recalculate for complex data', () => {
 		const [count, setCount] = createSignal({ value: 0 });
 		let runCount = 0;
 		createEffect(() => {
@@ -33,7 +33,7 @@ await describe('createSignal', async () => {
 			runCount++;
 		});
 		setCount({ value: 0 });
-		assert.strictEqual(runCount, 2);
+		assert.strictEqual(runCount, 1);
 	});
 	await it('runs in debug mode', async (testContext) => {
 		await it('adds the label when the signal is created with one', async () => {

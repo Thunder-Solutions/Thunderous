@@ -33,9 +33,20 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 		return value;
 	};
 	getter.getter = true;
+	let stackLength = 0;
 	const setter: SignalSetter<T> = (newValue, setterOptions) => {
+		stackLength++;
+		queueMicrotask(() => stackLength--);
+		if (stackLength > 1000) {
+			console.error(new Error('Signal setter stack overflow detected. Possible infinite loop. Bailing out.'));
+			stackLength = 0;
+			return;
+		}
 		const isObject = typeof newValue === 'object' && newValue !== null;
 		if (!isObject && value === newValue) return;
+		if (isObject && typeof value === 'object' && value !== null) {
+			if (JSON.stringify(value) === JSON.stringify(newValue)) return;
+		}
 		const oldValue = value;
 		value = newValue;
 		for (const fn of subscribers) {
@@ -69,8 +80,8 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
  * const doubleCount = derived(() => getCount() * 2);
  * ```
  */
-export const derived = <T>(fn: () => T): SignalGetter<T> => {
-	const [getter, setter] = createSignal<T>();
+export const derived = <T>(fn: () => T, options?: SignalOptions): SignalGetter<T> => {
+	const [getter, setter] = createSignal<T>(undefined, options);
 	createEffect(() => {
 		try {
 			setter(fn());
