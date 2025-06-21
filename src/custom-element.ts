@@ -339,7 +339,7 @@ Element: <${this.tagName.toLowerCase()}>
 					const value = getter();
 					if (value === undefined) return;
 					if (value !== null && value !== false) {
-						this.setAttribute(attrName, String(value));
+						this.setAttribute(attrName, String(value === true ? '' : value));
 					} else {
 						this.removeAttribute(attrName);
 					}
