@@ -24,11 +24,23 @@
 				<ul>
 					<li>
 						<th-content-group>
-							<th-text> <th-code>2.3.11</th-code> (Latest)</th-text>
+							<th-text> <th-code>2.3.12</th-code> (Latest)</th-text>
 							<th-content-group>
 								<th-text>
-									Fix boolean attributes-as-properties so that false values remove the attribute from the DOM, and true
-									adds an attribute with an empty value.
+									Fixed boolean coercion in attributes-as-properties, so that now empty strings are coerced to
+									<th-code>true</th-code> while both the string <th-code>'false'</th-code> and
+									<th-code>null</th-code> are coerced to <th-code>false</th-code>.
+								</th-text>
+							</th-content-group>
+						</th-content-group>
+					</li>
+					<li>
+						<th-content-group>
+							<th-text> <th-code>2.3.11</th-code> </th-text>
+							<th-content-group>
+								<th-text>
+									Fixed boolean attributes-as-properties so that false values remove the attribute from the DOM, and
+									true adds an attribute with an empty value.
 								</th-text>
 							</th-content-group>
 						</th-content-group>
