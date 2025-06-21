@@ -371,8 +371,14 @@ Element: <${this.tagName.toLowerCase()}>
 				const propName = prop.prop as Extract<keyof Props, string>;
 				this.#attributesBusy = true; // prevent infinite loop
 				const [, propSetter] = this.#getPropSignal(propName);
-				const propValue = (newValue === null ? null : prop.coerce(newValue)) as Props[typeof propName];
-				propSetter(propValue);
+				if (prop.coerce === Boolean) {
+					const bool = newValue !== null && newValue !== 'false';
+					const propValue = (newValue === null ? null : bool) as Props[typeof propName];
+					propSetter(propValue);
+				} else {
+					const propValue = (newValue === null ? null : prop.coerce(newValue)) as Props[typeof propName];
+					propSetter(propValue);
+				}
 				this.#attributesBusy = false;
 			}
 			for (const fn of this.#attributeChangedFns) {
