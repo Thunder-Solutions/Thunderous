@@ -24,12 +24,23 @@
 				<ul>
 					<li>
 						<th-content-group>
+							<th-text> <th-code>2.3.11</th-code> (Latest)</th-text>
+							<th-content-group>
+								<th-text>
+									Fix boolean attributes-as-properties so that false values remove the attribute from the DOM, and true
+									adds an attribute with an empty value.
+								</th-text>
+							</th-content-group>
+						</th-content-group>
+					</li>
+					<li>
+						<th-content-group>
 							<th-text> <th-code>2.3.10</th-code> (Latest)</th-text>
 							<th-content-group>
 								<th-text>
-									Fixed attributes-as-props binding, which set attributes prematurely, causing issues with reactivity.
-									The attributes are now set after the element is connected to the DOM. Additionally, more protection
-									against infinite loops has been added.
+									Fixed attributes-as-properties binding, which set attributes prematurely, causing issues with
+									reactivity. The attributes are now set after the element is connected to the DOM. Additionally, more
+									protection against infinite loops has been added.
 								</th-text>
 							</th-content-group>
 						</th-content-group>
