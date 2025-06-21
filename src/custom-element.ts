@@ -317,20 +317,6 @@ Element: <${this.tagName.toLowerCase()}>
 				for (const attr of this.attributes) {
 					this.#attrSignals[attr.name] = createSignal<string | null>(attr.value);
 				}
-				for (const [attrName, attr] of this.#attributesAsPropertiesMap) {
-					if (!(attrName in this.#attrSignals)) this.#attrSignals[attrName] = createSignal<string | null>(null);
-					const propName = attr.prop as Extract<keyof Props, string>;
-					const [getter] = this.#getPropSignal(propName, { allowUndefined: true });
-					createEffect(() => {
-						const value = getter();
-						if (value === undefined) return;
-						if (value !== null) {
-							this.setAttribute(attrName, String(value));
-						} else {
-							this.removeAttribute(attrName);
-						}
-					});
-				}
 				this.#render();
 			} catch (error) {
 				const _error = new Error(
@@ -342,6 +328,24 @@ Element: <${this.tagName.toLowerCase()}>
 			}
 		}
 		connectedCallback() {
+			for (const [attrName, attr] of this.#attributesAsPropertiesMap) {
+				if (!(attrName in this.#attrSignals)) this.#attrSignals[attrName] = createSignal<string | null>(null);
+				const propName = attr.prop as Extract<keyof Props, string>;
+				const [getter] = this.#getPropSignal(propName, { allowUndefined: true });
+				let busy = false;
+				createEffect(() => {
+					if (busy) return;
+					busy = true;
+					const value = getter();
+					if (value === undefined) return;
+					if (value !== null) {
+						this.setAttribute(attrName, String(value));
+					} else {
+						this.removeAttribute(attrName);
+					}
+					busy = false;
+				});
+			}
 			if (this.#observer !== null) {
 				this.#observer.observe(this, { attributes: true });
 			}
