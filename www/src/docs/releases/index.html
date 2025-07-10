@@ -24,7 +24,20 @@
 				<ul>
 					<li>
 						<th-content-group>
-							<th-text> <th-code>2.3.12</th-code> (Latest)</th-text>
+							<th-text> <th-code>2.3.13</th-code> (Latest)</th-text>
+							<th-content-group>
+								<th-text>
+									Fixed a bug in <th-code>prop:</th-code> binding where uppercase characters were not persisting after
+									parsing HTML, which caused issues with camelCase properties. This also addresses
+									<th-code>attributesAsProperties</th-code> binding, which now correctly converts kebab-case attributes
+									to camelCase properties.
+								</th-text>
+							</th-content-group>
+						</th-content-group>
+					</li>
+					<li>
+						<th-content-group>
+							<th-text> <th-code>2.3.12</th-code> </th-text>
 							<th-content-group>
 								<th-text>
 									Fixed boolean coercion in attributes-as-properties, so that now empty strings are coerced to
@@ -145,22 +158,17 @@
 					<li>
 						<th-content-group>
 							<th-text> <th-code>2.3.0</th-code> </th-text>
-							<th-content-group>
-								<th-text>
-									Added HTMLCustomElement type for convenience.
-									<th-link href="/docs/types">Read more about types.</th-link>
-								</th-text>
-							</th-content-group>
+							<th-text>
+								Minor release, see <th-link href="/docs/releases/2.0.0">release 2.0.0</th-link> for details.
+							</th-text>
 						</th-content-group>
 					</li>
 					<li>
 						<th-content-group>
 							<th-text> <th-code>2.2.0</th-code> </th-text>
-							<th-content-group>
-								<th-text> Added property signal initializers. For example: </th-text>
-								<th-code>const [prop, setProp] = propSignals.prop.init('initial')</th-code>
-								<th-link href="/docs/property-signals">Read more about properties.</th-link>
-							</th-content-group>
+							<th-text>
+								Minor release, see <th-link href="/docs/releases/2.0.0">release 2.0.0</th-link> for details.
+							</th-text>
 						</th-content-group>
 					</li>
 					<li>
