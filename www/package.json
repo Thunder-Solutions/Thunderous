@@ -1,6 +1,6 @@
 {
 	"name": "thunderous-docs",
-	"version": "2.3.12",
+	"version": "2.3.13",
 	"description": "Documentation for the Thunderous NPM library.",
 	"type": "module",
 	"scripts": {
