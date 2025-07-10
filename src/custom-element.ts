@@ -107,9 +107,7 @@ export const customElement = <Props extends CustomElementProps>(
 		observedAttributesSet.add(attrName);
 		attributesAsPropertiesMap.set(attrName, {
 			// convert kebab-case attribute names to camelCase property names
-			prop: attrName
-				.replace(/^([A-Z]+)/, (_, letter: string) => letter.toLowerCase())
-				.replace(/(-|_| )([a-zA-Z])/g, (_, letter: string) => letter.toUpperCase()),
+			prop: attrName.replace(/(?<=-|_)([a-z])/g, (_, letter: string) => letter.toUpperCase()).replace(/(-|_)/g, ''),
 			coerce,
 			value: null,
 		});
