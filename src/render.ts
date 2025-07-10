@@ -13,6 +13,7 @@ export const renderState = {
 	signalMap: new Map<string, SignalGetter<unknown>>(),
 	callbackMap: new Map<string, AnyFn>(),
 	fragmentMap: new Map<string, DocumentFragment>(),
+	propertyMap: new Map<string, string>(),
 	registry: typeof customElements !== 'undefined' ? customElements : ({} as CustomElementRegistry),
 };
 
@@ -194,14 +195,22 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 								newText += text;
 							}
 						}
-						if ((hasNull && newText === 'null') || attrName.startsWith('prop:')) {
+						if ((hasNull && newText === 'null') || attrName.startsWith('prop-id:')) {
 							if (child.hasAttribute(attrName)) child.removeAttribute(attrName);
 						} else {
 							if (newText !== prevText) child.setAttribute(attrName, newText);
 						}
-						if (attrName.startsWith('prop:')) {
+						if (attrName.startsWith('prop-id:')) {
 							if (child.hasAttribute(attrName)) child.removeAttribute(attrName);
-							const propName = attrName.replace('prop:', '');
+							const propId = attrName.replace('prop-id:', '');
+							const propName = renderState.propertyMap.get(propId);
+							if (propName === undefined) {
+								console.error(
+									`BRANCH:SIGNAL; Property ID "${propId}" does not exist in the property map. This is likely a problem with Thunderous. Report a bug if you see this message. https://github.com/Thunder-Solutions/Thunderous/issues`,
+									child,
+								);
+								return;
+							}
 							const newValue = hasNull && newText === 'null' ? null : newText;
 							if (!(propName in child)) logPropertyWarning(propName, child);
 							// @ts-expect-error // the above warning should suffice for developers
@@ -228,20 +237,34 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 								child.__customCallbackFns.set(uniqueKey, callback);
 							}
 						}
-						if (uniqueKey !== '' && !attrName.startsWith('prop:')) {
+						if (uniqueKey !== '' && !attrName.startsWith('prop-id:')) {
 							child.setAttribute(attrName, `this.__customCallbackFns.get('${uniqueKey}')(event)`);
-						} else if (attrName.startsWith('prop:')) {
+						} else if (attrName.startsWith('prop-id:')) {
 							child.removeAttribute(attrName);
-							const propName = attrName.replace('prop:', '');
-							if (!(propName in child)) logPropertyWarning(propName, child);
+							const propId = attrName.replace('prop-id:', '');
+							const propName = renderState.propertyMap.get(propId);
+							if (propName === undefined) {
+								console.error(
+									`BRANCH:CALLBACK; Property ID "${propId}" does not exist in the property map. This is likely a problem with Thunderous. Report a bug if you see this message. https://github.com/Thunder-Solutions/Thunderous/issues`,
+									child,
+								);
+								return;
+							}
 							// @ts-expect-error // the above warning should suffice for developers
 							child[propName] = child.__customCallbackFns.get(uniqueKey);
 						}
 					});
-				} else if (attrName.startsWith('prop:')) {
+				} else if (attrName.startsWith('prop-id:')) {
 					child.removeAttribute(attrName);
-					const propName = attrName.replace('prop:', '');
-					if (!(propName in child)) logPropertyWarning(propName, child);
+					const propId = attrName.replace('prop-id:', '');
+					const propName = renderState.propertyMap.get(propId);
+					if (propName === undefined) {
+						console.error(
+							`BRANCH:PROP; Property ID "${propId}" does not exist in the property map. This is likely a problem with Thunderous. Report a bug if you see this message. https://github.com/Thunder-Solutions/Thunderous/issues`,
+							child,
+						);
+						return;
+					}
 					// @ts-expect-error // the above warning should suffice for developers
 					child[propName] = attr.value;
 				}
@@ -257,7 +280,7 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
  */
 export const html = (strings: TemplateStringsArray, ...values: unknown[]): DocumentFragment => {
 	// Combine the strings and values into a single HTML string
-	const innerHTML = strings.reduce((innerHTML, str, i) => {
+	let innerHTML = strings.reduce((innerHTML, str, i) => {
 		let value: unknown = values[i] ?? '';
 		if (Array.isArray(value)) {
 			value = value.map((item) => processValue(item)).join('');
@@ -270,6 +293,19 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]): Docum
 
 	// @ts-expect-error // return a plain string for server-side rendering
 	if (isServer) return innerHTML;
+
+	// Track properties in the render state while the HTML is still a string,
+	// since everything converts to lowercase after parsing as a DOM fragment.
+	const props = innerHTML.match(/prop:([^=]+)/g);
+	if (props !== null) {
+		for (const prop of props) {
+			const name = prop.split(':')[1].trim();
+			const id = crypto.randomUUID();
+			const newProp = `prop-id:${id}`;
+			renderState.propertyMap.set(id, name);
+			innerHTML = innerHTML.replace(`prop:${name}`, newProp);
+		}
+	}
 
 	// Parse the HTML string into a DocumentFragment
 	const template = document.createElement('template');
