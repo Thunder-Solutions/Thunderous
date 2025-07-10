@@ -33,6 +33,13 @@
 				</th-text>
 				<th-code-block lang="ts"><%= include('_code-snippets/property-binding.ejs') %></th-code-block>
 
+				<th-block-quote>
+					PLEASE NOTE: While HTML does not natively support uppercase characters in attributes, Thunderous supports
+					camelCase for properties. For example, <th-code>prop:myCount="${0}"</th-code> will set the
+					<th-code>myCount</th-code> property to the number, <th-code>0</th-code>, and will not be reflected in the
+					HTML.
+				</th-block-quote>
+
 				<th-content-header>Properties as Signals</th-content-header>
 				<th-text>
 					Thunderous supports properties for cases where strings are not sufficient. These are also reflected as signals
@@ -61,9 +68,15 @@
 
 				<th-text>
 					To use this feature, pass <th-code>attributesAsProperties</th-code> in the options. It accepts an array of
-					<th-code>[propertyName, coerceFunction]</th-code> pairs. For primitive types, you can use their constructors
+					<th-code>[attributeName, coerceFunction]</th-code> pairs. For primitive types, you can use their constructors
 					for coercion, like <th-code>['count', Number]</th-code>.
 				</th-text>
+
+				<th-block-quote>
+					PLEASE NOTE: Kebab case converts to camelCase, so <th-code>['my-count', Number]</th-code> will map to
+					<th-code>propSignals.myCount</th-code>. This is done because HTML attributes cannot support uppercase
+					characters.
+				</th-block-quote>
 
 				<th-code-block lang="ts"><%= include('_code-snippets/attributes-as-properties.ejs') %></th-code-block>
 
