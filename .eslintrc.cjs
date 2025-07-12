@@ -2,7 +2,7 @@
 const config = {
 	parser: '@typescript-eslint/parser',
 	parserOptions: {
-		project: true,
+		project: './tsconfig.eslint.json',
 	},
 	plugins: ['@typescript-eslint'],
 	extends: ['plugin:@typescript-eslint/recommended-type-checked', 'plugin:@typescript-eslint/stylistic-type-checked'],
@@ -45,6 +45,16 @@ const config = {
 			},
 		},
 	],
-	ignorePatterns: ['demo', 'dist', 'vendor', 'www', 'coverage', '**/*.ejs', '**config.js', '**config.ts'],
+	ignorePatterns: [
+		'demo',
+		'dist',
+		'vendor',
+		'www',
+		'coverage',
+		'**/*.ejs',
+		'**config.js',
+		'**config.ts',
+		'.eslintrc.cjs',
+	],
 };
 module.exports = config;
