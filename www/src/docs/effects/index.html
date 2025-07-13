@@ -19,6 +19,25 @@
 					signal used inside will trigger the callback when they're changed.
 				</th-text>
 				<th-code-block lang="ts"><%= include('_code-snippets/effect.ejs') %></th-code-block>
+				<th-text>
+					An arguments object is fed to the effect callback if needed, which includes the following properties:
+				</th-text>
+				<ul>
+					<li>
+						<th-text>
+							<th-code>lastValue</th-code> - The previous return value of the effect callback. This is potentially
+							helpful for avoiding unnecessary updates. To take advantage of this feature, you must return a value from
+							the callback, and provide an initial value as the second argument to <th-code>createEffect()</th-code>.
+						</th-text>
+					</li>
+					<li>
+						<th-text>
+							<th-code>destroy</th-code> - A function that can be called to destroy the effect, preventing it from
+							running again. This is useful if you want to conditionally stop the effect based on some logic.
+						</th-text>
+					</li>
+				</ul>
+				<th-code-block lang="ts"><%= include('_code-snippets/effect-args.ejs') %></th-code-block>
 			</th-content-group>
 		</th-doc-page>
 		<script type="module" src="/main.ts"></script>

@@ -1,6 +1,8 @@
-import type { Signal, SignalGetter, SignalOptions, SignalSetter } from './types';
+import type { Signal, SignalGetter, SignalOptions, SignalSetter, Effect } from './types';
 
-let subscriber: (() => void) | null = null;
+let sym: symbol | null = null;
+
+const effects = new WeakMap<symbol, { fn: Effect; value: unknown }>();
 
 /**
  * Create a signal with an initial value.
@@ -12,11 +14,11 @@ let subscriber: (() => void) | null = null;
  * ```
  */
 export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions): Signal<T> => {
-	const subscribers = new Set<() => void>();
+	const subscribers = new Set<symbol>();
 	let value = initVal as T;
 	const getter: SignalGetter<T> = (getterOptions) => {
-		if (subscriber !== null) {
-			subscribers.add(subscriber);
+		if (sym !== null) {
+			subscribers.add(sym);
 		}
 		if (options?.debugMode === true || getterOptions?.debugMode === true) {
 			let label = 'anonymous signal';
@@ -49,11 +51,23 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 		}
 		const oldValue = value;
 		value = newValue;
-		for (const fn of subscribers) {
-			try {
-				fn();
-			} catch (error) {
-				console.error('Error in subscriber:', { error, oldValue, newValue, fn });
+		for (const sym of subscribers) {
+			const effectRef = effects.get(sym);
+			if (effectRef !== undefined) {
+				try {
+					effectRef.fn({
+						lastValue: effectRef.value,
+						destroy: () => {
+							effects.delete(sym);
+							queueMicrotask(() => subscribers.delete(sym));
+						},
+					});
+				} catch (error) {
+					console.error('Error in subscriber:', { error, oldValue, newValue, fn: effectRef.fn });
+				}
+			} else {
+				// Cleanup any stale subscribers, queued to avoid breaking the `for` loop
+				queueMicrotask(() => subscribers.delete(sym));
 			}
 		}
 		if (options?.debugMode === true || setterOptions?.debugMode === true) {
@@ -102,12 +116,18 @@ export const derived = <T>(fn: () => T, options?: SignalOptions): SignalGetter<T
  * });
  * ```
  */
-export const createEffect = (fn: () => void) => {
-	subscriber = fn;
+export const createEffect = <T>(fn: Effect, value?: T) => {
+	const privateSym = (sym = Symbol());
+	effects.set(sym, { fn, value });
 	try {
-		fn();
+		fn({
+			lastValue: value,
+			destroy: () => {
+				effects.delete(privateSym);
+			},
+		});
 	} catch (error) {
 		console.error('Error in effect:', { error, fn });
 	}
-	subscriber = null;
+	sym = null;
 };

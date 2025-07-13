@@ -134,3 +134,5 @@ export type SignalWithInit<T = unknown> = Signal<T> & { init: (value: T) => Sign
 export type AnyFn = (...args: any[]) => any;
 
 export type HTMLCustomElement<T extends Record<PropertyKey, unknown>> = Omit<HTMLElement, keyof T> & T;
+
+export type Effect = <T = unknown>(args: { lastValue: T; destroy: () => void }) => T | void;
