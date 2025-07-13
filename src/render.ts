@@ -217,16 +217,16 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 							bindArrayNode(signal);
 							return;
 						}
-						const nextNode = createNewNode(result, element);
-						if (nextNode instanceof Text) {
+						if (!(result instanceof DocumentFragment)) {
+							const text = createNewNode(result, element) as Text;
 							destroy();
-							bindTextNode(nextNode, signal);
+							bindTextNode(text, signal);
 							return;
 						}
 						while (startAnchor.nextSibling !== endAnchor) {
 							startAnchor.nextSibling?.remove();
 						}
-						element.insertBefore(nextNode, endAnchor);
+						startAnchor.after(result.cloneNode(true));
 					});
 				};
 
