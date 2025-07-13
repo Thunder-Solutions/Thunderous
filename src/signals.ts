@@ -30,7 +30,11 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 			} else if (getterOptions?.label !== undefined) {
 				label = getterOptions.label;
 			}
-			console.log('Signal retrieved:', { value, subscribers, label });
+			console.log('Signal retrieved:', {
+				value,
+				subscribers: Array.from(subscribers).map((sym) => effects.get(sym)),
+				label,
+			});
 		}
 		return value;
 	};
@@ -45,10 +49,21 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 			return;
 		}
 		const isObject = typeof newValue === 'object' && newValue !== null;
+
+		// If the value is the same, do not notify subscribers.
 		if (!isObject && value === newValue) return;
+
+		// If both values are plain object or array literals, check for deep equality.
+		//     NOTE: This may be okay as an unrelated effort to reduce excess calls,
+		//     but it's a bandaid on the problem of a stack overflow bug in some setters.
 		if (isObject && typeof value === 'object' && value !== null) {
-			if (JSON.stringify(value) === JSON.stringify(newValue)) return;
+			const isPlainObject = (obj: unknown) =>
+				typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
+			if (isPlainObject(value) && isPlainObject(newValue)) {
+				if (JSON.stringify(value) === JSON.stringify(newValue)) return;
+			}
 		}
+
 		const oldValue = value;
 		value = newValue;
 		for (const sym of subscribers) {
@@ -80,7 +95,12 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 			} else if (setterOptions?.label !== undefined) {
 				label = setterOptions.label;
 			}
-			console.log('Signal set:', { oldValue, newValue, subscribers, label });
+			console.log('Signal set:', {
+				oldValue,
+				newValue,
+				subscribers: Array.from(subscribers).map((sym) => effects.get(sym)),
+				label,
+			});
 		}
 	};
 	return [getter, setter];
@@ -116,12 +136,12 @@ export const derived = <T>(fn: () => T, options?: SignalOptions): SignalGetter<T
  * });
  * ```
  */
-export const createEffect = <T>(fn: Effect, value?: T) => {
+export const createEffect = <T = unknown>(fn: Effect<T>, value?: T) => {
 	const privateSym = (sym = Symbol());
 	effects.set(sym, { fn, value });
 	try {
 		fn({
-			lastValue: value,
+			lastValue: value as T,
 			destroy: () => {
 				effects.delete(privateSym);
 			},

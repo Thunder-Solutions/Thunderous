@@ -135,4 +135,6 @@ export type AnyFn = (...args: any[]) => any;
 
 export type HTMLCustomElement<T extends Record<PropertyKey, unknown>> = Omit<HTMLElement, keyof T> & T;
 
-export type Effect = <T = unknown>(args: { lastValue: T; destroy: () => void }) => T | void;
+// Again, flexible typing is necessary to support these generics
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Effect<T = any> = (args: { lastValue: T; destroy: () => void }) => T | void;
