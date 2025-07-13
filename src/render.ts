@@ -26,12 +26,12 @@ const logPropertyWarning = (propName: string, element: Element) => {
 };
 
 // For nested loops in templating logic...
-const arrayToDocumentFragment = (array: unknown[], parent: ElementParent, uniqueKey: string) => {
+const arrayToDocumentFragment = (array: unknown[], parent: ElementParent) => {
 	const documentFragment = new DocumentFragment();
 	let count = 0;
 	const keys = new Set<string>();
 	for (const item of array) {
-		const node = createNewNode(item, parent, uniqueKey);
+		const node = createNewNode(item, parent);
 		if (node instanceof DocumentFragment) {
 			const child = node.firstElementChild;
 			if (node.children.length > 1) {
@@ -61,16 +61,14 @@ const arrayToDocumentFragment = (array: unknown[], parent: ElementParent, unique
 		}
 		documentFragment.append(node);
 	}
-	const comment = document.createComment(uniqueKey);
-	documentFragment.append(comment);
 	return documentFragment;
 };
 
-const createNewNode = (value: unknown, parent: ElementParent, uniqueKey: string) => {
+const createNewNode = (value: unknown, parent: ElementParent) => {
 	if (typeof value === 'string') return new Text(value);
-	if (Array.isArray(value)) return arrayToDocumentFragment(value, parent, uniqueKey);
+	if (Array.isArray(value)) return arrayToDocumentFragment(value, parent);
 	if (value instanceof DocumentFragment) return value;
-	return new Text('');
+	return new Text();
 };
 
 // Handle each interpolated value and convert it to a string.
@@ -101,39 +99,81 @@ const processValue = (value: unknown): string => {
 
 // Bind signals and callbacks to DOM nodes in a DocumentFragment.
 const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) => {
-	for (const child of element.childNodes) {
+	for (const child of [...element.childNodes]) {
 		if (child instanceof Text && SIGNAL_BINDING_REGEX.test(child.data)) {
 			const textList = child.data.split(SIGNAL_BINDING_REGEX);
-			const sibling = child.nextSibling;
+			const nextSibling = child.nextSibling;
+			const prevSibling = child.previousSibling;
 			textList.forEach((text, i) => {
-				const uniqueKey = text.replace(/\{\{signal:(.+)\}\}/, '$1');
-				const signal = uniqueKey !== text ? renderState.signalMap.get(uniqueKey) : undefined;
+				const uniqueKey = SIGNAL_BINDING_REGEX.test(text) ? text.replace(/\{\{signal:(.+)\}\}/, '$1') : undefined;
+				const signal = uniqueKey !== undefined ? renderState.signalMap.get(uniqueKey) : undefined;
 				const newValue = signal !== undefined ? signal() : text;
-				const newNode = createNewNode(newValue, element, uniqueKey);
+				const newNode = createNewNode(newValue, element);
 
 				// there is only one text node, originally, so we have to replace it before inserting additional nodes
 				if (i === 0) {
 					child.replaceWith(newNode);
 				} else {
-					element.insertBefore(newNode, sibling);
+					const endAnchor = queryComment(element, `${uniqueKey}:end`) ?? nextSibling;
+					if (endAnchor !== null) {
+						endAnchor.before(newNode);
+					} else {
+						element.append(newNode);
+					}
 				}
 
-				// evaluate signals and subscribe to them
-				if (signal !== undefined && newNode instanceof Text) {
-					createEffect(() => {
-						newNode.data = signal() as string;
-					});
-				} else if (signal !== undefined && newNode instanceof DocumentFragment) {
-					let init = false;
-					createEffect(() => {
+				if (uniqueKey === undefined) return;
+
+				const startAnchor = document.createComment(`${uniqueKey}:start`);
+				if (prevSibling !== null) {
+					prevSibling.after(startAnchor);
+				} else {
+					element.prepend(startAnchor);
+				}
+				const endAnchor = document.createComment(`${uniqueKey}:end`);
+				if (nextSibling !== null) {
+					nextSibling.before(endAnchor);
+				} else {
+					element.append(endAnchor);
+				}
+
+				const bindTextNode = (node: Text, signal: SignalGetter<unknown>) => {
+					createEffect(({ destroy }) => {
 						const result = signal();
-						const nextNode = createNewNode(result, element, uniqueKey);
+
+						// If the type of the result changes, destroy this effect in favor of the appropriate one.
+						if (Array.isArray(result)) {
+							destroy();
+							bindArrayNode(signal);
+							return;
+						}
+						if (result instanceof DocumentFragment) {
+							destroy();
+							bindFragmentNode(signal);
+							return;
+						}
+
+						// Handle the string content of the text node.
+						node.data = result === null ? '' : String(result);
+					});
+				};
+
+				const bindArrayNode = (signal: SignalGetter<unknown>) => {
+					let init = false;
+					createEffect(({ destroy }) => {
+						const result = signal();
+						const nextNode = createNewNode(result, element);
+
+						// If the type of the result changes, destroy this effect in favor of the appropriate one.
+						if (!Array.isArray(result) && nextNode instanceof DocumentFragment) {
+							destroy();
+							bindFragmentNode(signal);
+							return;
+						}
 						if (nextNode instanceof Text) {
-							const error = new TypeError(
-								'Signal mismatch: expected DocumentFragment or Array<DocumentFragment>, but got Text',
-							);
-							console.error(error);
-							throw error;
+							destroy();
+							bindTextNode(nextNode, signal);
+							return;
 						}
 
 						// remove elements that are not in the updated array (fragment)
@@ -147,7 +187,7 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 						}
 
 						// persist elements using the same key
-						let anchor = queryComment(element, uniqueKey);
+						let anchor: Node | null = endAnchor;
 						for (const child of nextNode.children) {
 							const key = child.getAttribute('key');
 							const matchingNode = element.querySelector(`[key="${key}"]`);
@@ -165,6 +205,40 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 						element.insertBefore(nextNode, anchor);
 						if (!init) init = true;
 					});
+				};
+
+				const bindFragmentNode = (signal: SignalGetter<unknown>) => {
+					createEffect(({ destroy }) => {
+						const result = signal();
+
+						// If the type of the result changes, destroy this effect in favor of the appropriate one.
+						if (Array.isArray(result)) {
+							destroy();
+							bindArrayNode(signal);
+							return;
+						}
+						const nextNode = createNewNode(result, element);
+						if (nextNode instanceof Text) {
+							destroy();
+							bindTextNode(nextNode, signal);
+							return;
+						}
+						while (startAnchor.nextSibling !== endAnchor) {
+							startAnchor.nextSibling?.remove();
+						}
+						element.insertBefore(nextNode, endAnchor);
+					});
+				};
+
+				// evaluate signals and subscribe to them
+				if (signal !== undefined) {
+					if (Array.isArray(newValue)) {
+						bindArrayNode(signal);
+					} else if (newNode instanceof DocumentFragment) {
+						bindFragmentNode(signal);
+					} else {
+						bindTextNode(newNode, signal);
+					}
 				}
 			});
 		}
