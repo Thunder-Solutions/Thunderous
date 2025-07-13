@@ -1,6 +1,6 @@
 {
 	"name": "thunderous",
-	"version": "2.3.13",
+	"version": "2.4.0",
 	"description": "",
 	"type": "module",
 	"main": "./dist/index.cjs",
