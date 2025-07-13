@@ -1,7 +1,7 @@
 import { isServer } from './server-side';
 import { createEffect } from './signals';
 import type { ElementParent, Styles, SignalGetter, AnyFn } from './types';
-import { queryComment } from './utilities';
+import { queryChildren, queryComment } from './utilities';
 
 const CALLBACK_BINDING_REGEX = /(\{\{callback:.+\}\})/;
 const LEGACY_CALLBACK_BINDING_REGEX = /(this.getRootNode\(\).host.__customCallbackFns.get\('.+'\)\(event\))/;
@@ -13,6 +13,7 @@ export const renderState = {
 	signalMap: new Map<string, SignalGetter<unknown>>(),
 	callbackMap: new Map<string, AnyFn>(),
 	fragmentMap: new Map<string, DocumentFragment>(),
+	childrenMap: new Map<DocumentFragment, Node[]>(),
 	propertyMap: new Map<string, string>(),
 	registry: typeof customElements !== 'undefined' ? customElements : ({} as CustomElementRegistry),
 };
@@ -25,22 +26,27 @@ const logPropertyWarning = (propName: string, element: Element) => {
 	);
 };
 
-// For nested loops in templating logic...
-const arrayToDocumentFragment = (array: unknown[], parent: ElementParent) => {
-	const documentFragment = new DocumentFragment();
-	let count = 0;
-	const keys = new Set<string>();
-	for (const item of array) {
-		const node = createNewNode(item, parent);
-		if (node instanceof DocumentFragment) {
-			const child = node.firstElementChild;
-			if (node.children.length > 1) {
+const asNodeList = (value: unknown, parent: ElementParent): Node[] => {
+	if (typeof value === 'string') return [new Text(value)];
+	if (value instanceof DocumentFragment) return [...value.children];
+	if (Array.isArray(value)) {
+		const nodeList: Node[] = [];
+		let count = 0;
+		const keys = new Set<string>();
+		for (const item of value) {
+			const cachedItem = item instanceof DocumentFragment ? renderState.childrenMap.get(item) : undefined;
+			const children = cachedItem ?? asNodeList(item, parent);
+			if (cachedItem === undefined && item instanceof DocumentFragment) {
+				renderState.childrenMap.set(item, children);
+			}
+			if (children.length > 1) {
 				console.error(
 					'When rendering arrays, fragments must contain only one top-level element at a time. Error occured in:',
 					parent,
 				);
 			}
-			if (child === null) continue;
+			const child = children[0];
+			if (child === null || !(child instanceof Element)) continue;
 			let key = child.getAttribute('key');
 			if (key === null) {
 				console.warn(
@@ -58,17 +64,11 @@ const arrayToDocumentFragment = (array: unknown[], parent: ElementParent) => {
 			}
 			keys.add(key);
 			count++;
+			nodeList.push(...children);
 		}
-		documentFragment.append(node);
+		return nodeList;
 	}
-	return documentFragment;
-};
-
-const createNewNode = (value: unknown, parent: ElementParent) => {
-	if (typeof value === 'string') return new Text(value);
-	if (Array.isArray(value)) return arrayToDocumentFragment(value, parent);
-	if (value instanceof DocumentFragment) return value;
-	return new Text();
+	return [new Text()];
 };
 
 // Handle each interpolated value and convert it to a string.
@@ -108,17 +108,17 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 				const uniqueKey = SIGNAL_BINDING_REGEX.test(text) ? text.replace(/\{\{signal:(.+)\}\}/, '$1') : undefined;
 				const signal = uniqueKey !== undefined ? renderState.signalMap.get(uniqueKey) : undefined;
 				const newValue = signal !== undefined ? signal() : text;
-				const newNode = createNewNode(newValue, element);
+				const initialChildren = asNodeList(newValue, element);
 
 				// there is only one text node, originally, so we have to replace it before inserting additional nodes
 				if (i === 0) {
-					child.replaceWith(newNode);
+					child.replaceWith(...initialChildren);
 				} else {
 					const endAnchor = queryComment(element, `${uniqueKey}:end`) ?? nextSibling;
 					if (endAnchor !== null) {
-						endAnchor.before(newNode);
+						endAnchor.before(...initialChildren);
 					} else {
-						element.append(newNode);
+						element.append(...initialChildren);
 					}
 				}
 
@@ -137,19 +137,19 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 					element.append(endAnchor);
 				}
 
-				const bindTextNode = (node: Text, signal: SignalGetter<unknown>) => {
+				const bindText = (node: Text, signal: SignalGetter<unknown>) => {
 					createEffect(({ destroy }) => {
 						const result = signal();
 
 						// If the type of the result changes, destroy this effect in favor of the appropriate one.
 						if (Array.isArray(result)) {
 							destroy();
-							bindArrayNode(signal);
+							bindArray(signal);
 							return;
 						}
 						if (result instanceof DocumentFragment) {
 							destroy();
-							bindFragmentNode(signal);
+							bindFragment(signal);
 							return;
 						}
 
@@ -158,86 +158,112 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 					});
 				};
 
-				const bindArrayNode = (signal: SignalGetter<unknown>) => {
-					let init = false;
-					createEffect(({ destroy }) => {
-						const result = signal();
-						const nextNode = createNewNode(result, element);
+				const bindArray = (signal: SignalGetter<unknown>) => {
+					createEffect(
+						({ lastValue: oldChildren, destroy }) => {
+							const result = signal();
+							console.trace('Binding array:', {
+								result: (result as Node[]).map((node) => node.cloneNode(true)),
+								oldChildren,
+							});
+							const newChildren = asNodeList(result, element);
+							const firstChild = newChildren[0];
 
-						// If the type of the result changes, destroy this effect in favor of the appropriate one.
-						if (!Array.isArray(result) && nextNode instanceof DocumentFragment) {
-							destroy();
-							bindFragmentNode(signal);
-							return;
-						}
-						if (nextNode instanceof Text) {
-							destroy();
-							bindTextNode(nextNode, signal);
-							return;
-						}
-
-						// remove elements that are not in the updated array (fragment)
-						for (const child of element.children) {
-							const key = child.getAttribute('key');
-							if (key === null) continue;
-							const matchingNode = nextNode.querySelector(`[key="${key}"]`);
-							if (init && matchingNode === null) {
-								child.remove();
+							// If the type of the result changes, destroy this effect in favor of the appropriate one.
+							if (!Array.isArray(result) && newChildren.length === 1 && firstChild instanceof DocumentFragment) {
+								destroy();
+								bindFragment(signal);
+								return;
 							}
-						}
-
-						// persist elements using the same key
-						let anchor: Node | null = endAnchor;
-						for (const child of nextNode.children) {
-							const key = child.getAttribute('key');
-							const matchingNode = element.querySelector(`[key="${key}"]`);
-							if (matchingNode === null) continue;
-							matchingNode.__customCallbackFns = child.__customCallbackFns;
-							for (const attr of child.attributes) {
-								matchingNode.setAttribute(attr.name, attr.value);
+							if (newChildren.length === 1 && firstChild instanceof Text) {
+								destroy();
+								bindText(firstChild, signal);
+								return;
 							}
-							matchingNode.replaceChildren(...child.childNodes);
-							anchor = matchingNode.nextSibling;
-							child.replaceWith(matchingNode);
-						}
-						const nextAnchor = queryComment(nextNode, uniqueKey);
-						nextAnchor?.remove();
-						element.insertBefore(nextNode, anchor);
-						if (!init) init = true;
-					});
+
+							// Remove all previous children between the anchor comments.
+							while (startAnchor.nextSibling !== endAnchor) {
+								startAnchor.nextSibling?.remove();
+							}
+
+							// Insert the new children after the start anchor.
+							startAnchor.after(...newChildren);
+							if (oldChildren === null) return newChildren;
+
+							// If there are previous children, we need to persist their instances to avoid losing references.
+							for (const persistedChild of oldChildren) {
+								if (persistedChild instanceof Element) {
+									const key = persistedChild.getAttribute('key');
+									if (key === null) continue;
+									const newChild = queryChildren(newChildren, `[key="${key}"]`);
+
+									// If the new child is not found, remove the persisted child.
+									if (newChild === null) {
+										persistedChild.remove();
+										continue;
+									}
+
+									// Remove attributes that are not present in the new child.
+									for (const attr of [...persistedChild.attributes]) {
+										if (!newChild.hasAttribute(attr.name)) persistedChild.removeAttribute(attr.name);
+									}
+
+									// Copy attributes from the new child to the persisted child.
+									for (const newAttr of [...newChild.attributes]) {
+										const oldAttrValue = persistedChild.getAttribute(newAttr.name);
+
+										// Skip if the last attribute value is a custom callback. It's important to maintain the original callback key.
+										if (oldAttrValue?.startsWith('this.__customCallbackFns')) continue;
+										persistedChild.setAttribute(newAttr.name, newAttr.value);
+									}
+									newChild.replaceWith(persistedChild);
+								}
+							}
+
+							// Return to manage the previous children in the next effect run.
+							return newChildren;
+						},
+						null as Node[] | null,
+					);
 				};
 
-				const bindFragmentNode = (signal: SignalGetter<unknown>) => {
+				const bindFragment = (signal: SignalGetter<unknown>) => {
+					const initialFragment = signal() as DocumentFragment;
+					renderState.childrenMap.set(initialFragment, [...initialFragment.childNodes]);
 					createEffect(({ destroy }) => {
 						const result = signal();
+						const cachedChildren = renderState.childrenMap.get(initialFragment);
+						const children = cachedChildren ?? asNodeList(result, element);
 
 						// If the type of the result changes, destroy this effect in favor of the appropriate one.
 						if (Array.isArray(result)) {
 							destroy();
-							bindArrayNode(signal);
+							bindArray(signal);
 							return;
 						}
-						if (!(result instanceof DocumentFragment)) {
-							const text = createNewNode(result, element) as Text;
+						if (result instanceof Text) {
+							const children = asNodeList(result, element);
+							const text = children[0] as Text;
 							destroy();
-							bindTextNode(text, signal);
+							bindText(text, signal);
 							return;
 						}
 						while (startAnchor.nextSibling !== endAnchor) {
 							startAnchor.nextSibling?.remove();
 						}
-						startAnchor.after(result.cloneNode(true));
+						startAnchor.after(...children);
 					});
 				};
 
 				// evaluate signals and subscribe to them
 				if (signal !== undefined) {
 					if (Array.isArray(newValue)) {
-						bindArrayNode(signal);
-					} else if (newNode instanceof DocumentFragment) {
-						bindFragmentNode(signal);
+						bindArray(signal);
+					} else if (initialChildren instanceof DocumentFragment) {
+						bindFragment(signal);
 					} else {
-						bindTextNode(newNode, signal);
+						const initialChild = initialChildren[0] as Text;
+						bindText(initialChild, signal);
 					}
 				}
 			});
@@ -324,6 +350,7 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 								);
 								return;
 							}
+							if (!(propName in child)) logPropertyWarning(propName, child);
 							// @ts-expect-error // the above warning should suffice for developers
 							child[propName] = child.__customCallbackFns.get(uniqueKey);
 						}
@@ -339,6 +366,7 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 						);
 						return;
 					}
+					if (!(propName in child)) logPropertyWarning(propName, child);
 					// @ts-expect-error // the above warning should suffice for developers
 					child[propName] = attr.value;
 				}
