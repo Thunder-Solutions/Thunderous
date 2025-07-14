@@ -38,10 +38,9 @@
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint . && prettier --check .",
 		"lint:fix": "eslint . --fix && prettier --write .",
-		"version:patch": "npm run build && npm version patch && cd demo && npm version patch && cd ../www && npm version patch && git add -A && git commit -m 'bump version'",
-		"version:minor": "npm run build && npm version minor && cd demo && npm version minor && cd ../www && npm version minor && git add -A && git commit -m 'bump version'",
-		"version:major": "npm run build && npm version major && cd demo && npm version major && cd ../www && npm version major && git add -A && git commit -m 'bump version'",
-		"publish": "npm run typecheck && npm run lint && npm test && npm run build && npm publish"
+		"preversion": "npm run typecheck && npm run lint && npm test && npm run build",
+		"version": "node postversion.js",
+		"prepublishOnly": "npm run typecheck && npm run lint && npm test && npm run build"
 	},
 	"devDependencies": {
 		"@types/dompurify": "^3.2.0",
