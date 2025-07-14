@@ -52,7 +52,7 @@ await describe('createSignal', async () => {
 				assert.strictEqual(logMock.callCount(), 1);
 				assert.deepStrictEqual(logMock.calls[0].arguments, [
 					'Signal retrieved:',
-					{ value: 0, subscribers: new Set(), label: '(count)' },
+					{ value: 0, subscribers: [], label: '(count)' },
 				]);
 			});
 
@@ -61,7 +61,7 @@ await describe('createSignal', async () => {
 				assert.strictEqual(logMock.callCount(), 1);
 				assert.deepStrictEqual(logMock.calls[0].arguments, [
 					'Signal set:',
-					{ oldValue: 0, newValue: 1, subscribers: new Set(), label: '(count)' },
+					{ oldValue: 0, newValue: 1, subscribers: [], label: '(count)' },
 				]);
 			});
 		});
@@ -81,7 +81,7 @@ await describe('createSignal', async () => {
 				assert.strictEqual(logMock.callCount(), 1);
 				assert.deepStrictEqual(logMock.calls[0].arguments, [
 					'Signal retrieved:',
-					{ value: 0, subscribers: new Set(), label: 'anonymous signal' },
+					{ value: 0, subscribers: [], label: 'anonymous signal' },
 				]);
 			});
 
@@ -90,7 +90,7 @@ await describe('createSignal', async () => {
 				assert.strictEqual(logMock.callCount(), 1);
 				assert.deepStrictEqual(logMock.calls[0].arguments, [
 					'Signal set:',
-					{ oldValue: 0, newValue: 1, subscribers: new Set(), label: 'anonymous signal' },
+					{ oldValue: 0, newValue: 1, subscribers: [], label: 'anonymous signal' },
 				]);
 			});
 		});
@@ -132,7 +132,7 @@ await describe('createSignal', async () => {
 				assert.strictEqual(logMock.callCount(), 1);
 				assert.deepStrictEqual(logMock.calls[0].arguments, [
 					'Signal retrieved:',
-					{ value: 0, subscribers: new Set(), label: '(count) getter' },
+					{ value: 0, subscribers: [], label: '(count) getter' },
 				]);
 			});
 
@@ -142,7 +142,7 @@ await describe('createSignal', async () => {
 				assert.strictEqual(logMock.callCount(), 1);
 				assert.deepStrictEqual(logMock.calls[0].arguments, [
 					'Signal set:',
-					{ oldValue: 0, newValue: 1, subscribers: new Set(), label: '(count) setter' },
+					{ oldValue: 0, newValue: 1, subscribers: [], label: '(count) setter' },
 				]);
 			});
 		});
@@ -163,7 +163,7 @@ await describe('createSignal', async () => {
 				assert.strictEqual(logMock.callCount(), 1);
 				assert.deepStrictEqual(logMock.calls[0].arguments, [
 					'Signal retrieved:',
-					{ value: 0, subscribers: new Set(), label: 'getter' },
+					{ value: 0, subscribers: [], label: 'getter' },
 				]);
 			});
 
@@ -173,7 +173,7 @@ await describe('createSignal', async () => {
 				assert.strictEqual(logMock.callCount(), 1);
 				assert.deepStrictEqual(logMock.calls[0].arguments, [
 					'Signal set:',
-					{ oldValue: 0, newValue: 1, subscribers: new Set(), label: 'setter' },
+					{ oldValue: 0, newValue: 1, subscribers: [], label: 'setter' },
 				]);
 			});
 		});
