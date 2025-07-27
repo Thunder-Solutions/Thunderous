@@ -1,9 +1,9 @@
 import { describe, it, type Mock } from 'node:test';
 import assert from 'assert';
-import { customElement } from '../custom-element';
-import { html } from '../render';
-import { createRegistry } from '../registry';
-import { NOOP } from '../utilities';
+import { customElement } from '../../custom-element';
+import { html } from '../../render';
+import { createRegistry } from '../../registry';
+import { NOOP } from '../../utilities';
 
 await describe('customElement', async () => {
 	await it('does not throw on the server', () => {

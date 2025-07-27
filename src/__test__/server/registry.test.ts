@@ -1,9 +1,9 @@
 import { describe, it, type Mock } from 'node:test';
 import assert from 'assert';
-import { createRegistry } from '../registry';
-import { customElement } from '../custom-element';
-import { html } from '../render';
-import { NOOP } from '../utilities';
+import { createRegistry } from '../../registry';
+import { customElement } from '../../custom-element';
+import { html } from '../../render';
+import { NOOP } from '../../utilities';
 
 await describe('createRegistry', async () => {
 	await it('creates a global registry', () => {

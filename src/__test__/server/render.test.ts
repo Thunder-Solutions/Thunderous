@@ -1,7 +1,7 @@
 import { describe, it, type Mock } from 'node:test';
 import assert from 'assert';
-import { html, css } from '../render';
-import { NOOP } from '../utilities';
+import { html, css } from '../../render';
+import { NOOP } from '../../utilities';
 
 await describe('html', async () => {
 	await it('renders a simple string', () => {

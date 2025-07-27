@@ -7,15 +7,15 @@ import {
 	serverDefine,
 	serverDefineFns,
 	wrapTemplate,
-} from '../server-side';
+} from '../../server-side';
 import { describe, mock, it } from 'node:test';
 import assert from 'assert';
-import { createRegistry } from '../registry';
-import { DEFAULT_RENDER_OPTIONS } from '../constants';
-import { type ServerRenderOptions } from '../types';
-import { NOOP } from '../utilities';
-import { customElement } from '../custom-element';
-import { html } from '../render';
+import { createRegistry } from '../../registry';
+import { DEFAULT_RENDER_OPTIONS } from '../../constants';
+import { type ServerRenderOptions } from '../../types';
+import { NOOP } from '../../utilities';
+import { customElement } from '../../custom-element';
+import { html } from '../../render';
 
 const stripWhitespace = (template: string) => template.trim().replace(/\s\s+/g, ' ');
 

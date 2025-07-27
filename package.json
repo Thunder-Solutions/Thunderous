@@ -34,7 +34,7 @@
 		"demo:ssr": "cd demo && npm run ssr",
 		"www": "cd www && npm run dev",
 		"build": "tsup src/index.ts --format cjs,esm --dts --no-clean",
-		"test": "find src -name '*.test.ts' | xargs c8 node --import tsx --test",
+		"test": "find src -wholename '/__test__/server/*' | xargs c8 tsx --test",
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint . && prettier --check .",
 		"lint:fix": "eslint . --fix && prettier --write .",

@@ -1,8 +1,8 @@
-import { createEffect, createSignal, derived } from '../signals';
+import { createEffect, createSignal, derived } from '../../signals';
 import { describe, it, beforeEach, type Mock } from 'node:test';
 import assert from 'assert';
-import { NOOP } from '../utilities';
-import type { AnyFn } from '../types';
+import { NOOP } from '../../utilities';
+import type { AnyFn } from '../../types';
 
 await describe('createSignal', async () => {
 	await it('sets the initial value', () => {
