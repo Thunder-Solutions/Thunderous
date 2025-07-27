@@ -34,7 +34,9 @@
 		"demo:ssr": "cd demo && npm run ssr",
 		"www": "cd www && npm run dev",
 		"build": "tsup src/index.ts --format cjs,esm --dts --no-clean",
-		"test": "find src -wholename '/__test__/server/*' | xargs c8 tsx --test",
+		"test": "npm run test:server && npm run test:client",
+		"test:server": "find src/__test__/server -name '*.test.ts' | xargs c8 tsx --test",
+		"test:client": "playwright test",
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint . && prettier --check .",
 		"lint:fix": "eslint . --fix && prettier --write .",
@@ -43,6 +45,7 @@
 		"prepublishOnly": "npm run typecheck && npm run lint && npm test && npm run build"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.54.1",
 		"@types/dompurify": "^3.2.0",
 		"@types/eslint": "^8.56.10",
 		"@types/node": "^22.10.1",
