@@ -1,8 +1,8 @@
 import type { Signal, SignalGetter, SignalOptions, SignalSetter, Effect } from './types';
 
-let sym: symbol | null = null;
+let ident: object | null = null;
 
-const effects = new WeakMap<symbol, { fn: Effect; value: unknown }>();
+const effects = new WeakMap<object, { fn: Effect; value: unknown }>();
 
 /**
  * Create a signal with an initial value.
@@ -14,11 +14,11 @@ const effects = new WeakMap<symbol, { fn: Effect; value: unknown }>();
  * ```
  */
 export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions): Signal<T> => {
-	const subscribers = new Set<symbol>();
+	const subscribers = new Set<object>();
 	let value = initVal as T;
 	const getter: SignalGetter<T> = (getterOptions) => {
-		if (sym !== null) {
-			subscribers.add(sym);
+		if (ident !== null) {
+			subscribers.add(ident);
 		}
 		if (options?.debugMode === true || getterOptions?.debugMode === true) {
 			let label = 'anonymous signal';
@@ -137,17 +137,17 @@ export const derived = <T>(fn: () => T, options?: SignalOptions): SignalGetter<T
  * ```
  */
 export const createEffect = <T = unknown>(fn: Effect<T>, value?: T) => {
-	const privateSym = (sym = Symbol());
-	effects.set(sym, { fn, value });
+	const privateIdent = (ident = {});
+	effects.set(ident, { fn, value });
 	try {
 		fn({
 			lastValue: value as T,
 			destroy: () => {
-				effects.delete(privateSym);
+				effects.delete(privateIdent);
 			},
 		});
 	} catch (error) {
 		console.error('Error in effect:', { error, fn });
 	}
-	sym = null;
+	ident = null;
 };

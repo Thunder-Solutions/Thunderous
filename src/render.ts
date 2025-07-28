@@ -467,7 +467,7 @@ export const css = (strings: TemplateStringsArray, ...values: unknown[]): Styles
 		}
 		const newCSSText = newCSSTextList.join('');
 		if (isCSSStyleSheet(stylesheet)) {
-			stylesheet.replace(newCSSText).catch(console.error);
+			stylesheet.replaceSync(newCSSText);
 		} else {
 			stylesheet.textContent = newCSSText;
 		}
