@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"type": "module",
 	"scripts": {
-		"start": "vite",
+		"start": "vite --port 5555",
 		"ssr": "npx tsx src/main.ts"
 	},
 	"keywords": [],
