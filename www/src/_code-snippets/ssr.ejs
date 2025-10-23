@@ -13,7 +13,7 @@ let htmlResponse = `
 `;
 
 onServerDefine((tagName, innerHTML) => {
-  insertTemplates(tagName, innerHTML, htmlResponse);
+  htmlResponse = insertTemplates(tagName, innerHTML, htmlResponse);
 });
 
 export default function handler(req, res) {
