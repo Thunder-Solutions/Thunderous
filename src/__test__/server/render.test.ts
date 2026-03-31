@@ -12,6 +12,19 @@ await describe('html', async () => {
 		const result = html`<div>${'Hello, world!'} ${1} ${true}</div>`;
 		assert.strictEqual(result, '<div>Hello, world! 1 true</div>');
 	});
+	await it('renders a string with nested templates', () => {
+		const result = html`<div>${html`<span>Hello, world!</span>`}</div>`;
+		assert.strictEqual(result, '<div><span>Hello, world!</span></div>');
+	});
+	await it('renders a joined string from arrays', () => {
+		const result = html`<div>${['Hello', ' ', 'world']}</div>`;
+		assert.strictEqual(result, '<div>Hello world</div>');
+	});
+	await it('renders a joined string from nested template arrays', () => {
+		// prettier-ignore
+		const result = html`<ul>${['1', '2', '3'].map((str) => html`<li>${str}</li>`)}</ul>`;
+		assert.strictEqual(result, '<ul><li>1</li><li>2</li><li>3</li></ul>');
+	});
 	await it('renders a string with signals', () => {
 		const mockGetter = () => 'Hello, world!';
 		const result = html`<div>${mockGetter}</div>`;
