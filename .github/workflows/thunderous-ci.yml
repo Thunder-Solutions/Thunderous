@@ -1,0 +1,41 @@
+name: Quality and Build Pipeline
+
+on:
+  push:
+    branches:
+      - trunk
+    paths:
+      - "packages/thunderous/**"
+
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/install-deps
+      - name: Lint
+        run: pnpm -F thunderous lint
+
+  Format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/install-deps
+      - name: Format
+        run: pnpm -F thunderous format
+
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/install-deps
+      - name: Test
+        run: pnpm -F thunderous test
+
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/install-deps
+      - name: Build
+        run: pnpm -F thunderous build

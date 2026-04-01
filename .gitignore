@@ -1,10 +1,16 @@
+# Builds and caches
 node_modules
 dist
 .vercel
-coverage
+.browsers
 
-# Playwright
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
+# Tests and reports
+coverage
+test-results
+playwright-report
+blob-report
+**/**/playwright/.cache
+
+# We use pnpm, so prevent other lockfiles from being committed
+package-lock.json
+yarn.lock

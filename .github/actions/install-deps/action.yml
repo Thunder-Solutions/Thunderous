@@ -1,0 +1,29 @@
+name: "Install Dependencies"
+description: "Installs dependencies defined in package.json"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v6
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 10
+    - uses: actions/setup-node@v6
+      with:
+        node-version-file: ".nvmrc"
+        cache: "pnpm"
+    - name: Cache node modules
+      uses: actions/cache@v5
+      id: cache
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: ${{ runner.os }}-
+    - name: Install dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: pnpm install
+      shell: bash
+    - name: Validate versions
+      run: |
+        echo "Node version: $(node -v)"
+        echo "PNPM version: $(pnpm -v)"
+      shell: bash

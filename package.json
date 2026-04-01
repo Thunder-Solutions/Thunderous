@@ -1,73 +1,13 @@
 {
-	"name": "thunderous",
-	"version": "2.4.1",
-	"description": "",
-	"type": "module",
-	"main": "./dist/index.cjs",
-	"module": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"files": [
-		"/dist",
-		"/package.json",
-		"/README.md",
-		"/LICENSE"
-	],
-	"author": "Jonathan DeWitt",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Thunder-Solutions/Thunderous"
-	},
-	"keywords": [
-		"thunderous",
-		"web components",
-		"functional",
-		"signals",
-		"custom elements"
-	],
-	"bugs": {
-		"url": "https://github.com/Thunder-Solutions/Thunderous/issues"
-	},
-	"homepage": "https://github.com/Thunder-Solutions/Thunderous#readme",
-	"license": "MIT",
-	"scripts": {
-		"demo": "cd demo && npm start",
-		"demo:ssr": "cd demo && npm run ssr",
-		"www": "cd www && npm run dev",
-		"build": "tsup src/index.ts --format cjs,esm --dts --no-clean",
-		"test": "npm run test:server && npm run test:client",
-		"test:server": "find src/__test__/server -name '*.test.ts' | xargs c8 tsx --test",
-		"test:client": "playwright test",
-		"typecheck": "tsc --noEmit",
-		"lint": "eslint . && prettier --check .",
-		"lint:fix": "eslint . --fix && prettier --write .",
-		"preversion": "npm run typecheck && npm run lint && npm test && npm run build",
-		"version": "node postversion.js",
-		"prepublishOnly": "npm run typecheck && npm run lint && npm test && npm run build"
-	},
-	"devDependencies": {
-		"@playwright/test": "^1.54.1",
-		"@types/dompurify": "^3.2.0",
-		"@types/eslint": "^8.56.10",
-		"@types/node": "^22.10.1",
-		"@typescript-eslint/eslint-plugin": "^8.17.0",
-		"@typescript-eslint/parser": "^8.17.0",
-		"c8": "^10.1.2",
-		"eslint": "^8.57.0",
-		"eslint-plugin-import": "^2.31.0",
-		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-promise": "^7.1.0",
-		"express": "^4.17.1",
-		"prettier": "^3.3.3",
-		"tsup": "^8.3.0",
-		"tsx": "^4.19.2",
-		"typescript": "^5.7.2"
-	},
-	"peerDependencies": {
-		"@webcomponents/scoped-custom-element-registry": "^0.0.10"
-	},
-	"peerDependenciesMeta": {
-		"@webcomponents/scoped-custom-element-registry": {
-			"optional": true
-		}
-	}
+  "name": "thunderous-monorepo",
+  "version": "0.0.0",
+  "description": "Thunderous monorepo",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "www": "cd www && npm run dev"
+  }
 }
