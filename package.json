@@ -1,13 +1,31 @@
 {
-  "name": "thunderous-monorepo",
-  "version": "0.0.0",
-  "description": "Thunderous monorepo",
-  "engines": {
-    "node": ">=24.0.0",
-    "pnpm": ">=10.0.0"
-  },
-  "packageManager": "pnpm@10.33.0",
-  "scripts": {
-    "www": "cd www && npm run dev"
-  }
+	"name": "thunderous-monorepo",
+	"version": "0.0.0",
+	"description": "Thunderous monorepo",
+	"engines": {
+		"node": ">=24.0.0",
+		"pnpm": ">=10.0.0"
+	},
+	"packageManager": "pnpm@10.33.0",
+	"scripts": {
+		"postinstall": "test -d .browsers || PLAYWRIGHT_BROWSERS_PATH=.browsers/ playwright install",
+		"www": "cd www && npm run dev"
+	},
+	"devDependencies": {
+		"prettier": "^3.3.3",
+		"@types/node": "^22.10.1",
+		"@types/eslint": "^8.56.10",
+		"@typescript-eslint/eslint-plugin": "^8.17.0",
+		"@typescript-eslint/parser": "^8.17.0",
+		"eslint": "^8.57.0",
+		"eslint-plugin-import": "^2.31.0",
+		"eslint-plugin-node": "^11.1.0",
+		"eslint-plugin-promise": "^7.1.0",
+		"@playwright/test": "^1.54.1",
+		"c8": "^10.1.2",
+		"express": "^4.17.1",
+		"tsup": "^8.3.0",
+		"tsx": "^4.19.2",
+		"typescript": "^5.7.2"
+	}
 }

@@ -30,7 +30,6 @@
 	"homepage": "https://github.com/Thunder-Solutions/Thunderous#readme",
 	"license": "MIT",
 	"scripts": {
-		"postinstall": "PLAYWRIGHT_BROWSERS_PATH=.browsers/ playwright install",
 		"demo": "cd demo && npm start",
 		"demo:ssr": "cd demo && npm run ssr",
 		"build": "tsup src/index.ts --format cjs,esm --dts --no-clean",
@@ -45,23 +44,6 @@
 		"preversion": "npm run typecheck && npm run lint && npm test && npm run build",
 		"version": "node postversion.js",
 		"prepublishOnly": "npm run typecheck && npm run lint && npm test && npm run build"
-	},
-	"devDependencies": {
-		"@playwright/test": "^1.54.1",
-		"@types/eslint": "^8.56.10",
-		"@types/node": "^22.10.1",
-		"@typescript-eslint/eslint-plugin": "^8.17.0",
-		"@typescript-eslint/parser": "^8.17.0",
-		"c8": "^10.1.2",
-		"eslint": "^8.57.0",
-		"eslint-plugin-import": "^2.31.0",
-		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-promise": "^7.1.0",
-		"express": "^4.17.1",
-		"prettier": "^3.3.3",
-		"tsup": "^8.3.0",
-		"tsx": "^4.19.2",
-		"typescript": "^5.7.2"
 	},
 	"peerDependencies": {
 		"@webcomponents/scoped-custom-element-registry": "^0.0.10"

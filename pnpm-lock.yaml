@@ -6,13 +6,7 @@ settings:
 
 importers:
 
-  .: {}
-
-  packages/thunderous:
-    dependencies:
-      '@webcomponents/scoped-custom-element-registry':
-        specifier: ^0.0.10
-        version: 0.0.10
+  .:
     devDependencies:
       '@playwright/test':
         specifier: ^1.54.1
@@ -59,6 +53,18 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
+
+  packages/thunderous:
+    dependencies:
+      '@webcomponents/scoped-custom-element-registry':
+        specifier: ^0.0.10
+        version: 0.0.10
+
+  packages/thunderous-spa:
+    devDependencies:
+      thunderous:
+        specifier: workspace:*
+        version: link:../thunderous
 
   www:
     dependencies:
