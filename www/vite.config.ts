@@ -1,5 +1,4 @@
-import { existsSync, readFileSync, readSync } from 'fs';
-import { glob } from 'glob';
+import { globSync } from 'node:fs';
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import { ViteEjsPlugin } from 'vite-plugin-ejs';
@@ -10,7 +9,7 @@ export default defineConfig({
 		outDir: resolve(__dirname, 'dist'),
 		emptyOutDir: true,
 		rollupOptions: {
-			input: glob.sync(resolve(__dirname, 'src', '**/*.html')),
+			input: globSync('**/*.html', { cwd: resolve(__dirname, 'src') }).map((f) => resolve(__dirname, 'src', f)),
 		},
 	},
 	plugins: [ViteEjsPlugin()],
