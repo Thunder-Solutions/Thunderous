@@ -1,0 +1,43 @@
+{
+	"name": "thunderous-spa",
+	"version": "0.0.0",
+	"description": "",
+	"author": "Jonathan DeWitt <jon.dewitt@thunder.solutions>",
+	"license": "MIT",
+	"packageManager": "pnpm@10.33.0",
+	"type": "module",
+	"module": "./src/index.ts",
+	"types": "./src/index.ts",
+	"files": [
+		"/src",
+		"/package.json",
+		"/README.md",
+		"/LICENSE"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Thunder-Solutions/Thunderous"
+	},
+	"keywords": [
+		"thunderous",
+		"router",
+		"csr",
+		"spa",
+		"web components",
+		"custom elements"
+	],
+	"bugs": {
+		"url": "https://github.com/Thunder-Solutions/Thunderous/issues"
+	},
+	"homepage": "https://github.com/Thunder-Solutions/Thunderous#readme",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"devDependencies": {
+		"@types/dom-navigation": "^1.0.7",
+		"thunderous": "workspace:*"
+	},
+	"peerDependencies": {
+		"thunderous": "^2.4.1"
+	}
+}
