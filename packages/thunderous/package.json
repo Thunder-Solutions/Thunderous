@@ -1,7 +1,7 @@
 {
 	"name": "thunderous",
 	"version": "2.4.1",
-	"description": "",
+	"description": "A lightweight, functional web components library that brings the power of signals to your UI.",
 	"type": "module",
 	"main": "./dist/index.cjs",
 	"module": "./dist/index.js",
@@ -12,7 +12,7 @@
 		"/README.md",
 		"/LICENSE"
 	],
-	"author": "Jonathan DeWitt",
+	"author": "Jonathan DeWitt <jon.dewitt@thunder.solutions>",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Thunder-Solutions/Thunderous"

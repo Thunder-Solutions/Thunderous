@@ -1,5 +1,5 @@
 export default {
 	name: 'Demo',
-	baseDir: 'demo/src',
+	baseDir: 'src',
 	outDir: 'dist',
 };
