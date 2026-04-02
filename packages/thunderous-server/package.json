@@ -41,9 +41,7 @@
 		"@types/node": "^24.9.1",
 		"@types/resolve": "^1.20.6",
 		"@typescript-eslint/eslint-plugin": "^8.46.2",
-		"connect-livereload": "^0.6.1",
 		"eslint": "^9.38.0",
-		"livereload": "^0.10.3",
 		"prettier": "^3.6.2",
 		"serve": "^14.2.5",
 		"tsx": "^4.20.6",
@@ -54,6 +52,8 @@
 	"dependencies": {
 		"es-module-lexer": "^1.7.0",
 		"express": "^5.1.0",
+		"livereload": "^0.10.3",
+		"connect-livereload": "^0.6.1",
 		"resolve": "^1.22.11",
 		"resolve.exports": "^2.0.3"
 	},
