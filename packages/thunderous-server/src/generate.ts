@@ -345,8 +345,8 @@ export const generateStaticTemplate = (filePath: string) => {
 				.replace(/(import\s+.+?\s+from\s+['"](?:\.\.?\/|\/)[^'"]+?)(?<!\.m?js)(['"])/gm, '$1.js$2');
 			replacementMap.set(key, `<script type="module">\n${fixedJs}\n</script>`);
 
-			// Write .js to outDir for vendorization
-			const jsOutPath = join(resolvedOutDir, `${name}-${scriptIndex}.tmp.js`);
+			// Write .js to baseDir for vendorization (so relative imports resolve from source tree)
+			const jsOutPath = join(resolvedBaseDir, `${name}-${scriptIndex}.tmp.js`);
 			writeFileSync(jsOutPath, js, 'utf-8');
 			tempFilesToCleanup.push(jsOutPath);
 			clientEntryFiles.push(resolve(jsOutPath));

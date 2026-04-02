@@ -1,4 +1,4 @@
-import { accessSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { accessSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path, { dirname, relative, join } from 'node:path';
 import resolve from 'resolve';
 import { resolve as resolveExports } from 'resolve.exports';
@@ -31,7 +31,21 @@ export function processNodeModules(entryFiles: string[], outputDir?: string) {
 		if (seen.has(file)) continue;
 		seen.add(file);
 
-		const code = readFileSync(file, 'utf8');
+		// In dev mode, .js may not exist yet; fall back to .ts source and transpile
+		let code: string;
+		if (existsSync(file)) {
+			code = readFileSync(file, 'utf8');
+		} else {
+			const tsFile = file.replace(/\.js$/, '.ts');
+			const tsxFile = file.replace(/\.js$/, '.tsx');
+			if (existsSync(tsFile)) {
+				code = transpileTsFast(readFileSync(tsFile, 'utf8'), tsFile);
+			} else if (existsSync(tsxFile)) {
+				code = transpileTsFast(readFileSync(tsxFile, 'utf8'), tsxFile);
+			} else {
+				throw new Error(`Cannot find module: ${file} (also tried .ts/.tsx)`);
+			}
+		}
 		const [imports] = parse(code);
 
 		for (const im of imports) {
@@ -84,7 +98,9 @@ export function processNodeModules(entryFiles: string[], outputDir?: string) {
 
 function withJsOrTs(p: string) {
 	const cand = [p, p + '.mjs', p + '.js', p + '.ts', p + '.tsx'];
-	for (const c of cand) return c; // optimistic; upstream readFile will fail fast if wrong
+	for (const c of cand) {
+		if (existsSync(c)) return c;
+	}
 	return p;
 }
 
