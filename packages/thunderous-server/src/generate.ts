@@ -105,6 +105,13 @@ const extractTags = (markup: string) => {
 			continue;
 		}
 
+		// Skip HTML comments <!-- ... -->
+		if (markup.startsWith('<!--', i)) {
+			const commentEnd = markup.indexOf('-->', i + 4);
+			i = commentEnd === -1 ? markup.length : commentEnd + 3;
+			continue;
+		}
+
 		// <?layout href="…">
 		if (markup.startsWith('<?layout', i)) {
 			const close = markup.indexOf('>', i);
