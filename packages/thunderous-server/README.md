@@ -119,6 +119,7 @@ Exported values are available in <script expr> tags.
 
 ## TODO
 
+- [ ] Add support for named slots in layouts
 - [ ] Create (or find existing) extension that supports:
   - [ ] TypeScript inside `<script>` tags
   - [ ] IDE navigation in `<script server>` and `<script expr>` tags (go to definition, find references, etc.)
@@ -127,3 +128,8 @@ Exported values are available in <script expr> tags.
   - [ ] Typechecking to ensure the default export in `<script server>` is `Record<PropertyKey, unknown>`
   - [ ] OPTIONAL: Lint and autofix for trailing `;` in `<script expr>` tags  
          _e.g., `('hello';)` is an invalid expression, so `<script expr>'hello';</script>` is technically incorrect. That said, Thunderous Server does handle this currently by stripping it from the content before it's evaluated._
+
+### Known Issues
+
+- [ ] The dev server is not reliably hot-reloading changes
+- [ ] The CSR views are not behaving as expected -- unclear if this is a bug in the server or the CSR package.
