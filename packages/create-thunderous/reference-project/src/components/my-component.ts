@@ -1,10 +1,10 @@
 import { customElement, html, css } from 'thunderous';
 
-export const MyComponent = customElement(({ clientOnlyCallback, adoptStylesheet }) => {
+export const MyComponent = customElement(({ clientOnlyCallback, adoptStyleSheet }) => {
 	clientOnlyCallback(() => {
 		console.log('MyComponent has been mounted on the client side.');
 	});
-	adoptStylesheet(stylesheet);
+	adoptStyleSheet(stylesheet);
 	return html`
 		<div class="my-component">
 			<p>
