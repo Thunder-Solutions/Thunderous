@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs';
 import { join, relative, resolve } from 'path';
 import { createRequire } from 'node:module';
 import { html } from 'thunderous';
@@ -277,6 +277,8 @@ export const generateStaticTemplate = (filePath: string) => {
 	const scriptKey = (s: ParsedScript) => `${s.kind}|${s.href ?? ''}|${s.content}`;
 	const replacementMap = new Map<string, string>();
 
+	mkdirSync(resolvedOutDir, { recursive: true });
+
 	let scriptIndex = 0;
 	for (const script of scripts) {
 		const key = scriptKey(script);
@@ -309,8 +311,8 @@ export const generateStaticTemplate = (filePath: string) => {
 				delete outRequire.cache[outRequire.resolve(hrefAbsPath)];
 				module = outRequire(hrefAbsPath);
 			} else {
-				// inline: write temp .ts so outRequire can import it
-				const tsScriptFile = join(resolvedOutDir, `${name}-${scriptIndex}.tmp.ts`);
+				// inline: write temp .ts into baseDir so relative imports resolve correctly
+				const tsScriptFile = join(resolvedBaseDir, `${name}-${scriptIndex}.tmp.ts`);
 				writeFileSync(tsScriptFile, `// @ts-nocheck\n${content}`, 'utf-8');
 				tempFilesToCleanup.push(tsScriptFile);
 				delete outRequire.cache[outRequire.resolve(tsScriptFile)];
