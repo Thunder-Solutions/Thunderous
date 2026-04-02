@@ -5,7 +5,8 @@ const parser = (typeof window !== 'undefined' ? new DOMParser() : null)!;
 let viewCount = 0;
 let navigateAbort = new AbortController();
 let resolvers = Promise.withResolvers<string>();
-resolvers.resolve(document.documentElement.outerHTML);
+const initialDocumentHTML = typeof document !== 'undefined' ? document.documentElement.outerHTML : '';
+resolvers.resolve(initialDocumentHTML);
 
 // Avoid registering the same navigation handler multiple times, in case this script
 // is invoked again (e.g., referenced by a <script> tag rendered inside the view)
