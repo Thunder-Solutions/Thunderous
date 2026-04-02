@@ -1,5 +1,8 @@
 # Thunderous CSR (Client Side Rendering)
 
+> [!CAUTION]
+> This project is experimental. It may not be suitable for production use at this time, as it is subject to bugs and breaking changes.
+
 A package for creating client-side rendered applications with minimal overhead. It combines both MPA and SPA patterns to gain the benefits of both approaches.
 
 ## How it works

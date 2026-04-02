@@ -1,7 +1,7 @@
 # Thunderous Server
 
 > [!CAUTION]
-> This project is experimental. It is not ready for production use at this time.
+> This project is experimental. It may not be suitable for production use at this time, as it is subject to bugs and breaking changes.
 
 **Thunderous Server is a web framework and static generator designed to support and supplement _plain old HTML_.**
 
