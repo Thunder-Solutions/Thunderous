@@ -162,10 +162,6 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 					createEffect(
 						({ lastValue: oldChildren, destroy }) => {
 							const result = signal();
-							console.trace('Binding array:', {
-								result: (result as Node[]).map((node) => node.cloneNode(true)),
-								oldChildren,
-							});
 							const newChildren = asNodeList(result, element);
 							const firstChild = newChildren[0];
 

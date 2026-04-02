@@ -7,14 +7,19 @@
 		<script src="https://unpkg.com/@webcomponents/scoped-custom-element-registry@0.0.10/scoped-custom-element-registry.min.js"></script>
 	</head>
 	<body>
-		<button>Toggle Title</button>
-		<button id="outer-count">Update count from outside</button>
-		<form>
-			<my-element heading="title A" name="custom-input">hello world</my-element>
+		<th-view id="main-view">
+			<h1>Home</h1>
+			<strong>Home</strong> | <a href="/about.html">About</a> | <a href="/contact.html">Contact</a>
+			<hr />
+			<button>Toggle Title</button>
+			<button id="outer-count">Update count from outside</button>
+			<form>
+				<my-element heading="title A" name="custom-input">hello world</my-element>
 
-			<p>This scoped element should render nothing outside its scope:</p>
-			<nested-element text="test"></nested-element>
-		</form>
-		<script type="module" src="/src/main.ts"></script>
+				<p>This scoped element should render nothing outside its scope:</p>
+				<nested-element text="test"></nested-element>
+			</form>
+			<script type="module" src="/src/main.ts"></script>
+		</th-view>
 	</body>
 </html>

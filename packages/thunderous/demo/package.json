@@ -18,6 +18,7 @@
 	},
 	"dependencies": {
 		"@webcomponents/scoped-custom-element-registry": "^0.0.9",
-		"thunderous": "file:.."
+		"thunderous": "workspace:*",
+		"thunderous-spa": "workspace:*"
 	}
 }

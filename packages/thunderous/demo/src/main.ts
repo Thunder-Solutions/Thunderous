@@ -1,3 +1,15 @@
+/**
+ * Pardon the mess in this file. This demo is mostly used for practical
+ * testing and experimentation. It's not meant to be a model of good code.
+ *
+ * That being said, you might find it helpful to see how things work in practice.
+ *
+ * This file is also used for Playwright tests, so it needs to be kept in sync
+ * with those tests. It's probably worth having a separate file for that, but
+ * who has that kind of time? :) Please feel free to contribute by cleaning up
+ * and/or enhancing the test suite!
+ */
+
 import {
 	derived,
 	css,
@@ -11,6 +23,10 @@ import {
 	createEffect,
 	HTMLCustomElement,
 } from 'thunderous';
+import { View } from 'thunderous-spa';
+
+const RUN_SILENTLY = true;
+const log = RUN_SILENTLY ? () => {} : console.log;
 
 declare global {
 	interface HTMLElementTagNameMap {
@@ -43,8 +59,8 @@ const mockHTML = /* html */ `
 `;
 
 onServerDefine((tagName, htmlString) => {
-	console.log('onServerDefine:', tagName);
-	console.log(insertTemplates(tagName, htmlString, mockHTML));
+	log('onServerDefine:', tagName);
+	log(insertTemplates(tagName, htmlString, mockHTML));
 });
 
 const globalRegistry = createRegistry();
@@ -56,7 +72,7 @@ const NestedElement = customElement<NestedElementProps>(
 		const [text] = attrSignals.text;
 		const prop = derived(() => test().prop);
 		createEffect(() => {
-			console.log('NestedElement prop changed:', prop());
+			log('NestedElement prop changed:', prop());
 		});
 		return html`<strong>${text}</strong> <span>count: ${count}</span>`;
 	},
@@ -72,7 +88,7 @@ const MyElement = customElement<MyElementProps>(
 	({ attrSignals, propSignals, getter, internals, clientOnlyCallback, adoptStyleSheet }) => {
 		const [count, setCount] = propSignals.count.init(0);
 		createEffect(() => {
-			console.log('count changed:', count());
+			log('count changed:', count());
 		});
 		const [heading] = attrSignals.heading;
 		const [list, setList] = createSignal([
@@ -171,7 +187,7 @@ MyElement.define('my-element');
 clientOnlyCallback(() => {
 	requestAnimationFrame(() => {
 		const tagName = globalRegistry.getTagName(MyElement);
-		console.log(tagName);
+		log(tagName);
 	});
 
 	const myElement = document.querySelector('my-element')!;
@@ -185,3 +201,5 @@ clientOnlyCallback(() => {
 		// myElement.setAttribute('count', String(myElement.count + 1));
 	});
 });
+
+View.define('th-view');
