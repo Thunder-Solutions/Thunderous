@@ -1,100 +1,138 @@
 #!/usr/bin/env node
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import readline from 'node:readline';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { Command } from 'commander';
+import { input, confirm, select } from '@inquirer/prompts';
+import stringWidth from 'string-width';
+import chalk from 'chalk';
+import { emojify } from 'node-emoji';
+import { shimConsoleLog } from 'emoji-space-shim';
+
+const shim = shimConsoleLog();
+process.on('exit', () => {
+	shim.restore();
+});
 
 const DEFAULT_NAME = 'Thunderous Project';
+const DEFAULT_PACKAGE_MANAGER = 'pnpm';
+const PACKAGE_MANAGERS = ['pnpm', 'npm', 'yarn'];
 const PLACEHOLDER = '<app-name>';
 
-async function main() {
-	const args = process.argv.slice(2);
-	const { flags, positional } = parseArgs(args);
+const program = new Command();
 
+program
+	.name('create-thunderous')
+	.description('Scaffold a new Thunderous project')
+	.version('0.0.0')
+	.argument('[project-name]', 'project name, or "." to scaffold in the current directory')
+	.option('--current-dir', 'scaffold in the current directory')
+	.option('-p, --package-manager <name>', `package manager to use (${PACKAGE_MANAGERS.join(', ')})`)
+	.showHelpAfterError('(add --help for additional information)')
+	.configureOutput({
+		outputError: (str, write) => write(`\x1b[31m${str}\x1b[0m`),
+	});
+
+program.parse();
+
+const options = program.opts();
+const rawNameArg = program.args[0];
+
+await main({
+	rawNameArg,
+	currentDir: Boolean(options.currentDir),
+	packageManager: options.packageManager,
+});
+
+async function main({ rawNameArg, currentDir, packageManager }) {
 	const cwd = process.cwd();
 	const currentDirName = path.basename(cwd);
-
-	const rawNameArg = positional[0];
 	const dotMeansCurrentDir = rawNameArg === '.';
 
 	let projectName = dotMeansCurrentDir ? currentDirName : rawNameArg;
 
 	if (!projectName) {
-		projectName = await prompt(`Project name (${DEFAULT_NAME}): `);
-		projectName = projectName.trim() || DEFAULT_NAME;
+		projectName = await input({
+			message: 'Project name',
+			default: DEFAULT_NAME,
+		});
 	}
+
+	projectName = projectName.trim() || DEFAULT_NAME;
 
 	const namesMatch = looselyMatches(projectName, currentDirName);
 
 	let targetDir = cwd;
 	let createdFolder = false;
 
-	if (flags.currentDir || dotMeansCurrentDir) {
+	if (currentDir || dotMeansCurrentDir) {
 		targetDir = cwd;
 	} else if (!namesMatch) {
-		const shouldCreateFolder = await confirm(
-			`Current folder "${currentDirName}" does not match "${projectName}". Create a new folder? [Y/n]: `,
-			true,
-		);
-
-		if (shouldCreateFolder) {
-			const folderName = toKebabCase(projectName);
-			targetDir = path.join(cwd, folderName);
-			createdFolder = true;
-		}
+		targetDir = path.join(cwd, toKebabCase(projectName));
+		createdFolder = true;
 	}
 
 	ensureTargetIsUsable(targetDir, createdFolder);
 
-	const templateDir = path.resolve(getScriptDir(), '../reference-project');
+	const chosenPackageManager = await choosePackageManager(packageManager);
 
+	const templateDir = path.resolve(getScriptDir(), '../reference-project');
 	if (!fs.existsSync(templateDir)) {
 		fail(`Could not find reference-project at: ${templateDir}`);
 	}
 
+	logStep('Scaffolding project files');
 	copyDirectoryContents(templateDir, targetDir);
 	replacePlaceholderInDirectory(targetDir, PLACEHOLDER, projectName);
 
-	if (targetDir !== cwd) {
-		console.log(`cd ${path.relative(cwd, targetDir) || '.'}`);
-	}
-	console.log('Installing dependencies...');
-	spawnSync('pnpm', ['install'], { stdio: 'inherit' });
-	console.log('\n\nDone! Please run `pnpm dev` to start the development server.');
+	logStep(`Preparing ${chosenPackageManager}`);
+	ensurePackageManagerInstalled(chosenPackageManager);
 
-	console.log(`\n\x1b[32mThunderous project created: ${projectName}\x1b[0m`);
+	logStep(`Installing dependencies with ${chosenPackageManager}`);
+	runInstall(chosenPackageManager, targetDir);
+
+	const shouldInitializeGit = await confirm({
+		message: 'Initialize git repository?',
+		default: true,
+	});
+
+	if (shouldInitializeGit) {
+		logStep('Initializing git repository');
+		runCommand('git', ['init'], { cwd: targetDir });
+	}
+
+	printSuccess(projectName, targetDir, cwd, chosenPackageManager);
 }
 
-function parseArgs(args) {
-	const flags = {
-		currentDir: false,
-	};
-
-	const positional = [];
-
-	for (const arg of args) {
-		if (arg === '--current-dir') {
-			flags.currentDir = true;
-			continue;
+async function choosePackageManager(explicitValue) {
+	if (explicitValue) {
+		const normalized = explicitValue.toLowerCase();
+		if (!PACKAGE_MANAGERS.includes(normalized)) {
+			fail(`Unsupported package manager "${explicitValue}". Use one of: ${PACKAGE_MANAGERS.join(', ')}`);
 		}
-
-		if (arg.startsWith('-')) {
-			fail(`Unknown flag: ${arg}`);
-		}
-
-		positional.push(arg);
+		return normalized;
 	}
 
-	return { flags, positional };
+	return await select({
+		message: 'Which package manager would you like to use?',
+		default: DEFAULT_PACKAGE_MANAGER,
+		choices: [
+			{ name: 'pnpm', value: 'pnpm' },
+			{ name: 'npm', value: 'npm' },
+			{ name: 'yarn', value: 'yarn' },
+		],
+	});
 }
 
 function normalizeForComparison(value) {
 	return value
 		.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
 		.replace(/[_-]+/g, ' ')
-		.replace(/[^\p{L}\p{N}]+/gu, ' ');
-	toLowerCase().trim().replace(/\s+/g, ' ');
+		.replace(/[^\p{L}\p{N}]+/gu, ' ')
+		.toLowerCase()
+		.trim()
+		.replace(/\s+/g, ' ');
 }
 
 function looselyMatches(a, b) {
@@ -164,40 +202,159 @@ function looksBinary(filePath) {
 	return false;
 }
 
+function ensurePackageManagerInstalled(packageManager) {
+	if (hasCommand(packageManager)) return;
+
+	if (packageManager === 'npm') {
+		fail('npm is not available on this system. Install Node.js first, since npm is bundled with Node.');
+	}
+
+	if (!hasCommand('corepack')) {
+		if (!hasCommand('npm')) {
+			fail(
+				`${packageManager} is not installed, and Corepack is unavailable. Install Node.js/npm or install ${packageManager} manually.`,
+			);
+		}
+
+		logSubstep('Installing Corepack');
+		runCommand('npm', ['install', '-g', 'corepack@latest']);
+	}
+
+	logSubstep(`Enabling Corepack shim for ${packageManager}`);
+	runCommand('corepack', ['enable', packageManager]);
+
+	logSubstep(`Installing ${packageManager} via Corepack`);
+	runCommand('corepack', ['install', '-g', `${packageManager}@latest`]);
+
+	if (!hasCommand(packageManager)) {
+		fail(`Failed to make ${packageManager} available on PATH.`);
+	}
+}
+
+function runInstall(packageManager, cwd) {
+	if (packageManager === 'npm') {
+		runCommand('npm', ['install'], { cwd });
+		return;
+	}
+
+	if (packageManager === 'pnpm') {
+		runCommand('pnpm', ['install'], { cwd });
+		return;
+	}
+
+	if (packageManager === 'yarn') {
+		runCommand('yarn', ['install'], { cwd });
+		return;
+	}
+
+	fail(`Unsupported package manager: ${packageManager}`);
+}
+
+function hasCommand(command) {
+	const result = spawnSync(command, ['--version'], {
+		stdio: 'ignore',
+		shell: process.platform === 'win32',
+	});
+
+	return result.status === 0;
+}
+
+function runCommand(command, args, options = {}) {
+	const result = spawnSync(command, args, {
+		stdio: 'inherit',
+		cwd: options.cwd,
+		shell: process.platform === 'win32',
+	});
+
+	if (result.error) {
+		fail(`Failed to run "${command} ${args.join(' ')}": ${result.error.message}`);
+	}
+
+	if (result.status !== 0) {
+		fail(`Command failed: ${command} ${args.join(' ')}`);
+	}
+}
+
 function getScriptDir() {
 	return path.dirname(fileURLToPath(import.meta.url));
 }
 
+function stripAnsi(value) {
+	return value.replace(/\x1b\[[0-9;]*m/g, '');
+}
+
+function visibleWidth(value) {
+	return stringWidth(stripAnsi(value));
+}
+
+function printSuccess(projectName, targetDir, originalCwd, packageManager) {
+	const lines = [
+		`${chalk.blue(emojify(':cloud_with_lightning:'))}  ${chalk.magenta('Thunderous project created successfully!')} ${chalk.blue(emojify(':cloud_with_lightning:'))}`,
+		'',
+		`    ${chalk.bold('Name:')} ${chalk.blue(projectName)}`,
+		`    ${chalk.bold('Package manager:')} ${chalk.blue(packageManager)}`,
+		`    ${chalk.bold('Location:')} ${chalk.underline(chalk.blue(targetDir))}`,
+		'',
+		`    ${chalk.bold(targetDir !== originalCwd ? 'Next steps:' : 'Next step:')}`,
+		...(targetDir !== originalCwd ? [chalk.blue(`      cd ${path.relative(originalCwd, targetDir) || '.'}`)] : []),
+		chalk.blue(`      ${packageManager} dev`),
+	];
+
+	printBox(lines, {
+		borderColor: 'magenta',
+		textColor: 'white',
+		padding: 2,
+		marginBottom: 1,
+	});
+}
+
+function printBox(lines, options = {}) {
+	const { borderColor = '', textColor = '', padding = 0, marginTop = 1, marginBottom = 0 } = options;
+
+	const contentWidth = Math.max(...lines.map((line) => visibleWidth(line)), 0);
+	const innerWidth = contentWidth + padding * 2;
+	const horizontalWidth = innerWidth + 2;
+	const bc = chalk[borderColor];
+	const tc = chalk[textColor];
+
+	const top = bc(`╭${'─'.repeat(horizontalWidth)}──╮`);
+	const bottom = bc(`╰${'─'.repeat(horizontalWidth)}──╯`);
+	const emptyLine = `${bc('│')} ${' '.repeat(innerWidth)}   ${bc('│')}`;
+
+	if (marginTop > 0) {
+		process.stdout.write('\n'.repeat(marginTop));
+	}
+
+	console.log(top);
+	console.log(emptyLine);
+
+	for (const line of lines) {
+		const width = visibleWidth(line);
+		const rightPad = innerWidth - width - padding;
+		const paddedLine = ' '.repeat(padding) + line + ' '.repeat(Math.max(0, rightPad));
+
+		console.log(`${bc('│')} ${tc(paddedLine)}   ${bc('│')}`);
+	}
+
+	console.log(emptyLine);
+	console.log(bottom);
+
+	if (marginBottom > 0) {
+		process.stdout.write('\n'.repeat(marginBottom));
+	}
+}
+
+function logStep(message) {
+	console.log('');
+	console.log(`\x1b[36m▶\x1b[0m ${message}`);
+}
+
+function logSubstep(message) {
+	console.log(`  \x1b[90m•\x1b[0m ${message}`);
+}
+
 function fail(message) {
-	console.error(message);
+	console.error('');
+	console.error(`\x1b[31m✖ ${message}\x1b[0m`);
 	process.exit(1);
 }
-
-function prompt(query) {
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
-	});
-
-	return new Promise((resolve) => {
-		rl.question(query, (answer) => {
-			rl.close();
-			resolve(answer);
-		});
-	});
-}
-
-async function confirm(query, defaultYes = true) {
-	const answer = (await prompt(query)).trim().toLowerCase();
-
-	if (!answer) return defaultYes;
-	if (['y', 'yes'].includes(answer)) return true;
-	if (['n', 'no'].includes(answer)) return false;
-
-	return defaultYes;
-}
-
-main().catch((error) => {
-	console.error(error instanceof Error ? error.message : String(error));
-	process.exit(1);
-});
