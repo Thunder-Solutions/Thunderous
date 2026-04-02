@@ -1,5 +1,5 @@
 export default {
-	name: '<app-name>',
+	name: '{{ APP_NAME }}',
 	baseDir: 'src',
 	outDir: 'dist',
 };

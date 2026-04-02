@@ -2,46 +2,45 @@
 <!-- This markup will only be rendered if a page includes it with <?layout href="_layout.html"> -->
 <html>
 	<head>
-		<title><app-name><script expr>title !== '' ? ` | ${title}` : ''</script></title>
+		<title>{{ APP_NAME }}<script expr>title !== '' ? ` | ${title}` : ''</script></title>
 		<link rel="stylesheet" href="/global.css" />
 	</head>
 	<body>
-		<h1>
-			<script expr>
-				title === '' ? 'Home' : title;
-			</script>
-		</h1>
-
-		<!-- breadcrumb navigation -->
-		<nav>
-			<p>
+		<t-page>
+			<h1 slot="header">
 				<script expr>
-					breadcrumbs.map(
-						(crumb, index) => html`
-							<a href="${crumb.pathname}">${crumb.name}</a>
-							${index < breadcrumbs.length - 1 ? html`<span> | </span>` : ''}
-						`,
-					);
+					title === '' ? 'Home' : title;
 				</script>
-			</p>
-		</nav>
+			</h1>
 
-		<!-- main navigation -->
-		<nav>
-			<a href="/">Home</a>
-			<a href="/about">About Us</a>
-			<a href="/about/contact">Contact Us</a>
-		</nav>
+			<!-- We can use multiple views to render different content in different regions - see main-content for more details -->
+			<t-view id="breadcrumbs">
+				<nav slot="header">
+					<p>
+						<script expr>
+							breadcrumbs.map(
+								(crumb, index) => html`
+									<a href="${crumb.pathname}">${crumb.name}</a>
+									${index < breadcrumbs.length - 1 ? html`<span> | </span>` : ''}
+								`,
+							);
+						</script>
+					</p>
+				</nav>
+			</t-view>
 
-		<!-- This view element is used for CSR navigation, only this element will be replaced when navigating -->
-		<t-view id="main-content">
-			<!-- This is where page content is inserted when this layout is used -->
-			<slot></slot>
-		</t-view>
+			<!-- This view element is used for CSR navigation, only this element will be replaced when navigating -->
+			<t-view id="main-content">
+				<!-- This is where page content is inserted when this layout is used -->
+				<slot></slot>
+			</t-view>
+		</t-page>
 
 		<script isomorphic>
 			import { View } from 'thunderous-csr';
+			import { Page } from './components/page';
 			View.define('t-view');
+			Page.define('t-page');
 		</script>
 
 		<!-- This makes some handy data available to the template, like breadcrumbs -->

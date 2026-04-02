@@ -1,5 +1,5 @@
 {
-	"name": "<app-name>",
+	"name": "{{ APP_NAME }}",
 	"version": "0.0.0",
 	"description": "A demo to showcase Thunderous server capabilities.",
 	"license": "ISC",
@@ -28,14 +28,14 @@
 		"eslint": "^9.38.0",
 		"prettier": "^3.6.2",
 		"serve": "^14.2.5",
-		"thunderous-server": "^0.0.0",
+		"thunderous-server": "file:~/repos/Thunderous/packages/thunderous-server",
 		"tsx": "^4.20.6",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.46.2",
 		"undici-types": "^7.16.0"
 	},
 	"dependencies": {
-		"thunderous": "^2.4.1",
-		"thunderous-csr": "^0.0.0"
+		"thunderous": "file:~/repos/Thunderous/packages/thunderous",
+		"thunderous-csr": "file:~/repos/Thunderous/packages/thunderous-csr"
 	}
 }

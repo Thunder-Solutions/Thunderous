@@ -18,7 +18,7 @@ process.on('exit', () => {
 const DEFAULT_NAME = 'Thunderous Project';
 const DEFAULT_PACKAGE_MANAGER = 'pnpm';
 const PACKAGE_MANAGERS = ['pnpm', 'npm', 'yarn'];
-const PLACEHOLDER = '<app-name>';
+const PLACEHOLDER = '{{ APP_NAME }}';
 
 const program = new Command();
 
@@ -100,6 +100,8 @@ async function main({ rawNameArg, currentDir, packageManager }) {
 	if (shouldInitializeGit) {
 		logStep('Initializing git repository');
 		runCommand('git', ['init'], { cwd: targetDir });
+		runCommand('git', ['add', '.'], { cwd: targetDir });
+		runCommand('git', ['commit', '-m', 'Initial commit'], { cwd: targetDir });
 	}
 
 	printSuccess(projectName, targetDir, cwd, chosenPackageManager);
