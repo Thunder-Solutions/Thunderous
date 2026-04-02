@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+// Register tsx loaders in-process (no child process spawn needed)
+import { register as registerEsm } from 'tsx/esm/api';
+import { register as registerCjs } from 'tsx/cjs/api';
+registerCjs();
+registerEsm();
+
+// Dynamically import the TypeScript CLI entry point
+await import('../src/cli.ts');

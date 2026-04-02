@@ -1,0 +1,46 @@
+<?layout href="_layout.html">
+
+<p>
+	<script expr>
+		getValue();
+	</script>
+</p>
+
+<ul>
+	<script expr>
+		// this gets evaluated in-place and replaced with the result
+		list.map((item) => html` <li>test ${label} - ${item}</li> `);
+	</script>
+</ul>
+
+<my-component></my-component>
+
+<script>
+	// this is ordinary client-only code
+	console.log('Hello from the browser!');
+</script>
+
+<script type="module">
+	// this is also client-only code
+	// client-side modules are processed to vendorize NPM dependencies
+	console.log('Hello from a module!');
+</script>
+
+<script isomorphic>
+	// this code runs on both the client and server
+	// isomorphic scripts are always modules
+	// since it runs on the client, it will also vendorize NPM dependencies
+	import { MyComponent } from './scripts';
+	MyComponent.define('my-component');
+</script>
+
+<script server>
+	// this code runs on the server only
+	// server scripts are always modules
+	// exported values are available in <script expr> tags
+	export default {
+		getValue: () => 'This is home page data',
+		label: 'Item',
+		list: [1, 2, 3, 4, 5],
+	};
+</script>

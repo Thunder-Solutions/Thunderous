@@ -1,0 +1,34 @@
+<html>
+	<head>
+		<title>Demo<script expr>title !== '' ? ` | ${title}` : ''</script></title>
+	</head>
+	<body>
+		<h1>
+			<script expr>
+				title === '' ? 'Home' : title;
+			</script>
+		</h1>
+		<nav>
+			<p>
+				<script expr>
+					breadcrumbs.map(
+						(crumb, index) => html`
+							<a href="${crumb.pathname}">${crumb.name}</a>
+							${index < breadcrumbs.length - 1 ? html`<span> | </span>` : ''}
+						`,
+					);
+				</script>
+			</p>
+		</nav>
+		<nav>
+			<a href="/">Home</a>
+			<a href="/about">About Us</a>
+			<a href="/about/contact">Contact Us</a>
+		</nav>
+		<slot></slot>
+		<script server>
+			import { getMeta } from 'thunderous-server';
+			export default getMeta();
+		</script>
+	</body>
+</html>

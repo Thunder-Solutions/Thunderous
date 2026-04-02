@@ -1,0 +1,52 @@
+{
+	"name": "thunderous-server",
+	"version": "0.0.0",
+	"description": "A simple server to enhance Thunderous components with SSR.",
+	"license": "ISC",
+	"author": "",
+	"type": "module",
+	"main": "src/index.ts",
+	"scripts": {
+		"demo": "cd demo && npm run",
+		"demo:install": "cd demo && npm install",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"format": "prettier --check .",
+		"format:fix": "prettier --write . --list-different",
+		"typecheck": "tsc --noEmit",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"bin": {
+		"thunderous": "./bin/thunderous"
+	},
+	"devDependencies": {
+		"@eslint/css": "^0.13.0",
+		"@eslint/js": "^9.38.0",
+		"@eslint/json": "^0.13.2",
+		"@total-typescript/ts-reset": "^0.6.1",
+		"@types/connect-livereload": "^0.6.3",
+		"@types/express": "^5.0.3",
+		"@types/livereload": "^0.9.5",
+		"@types/node": "^24.9.1",
+		"@types/resolve": "^1.20.6",
+		"@typescript-eslint/eslint-plugin": "^8.46.2",
+		"connect-livereload": "^0.6.1",
+		"eslint": "^9.38.0",
+		"livereload": "^0.10.3",
+		"prettier": "^3.6.2",
+		"serve": "^14.2.5",
+		"tsx": "^4.20.6",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.46.2",
+		"undici-types": "^7.16.0"
+	},
+	"dependencies": {
+		"es-module-lexer": "^1.7.0",
+		"express": "^5.1.0",
+		"resolve": "^1.22.11",
+		"resolve.exports": "^2.0.3"
+	},
+	"peerDependencies": {
+		"thunderous": ">=2.4.1"
+	}
+}
