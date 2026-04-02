@@ -23,7 +23,7 @@ import {
 	createEffect,
 	HTMLCustomElement,
 } from 'thunderous';
-import { View } from 'thunderous-spa';
+import { View } from 'thunderous-csr';
 
 const RUN_SILENTLY = true;
 const log = RUN_SILENTLY ? () => {} : console.log;

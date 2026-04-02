@@ -64,7 +64,7 @@ const ViewRegistry = createRegistry();
  *
  * @example
  * ```js
- * import { View } from 'thunderous-spa';
+ * import { View } from 'thunderous-csr';
  * View.define('t-view');
  * ```
  * @example
