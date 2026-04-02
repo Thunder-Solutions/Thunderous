@@ -91,8 +91,8 @@ function withJsOrTs(p: string) {
 function vendorizeFile(absPath: string, vendorRoot: string) {
 	// Find package root & metadata
 	const pkgRoot = findPkgRoot(absPath);
-	const pkg = JSON.parse(readFileSync(join(pkgRoot, 'package.json'), 'utf8'));
-	const versionTag = `${pkg.name.replace('/', '__')}@${pkg.version}`;
+	const pkg = JSON.parse(readFileSync(join(pkgRoot, 'package.json'), 'utf8')) as Record<string, string>;
+	const versionTag = `${pkg['name']!.replace('/', '__')}@${pkg['version']!}`;
 	const relFromPkg = relative(pkgRoot, absPath);
 	const outDir = join(vendorRoot, versionTag);
 	const outPath = join(outDir, relFromPkg.replace(/\.(ts|tsx)$/, '.js'));

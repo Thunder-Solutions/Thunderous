@@ -39,8 +39,8 @@
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
-		"format": "prettier --check .",
-		"format:fix": "prettier --write .",
+		"format": "prettier --check . --ignore-path ../../.gitignore",
+		"format:fix": "prettier --write . --ignore-path ../../.gitignore",
 		"preversion": "npm run typecheck && npm run lint && npm test && npm run build",
 		"version": "node postversion.js",
 		"prepublishOnly": "npm run typecheck && npm run lint && npm test && npm run build"

@@ -3,6 +3,7 @@ node_modules
 dist
 .vercel
 .browsers
+*.tmp.*
 
 # Tests and reports
 coverage

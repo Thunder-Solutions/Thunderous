@@ -1,5 +1,5 @@
 import { clientOnlyCallback, createEffect, createRegistry, createSignal, customElement, css, html } from 'thunderous';
-const parser = (typeof window !== 'undefined' ? new DOMParser() : null) as DOMParser;
+const parser = (typeof window !== 'undefined' ? new DOMParser() : null)!;
 
 // Mutable state for navigation handling
 let viewCount = 0;
@@ -16,6 +16,7 @@ if (!globalThis.__GLOBAL_THUNDEROUS_VIEW_REGISTERED) {
 	globalThis.__GLOBAL_THUNDEROUS_VIEW_REGISTERED = true;
 
 	// Setup global navigation behavior once
+	// eslint-disable-next-line @typescript-eslint/no-floating-promises
 	clientOnlyCallback(() => {
 		navigation.addEventListener('navigate', (event) => {
 			// Skip cross-origin and same-document navigations
@@ -169,7 +170,9 @@ const View = customElement(
 					},
 				});
 			};
-			const handleSuccess = () => navigation.transition?.finished.then(() => setStatus('ready'));
+			const handleSuccess = () => {
+				void navigation.transition?.finished.then(() => setStatus('ready'));
+			};
 			const handleError = () => setStatus('error');
 
 			// Attach navigation handlers when this element is added to the DOM.

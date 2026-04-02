@@ -4,4 +4,13 @@ export { onServerDefine, insertTemplates, clientOnlyCallback } from './server-si
 export { createEffect, createSignal, derived } from './signals';
 export { html, css } from './render';
 
-export type { RenderFunction, RenderArgs, Signal, SignalGetter, SignalSetter, HTMLCustomElement } from './types';
+export type {
+	RenderFunction,
+	RenderArgs,
+	Signal,
+	SignalGetter,
+	SignalSetter,
+	HTMLCustomElement,
+	ElementResult,
+	RegistryResult,
+} from './types';

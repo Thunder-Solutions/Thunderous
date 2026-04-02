@@ -38,6 +38,7 @@ const transpileTs = (source: string, fileName = 'inline.ts'): string =>
  * This should be called once at the start of the build process.
  */
 export const bootstrapThunderous = () => {
+	// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 	const Thunderous: typeof import('thunderous') = outRequire('thunderous');
 	const { insertTemplates, onServerDefine } = Thunderous;
 	// Update the markup each time a thunderous element is defined on the server
@@ -80,7 +81,7 @@ export const processFiles = (args: ProcessFilesArgs) => {
 				dir: filePath,
 			});
 		} else if (args.filter(filePath)) {
-			args.callback(filePath);
+			void args.callback(filePath);
 		}
 	}
 };
@@ -369,6 +370,7 @@ export const generateStaticTemplate = (filePath: string) => {
 				content = readFileSync(hrefPath, 'utf-8').trim();
 			}
 			const expression = content.replace(/;$/, '');
+			// eslint-disable-next-line @typescript-eslint/no-implied-eval
 			text = Function(
 				'html',
 				'escapeHtml',
@@ -433,14 +435,14 @@ export const injectImportMap = (html: string, importMapJson: string): string => 
 	}
 
 	// Otherwise inject before first script tag
-	const firstScriptMatch = html.match(/<script/i);
-	if (firstScriptMatch && firstScriptMatch.index !== undefined) {
+	const firstScriptMatch = /<script/i.exec(html);
+	if (firstScriptMatch?.index !== undefined) {
 		return html.slice(0, firstScriptMatch.index) + importMapTag + '\n' + html.slice(firstScriptMatch.index);
 	}
 
 	// No script tag found, inject before </head> if possible
-	const headCloseMatch = html.match(/<\/head>/i);
-	if (headCloseMatch && headCloseMatch.index !== undefined) {
+	const headCloseMatch = /<\/head>/i.exec(html);
+	if (headCloseMatch?.index !== undefined) {
 		return html.slice(0, headCloseMatch.index) + importMapTag + '\n' + html.slice(headCloseMatch.index);
 	}
 

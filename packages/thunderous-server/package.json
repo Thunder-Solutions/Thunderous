@@ -5,20 +5,31 @@
 	"license": "ISC",
 	"author": "",
 	"type": "module",
-	"main": "src/index.ts",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"scripts": {
+		"build": "tsup --no-clean",
 		"demo": "cd demo && npm run",
 		"demo:install": "cd demo && npm install",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
-		"format": "prettier --check .",
-		"format:fix": "prettier --write . --list-different",
+		"format": "prettier --check . --ignore-path ../../.gitignore",
+		"format:fix": "prettier --write . --ignore-path ../../.gitignore",
 		"typecheck": "tsc --noEmit",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"bin": {
 		"thunderous": "./bin/thunderous"
 	},
+	"files": [
+		"/dist",
+		"/bin",
+		"/src",
+		"/types",
+		"/package.json",
+		"/README.md"
+	],
 	"devDependencies": {
 		"@eslint/css": "^0.13.0",
 		"@eslint/js": "^9.38.0",

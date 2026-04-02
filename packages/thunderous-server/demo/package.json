@@ -35,6 +35,6 @@
 		"undici-types": "^7.16.0"
 	},
 	"dependencies": {
-		"thunderous": "^2.4.1"
+		"thunderous": "workspace:*"
 	}
 }

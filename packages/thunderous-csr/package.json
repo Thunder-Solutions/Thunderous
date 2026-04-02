@@ -6,10 +6,11 @@
 	"license": "MIT",
 	"packageManager": "pnpm@10.33.0",
 	"type": "module",
-	"module": "./src/index.ts",
-	"types": "./src/index.ts",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"files": [
-		"/src",
+		"/dist",
 		"/package.json",
 		"/README.md",
 		"/LICENSE"
@@ -31,6 +32,12 @@
 	},
 	"homepage": "https://github.com/Thunder-Solutions/Thunderous#readme",
 	"scripts": {
+		"build": "tsup --no-clean",
+		"typecheck": "tsc --noEmit",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"format": "prettier --check . --ignore-path ../../.gitignore",
+		"format:fix": "prettier --write . --ignore-path ../../.gitignore",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"devDependencies": {
