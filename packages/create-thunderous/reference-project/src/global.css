@@ -1,0 +1,24 @@
+html {
+	font-size: 16px;
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	min-width: 320px;
+	min-height: 100vh;
+	padding: 3rem 1.5rem;
+	background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.22), transparent 30%),
+		radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.18), transparent 35%),
+		linear-gradient(180deg, #0f172a 0%, #111827 45%, #0b1120 100%);
+	color: #eaf2ff;
+	font-family: 'Plus Jakarta Sans', Inter, ui-sans-serif, system-ui, sans-serif;
+	font-size: 1rem;
+	line-height: 1.6;
+	font-weight: 400;
+	letter-spacing: 0.01em;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-font-smoothing: antialiased;
+}

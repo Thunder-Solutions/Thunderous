@@ -1,0 +1,39 @@
+<?layout href="_layout.html">
+
+<my-component>
+	<script expr>
+		// These <script expr> tags are evaluated in-place as expressions and replaced by the result.
+		html`<p>The ${stack} stack is dead simple and feels like there's no framework at all.</p>`;
+	</script>
+</my-component>
+
+<script>
+	// This is ordinary client-only code.
+	console.log('Hello from the browser!');
+</script>
+
+<script type="module">
+	// This is also client-only code.
+	// Client-side modules are processed to vendorize NPM dependencies.
+	// There is no bundle step - modules are loaded via import maps.
+	console.log('Hello from a module!');
+</script>
+
+<script isomorphic>
+	// This code runs on both the client and server.
+	// Isomorphic scripts are always modules.
+	// Since it runs on the client, it will also vendorize NPM dependencies.
+	import { MyComponent } from './components/my-component';
+
+	// Thunderous components render declarative shadow DOM when defined on the server.
+	MyComponent.define('my-component');
+</script>
+
+<script server>
+	// This code runs on the server only.
+	// Server scripts are always modules.
+	// Exported values are available in <script expr> tags.
+	export default {
+		stack: 'Thunderous',
+	};
+</script>

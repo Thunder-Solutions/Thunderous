@@ -1,0 +1,16 @@
+<!-- Since this is named index.html, it will be the default page for the /about route. -->
+<?layout href="../_layout.html">
+
+<h2>
+	<script expr>
+		teamName;
+	</script>
+</h2>
+<p>
+	<script expr>
+		description;
+	</script>
+</p>
+
+<!-- <script server> tags also support files via the href attribute -->
+<script server href="./about-data.server.ts"></script>
