@@ -443,10 +443,22 @@ export const injectImportMap = (html: string, importMapJson: string): string => 
 		return html.replace(existingImportMapRegex, importMapTag);
 	}
 
-	// Otherwise inject before first script tag
-	const firstScriptMatch = /<script/i.exec(html);
-	if (firstScriptMatch?.index !== undefined) {
-		return html.slice(0, firstScriptMatch.index) + importMapTag + '\n' + html.slice(firstScriptMatch.index);
+	// Otherwise inject before first script tag (skip HTML comments)
+	let searchPos = 0;
+	while (searchPos < html.length) {
+		// Skip HTML comments
+		const commentStart = html.indexOf('<!--', searchPos);
+		const scriptMatch = /<script/i.exec(html.slice(searchPos));
+		if (scriptMatch === null) break;
+		const scriptPos = searchPos + scriptMatch.index;
+		// If a comment starts before this <script, skip past the comment
+		if (commentStart !== -1 && commentStart < scriptPos) {
+			const commentEnd = html.indexOf('-->', commentStart + 4);
+			searchPos = commentEnd === -1 ? html.length : commentEnd + 3;
+			continue;
+		}
+		// Found a real <script outside of a comment
+		return html.slice(0, scriptPos) + importMapTag + '\n' + html.slice(scriptPos);
 	}
 
 	// No script tag found, inject before </head> if possible
