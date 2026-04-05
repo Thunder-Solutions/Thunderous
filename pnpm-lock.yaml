@@ -91,9 +91,6 @@ importers:
 
   packages/thunderous-csr:
     devDependencies:
-      '@types/dom-navigation':
-        specifier: ^1.0.7
-        version: 1.0.7
       thunderous:
         specifier: workspace:*
         version: link:../thunderous

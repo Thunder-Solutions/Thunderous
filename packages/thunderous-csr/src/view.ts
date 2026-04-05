@@ -1,60 +1,9 @@
-import { clientOnlyCallback, createEffect, createRegistry, createSignal, customElement, css, html } from 'thunderous';
-const parser = (typeof window !== 'undefined' ? new DOMParser() : null)!;
-
-// Mutable state for navigation handling
-let viewCount = 0;
-let navigateAbort = new AbortController();
-let resolvers = Promise.withResolvers<string>();
-const initialDocumentHTML = typeof document !== 'undefined' ? document.documentElement.outerHTML : '';
-resolvers.resolve(initialDocumentHTML);
-
-// Avoid registering the same navigation handler multiple times, in case this script
-// is invoked again (e.g., referenced by a <script> tag rendered inside the view)
-declare global {
-	var __GLOBAL_THUNDEROUS_VIEW_REGISTERED: boolean;
-}
-if (!globalThis.__GLOBAL_THUNDEROUS_VIEW_REGISTERED) {
-	globalThis.__GLOBAL_THUNDEROUS_VIEW_REGISTERED = true;
-
-	// Setup global navigation behavior once
-	// eslint-disable-next-line @typescript-eslint/no-floating-promises
-	clientOnlyCallback(() => {
-		navigation.addEventListener('navigate', (event) => {
-			// Skip cross-origin and same-document navigations
-			if (!event.canIntercept || event.destination.sameDocument) return;
-
-			// Intercept the navigation
-			event.intercept({
-				async handler() {
-					navigateAbort.abort();
-					navigateAbort = new AbortController();
-					resolvers = Promise.withResolvers<string>();
-					fetch(event.destination.url, {
-						headers: { 'content-type': 'text/html' },
-						signal: navigateAbort.signal,
-					})
-						.then((r) => r.text())
-						.then(resolvers.resolve)
-						.catch(resolvers.reject);
-
-					// Always replace all <head> content
-					const destinationDocument = parser.parseFromString(await resolvers.promise, 'text/html');
-					const destinationHeadElement = destinationDocument.querySelector('head');
-					const destinationHeadChildren = Array.from(destinationHeadElement?.childNodes ?? []);
-					document.head.replaceChildren(...destinationHeadChildren);
-
-					if (viewCount === 0) {
-						console.debug('THUNDEROUS-SPA: No views found, replacing entire body element');
-						document.body.replaceChildren(...destinationDocument.body.childNodes);
-					}
-				},
-			});
-		});
-	});
-}
+import { createEffect, createRegistry, createSignal, customElement, css, html } from 'thunderous';
+import { logger } from './logger';
+import { state } from './state';
 
 // This registry helps us track the consumer's tag name for the view element
-const ViewRegistry = createRegistry();
+export const viewRegistry = createRegistry();
 
 /**
  * A custom element that renders partial page content on the client side.
@@ -76,7 +25,7 @@ const ViewRegistry = createRegistry();
  * </t-view>
  * ```
  */
-const View = customElement(
+export const View = customElement(
 	({ clientOnlyCallback, connectedCallback, disconnectedCallback, adoptStyleSheet, elementRef }) => {
 		const [getStatus, setStatus] = createSignal('ready');
 
@@ -108,7 +57,7 @@ const View = customElement(
 		clientOnlyCallback(() => {
 			// Validate ID attribute
 			if (!elementRef.id) {
-				console.error('THUNDEROUS-SPA: view missing required id attribute', elementRef);
+				logger.error('THUNDEROUS-CSR: View missing required id attribute', elementRef);
 				return;
 			}
 
@@ -116,63 +65,70 @@ const View = customElement(
 			Object.defineProperty(elementRef, 'status', {
 				get: getStatus,
 				set: () => {
-					throw new Error('THUNDEROUS-SPA: view status is read-only');
+					throw new Error('THUNDEROUS-CSR: View status is read-only');
 				},
 			});
-			setStatus('ready');
+
+			let finishedResolvers = Promise.withResolvers<void>();
+
+			Object.defineProperty(elementRef, 'finished', {
+				get: () => finishedResolvers.promise,
+				set: () => {
+					throw new Error('THUNDEROUS-CSR: finished is a read-only promise');
+				},
+			});
+
+			setStatus('pending');
+
 			createEffect(() => {
 				const status = getStatus();
 				elementRef.classList.toggle('pending', status === 'pending');
 				elementRef.classList.toggle('ready', status === 'ready');
 				elementRef.classList.toggle('error', status === 'error');
-				console.debug(`THUNDEROUS-SPA: view status updated to "${status}" for ${elementRef.id}`);
+				if (status === 'pending') finishedResolvers = Promise.withResolvers();
+				else if (status === 'ready') finishedResolvers.resolve();
+				else if (status === 'error') finishedResolvers.reject();
+				logger.debug(`THUNDEROUS-CSR: View status updated to "${status}" for "${elementRef.id}"`);
 			});
 
 			// Define navigation handlers
 			const handleNavigate = (event: NavigateEvent) => {
-				if (!event.canIntercept) return;
+				if (!event.canIntercept || getStatus() === 'pending') return;
 				setStatus('pending');
 				event.intercept({
 					async handler() {
-						const destinationDocument = parser.parseFromString(await resolvers.promise, 'text/html');
-						const tagName = ViewRegistry.getTagName(View) ?? 't-view';
-						const selector = `${tagName}#${elementRef.id}`;
-						const destinationViewElement = destinationDocument.querySelector(selector);
-						destinationViewElement?.classList.add('pending'); // to match the host element's state for comparison later
-						const destinationHTML = destinationDocument.body.innerHTML;
+						const destinationDocument = await state.destResolvers.promise;
+						const viewTagName = viewRegistry.getTagName(View) ?? 't-view';
+						const selector = `${viewTagName}#${elementRef.id}`;
+						const destinationViewElement = destinationDocument.body.querySelector(selector);
 
 						if (destinationViewElement === null) {
-							console.warn(
-								`THUNDEROUS-SPA: view not found in destination document for ${elementRef.id}; this view will be removed from the DOM`,
+							logger.log(
+								`THUNDEROUS-CSR: View not found in destination document for "${elementRef.id}" -- this view will be removed from the DOM`,
 							);
 							elementRef.remove();
 						} else {
 							// Partial DOM patch using view transitions
-							const viewTransition = document.startViewTransition(() => {
-								elementRef.replaceChildren(...destinationViewElement.childNodes);
-								console.debug(`THUNDEROUS-SPA: Replaced view content for ${elementRef.id}`);
-							});
-							await viewTransition.updateCallbackDone;
+							await document.startViewTransition(() => {
+								// Clone each child node of the view -- avoid cloning the view itself,
+								// since doing so will trigger the component lifecycle again and
+								// clutter the console with extra noise.
+								const childNodes = [];
+								for (const child of destinationViewElement.childNodes) {
+									childNodes.push(child.cloneNode(true));
+								}
+								elementRef.replaceChildren(...childNodes);
+								logger.debug(`THUNDEROUS-CSR: Replaced view content for "${elementRef.id}"`);
+							}).updateCallbackDone;
 						}
-
-						if (document.body.innerHTML !== destinationHTML) {
-							console.warn(
-								`THUNDEROUS-SPA: body content does not match the full destination document after the partial update. Replacing the entire body element instead.`,
-								{
-									source: document.body.innerHTML,
-									destination: destinationHTML,
-								},
-							);
-							const viewTransition = document.startViewTransition(() => {
-								document.body.replaceChildren(...destinationDocument.body.childNodes);
-							});
-							await viewTransition.updateCallbackDone;
-						}
+						// Mark this view as ready so the global handler's
+						// await Promise.all(viewPromises) can proceed.
+						setStatus('ready');
 					},
 				});
 			};
 			const handleSuccess = () => {
-				void navigation.transition?.finished.then(() => setStatus('ready'));
+				navigation.transition?.finished.then(() => setStatus('ready'));
 			};
 			const handleError = () => setStatus('error');
 
@@ -181,8 +137,8 @@ const View = customElement(
 				navigation.addEventListener('navigate', handleNavigate);
 				navigation.addEventListener('navigatesuccess', handleSuccess);
 				navigation.addEventListener('navigateerror', handleError);
-				viewCount++;
-				console.debug(`THUNDEROUS-SPA: view connected for ${elementRef.id}`);
+				setStatus('ready');
+				logger.debug(`THUNDEROUS-CSR: View connected for "${elementRef.id}"`);
 			});
 
 			// Detach all navigation handlers when this element is removed from the DOM
@@ -191,8 +147,7 @@ const View = customElement(
 				navigation.removeEventListener('navigate', handleNavigate);
 				navigation.removeEventListener('navigatesuccess', handleSuccess);
 				navigation.removeEventListener('navigateerror', handleError);
-				viewCount--;
-				console.debug(`THUNDEROUS-SPA: view disconnected for ${elementRef.id}`);
+				logger.debug(`THUNDEROUS-CSR: View disconnected for "${elementRef.id}"`);
 			});
 		});
 
@@ -206,6 +161,10 @@ const View = customElement(
 			<slot></slot>
 		`;
 	},
-).register(ViewRegistry);
+).register(viewRegistry);
 
-export { View };
+export interface ViewElement extends HTMLElement {
+	new (): ViewElement;
+	readonly status: 'pending' | 'ready' | 'error';
+	readonly finished: Promise<void>;
+}
