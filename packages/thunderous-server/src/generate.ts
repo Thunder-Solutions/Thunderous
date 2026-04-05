@@ -432,18 +432,26 @@ export const generateImportMap = (entryFiles: string[]): string => {
 /**
  * Inject an import map into HTML content.
  * If an import map script already exists, it will be replaced.
- * Otherwise, it will be injected before the first script tag or at the end.
+ * Otherwise, it will be injected into the <head> so it's in a consistent
+ * position across all pages (important for CSR partial-update validation).
  */
 export const injectImportMap = (html: string, importMapJson: string): string => {
-	const importMapTag = `<script type="importmap">\n${importMapJson}\n</script>`;
+	const scriptId = `IMPORTMAP_${crypto.randomUUID()}`;
+	const importMapTag = `<script type="importmap" id="${scriptId}">\n${importMapJson}\n</script>`;
 
-	// Check if there's already an import map and replace it
-	const existingImportMapRegex = /<script\s+type="importmap"[^>]*>[\s\S]*?<\/script>/i;
-	if (existingImportMapRegex.test(html)) {
-		return html.replace(existingImportMapRegex, importMapTag);
+	// Check if we've already injected an import map (by our ID pattern) and replace it
+	const ownImportMapRegex = /<script\s+type="importmap"\s+id="IMPORTMAP_[^"]*"[^>]*>[\s\S]*?<\/script>/i;
+	if (ownImportMapRegex.test(html)) {
+		return html.replace(ownImportMapRegex, importMapTag);
 	}
 
-	// Otherwise inject before first script tag (skip HTML comments)
+	// Inject before </head> so the import map is always in a consistent position
+	const headCloseMatch = /<\/head>/i.exec(html);
+	if (headCloseMatch?.index !== undefined) {
+		return html.slice(0, headCloseMatch.index) + '\t' + importMapTag + '\n' + html.slice(headCloseMatch.index);
+	}
+
+	// Fallback: inject before first script tag (skip HTML comments)
 	let searchPos = 0;
 	while (searchPos < html.length) {
 		// Skip HTML comments
@@ -459,12 +467,6 @@ export const injectImportMap = (html: string, importMapJson: string): string => 
 		}
 		// Found a real <script outside of a comment
 		return html.slice(0, scriptPos) + importMapTag + '\n' + html.slice(scriptPos);
-	}
-
-	// No script tag found, inject before </head> if possible
-	const headCloseMatch = /<\/head>/i.exec(html);
-	if (headCloseMatch?.index !== undefined) {
-		return html.slice(0, headCloseMatch.index) + importMapTag + '\n' + html.slice(headCloseMatch.index);
 	}
 
 	// Last resort: add at the end
