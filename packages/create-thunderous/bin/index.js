@@ -162,7 +162,8 @@ function copyDirectoryContents(sourceDir, targetDir) {
 
 	for (const entry of fs.readdirSync(sourceDir, { withFileTypes: true })) {
 		const sourcePath = path.join(sourceDir, entry.name);
-		const targetPath = path.join(targetDir, entry.name);
+		const targetName = entry.name === 'gitignore' ? '.gitignore' : entry.name;
+		const targetPath = path.join(targetDir, targetName);
 
 		if (entry.isDirectory()) {
 			fs.cpSync(sourcePath, targetPath, { recursive: true });
