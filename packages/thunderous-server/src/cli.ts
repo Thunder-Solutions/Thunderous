@@ -1,6 +1,6 @@
 import { build } from './build';
 import nodemon from 'nodemon';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { config } from './config';
 import { relative, resolve } from 'path';
 import chalk from 'chalk';
@@ -9,8 +9,11 @@ const args = process.argv.slice(2);
 
 if (args[0] === 'dev') {
 	try {
-		const ignoreFile = readFileSync('.gitignore', 'utf-8');
-		const ignores = ignoreFile.split('\n').filter((line) => line.trim() !== '' && !line.startsWith('#'));
+		const ignores = existsSync('.gitignore')
+			? readFileSync('.gitignore', 'utf-8')
+					.split('\n')
+					.filter((line) => line.trim() !== '' && !line.startsWith('#'))
+			: [];
 
 		// Set up nodemon for auto-restart on server changes
 		if (process.env.NODE_ENV !== 'production') {
