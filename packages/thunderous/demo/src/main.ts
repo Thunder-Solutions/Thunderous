@@ -192,11 +192,11 @@ clientOnlyCallback(() => {
 
 	const myElement = document.querySelector('my-element')!;
 
-	document.querySelector('button')!.addEventListener('click', () => {
+	document.querySelector('button')?.addEventListener('click', () => {
 		const prev = myElement.getAttribute('heading');
 		myElement.setAttribute('heading', prev === 'title A' ? 'title B' : 'title A');
 	});
-	document.querySelector('#outer-count')!.addEventListener('click', () => {
+	document.querySelector('#outer-count')?.addEventListener('click', () => {
 		myElement.count = myElement.count + 1;
 		// myElement.setAttribute('count', String(myElement.count + 1));
 	});
