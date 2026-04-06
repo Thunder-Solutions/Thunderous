@@ -1,6 +1,6 @@
 {
 	"name": "thunderous-csr",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "",
 	"author": "Jonathan DeWitt <jon.dewitt@thunder.solutions>",
 	"license": "MIT",
@@ -44,6 +44,6 @@
 		"thunderous": "workspace:*"
 	},
 	"peerDependencies": {
-		"thunderous": "^2.4.1"
+		"thunderous": "^2.4.2"
 	}
 }
