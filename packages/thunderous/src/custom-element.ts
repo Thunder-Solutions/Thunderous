@@ -129,8 +129,10 @@ export const customElement = <Props extends CustomElementProps>(
 		#formResetCallbackFns = new Set<() => void>();
 		#formStateRestoreCallbackFns = new Set<() => void>();
 		#clientOnlyCallbackFns = new Set<() => void>();
-		#shadowRoot = attachShadow ? this.attachShadow(shadowRootOptions as ShadowRootInit) : null;
 		#internals = this.attachInternals();
+		#shadowRoot = attachShadow
+			? (this.#internals.shadowRoot ?? this.attachShadow(shadowRootOptions as ShadowRootInit))
+			: null;
 		#observer =
 			options?.observedAttributes !== undefined
 				? null
