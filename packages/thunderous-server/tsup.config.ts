@@ -7,6 +7,7 @@ export default defineConfig({
 	external: [
 		'thunderous',
 		'express',
+		'nodemon',
 		'typescript',
 		'es-module-lexer',
 		'resolve',

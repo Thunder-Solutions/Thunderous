@@ -19,12 +19,17 @@ export type ThunderousConfig = {
 	 * The output directory for builds.
 	 */
 	outDir: string;
+	/**
+	 * Non-configurable. The directory where the `thunderous.config.ts` file is located.
+	 */
+	readonly configDir: string | null;
 };
 
 const DEFAULT_CONFIG = Object.freeze({
 	name: 'Thunderous Project',
 	baseDir: 'src',
 	outDir: 'dist',
+	configDir: null,
 });
 
 /** Find and import the `thunderous.config.ts` file. */
@@ -47,6 +52,7 @@ const resolveConfig = (): ThunderousConfig => {
 				name: configOverrides.name ?? DEFAULT_CONFIG.name,
 				baseDir: configOverrides.baseDir?.replace(/^\/*/, '') ?? DEFAULT_CONFIG.baseDir,
 				outDir: configOverrides.outDir ?? DEFAULT_CONFIG.outDir,
+				configDir,
 			};
 		}
 		const parentDir = resolve(currentDir, '..');

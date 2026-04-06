@@ -1,7 +1,8 @@
 import express from 'express';
-import { readdirSync, statSync, mkdtempSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, statSync, mkdtempSync } from 'fs';
 import { join, relative, resolve } from 'path';
 import { tmpdir } from 'os';
+import { ModuleKind, ScriptTarget, transpileModule, ImportsNotUsedAsValues } from 'typescript';
 import { bootstrapThunderous, generateStaticTemplate, generateImportMap, injectImportMap } from './generate';
 import { config } from './config';
 import livereload from 'livereload';
@@ -32,7 +33,7 @@ const bootstrapRoutes = (dir: string, app: express.Express, vendorDir: string) =
 
 				// Generate import map if there are client entry files
 				if (result.clientEntryFiles.length > 0) {
-					const importMapJson = generateImportMap(result.clientEntryFiles);
+					const importMapJson = generateImportMap(result.clientEntryFiles, vendorDir);
 					markup = injectImportMap(markup, importMapJson);
 				}
 
@@ -81,6 +82,29 @@ export const dev = () => {
 	bootstrapThunderous();
 	bootstrapRoutes(`./${config.baseDir}`, app, vendorDir);
 
+	// Serve .js requests by transpiling the corresponding .ts source on-the-fly
+	app.use((req, res, next) => {
+		if (!req.path.endsWith('.js')) return next();
+		const tsPath = join(config.baseDir, req.path.replace(/\.js$/, '.ts'));
+		const tsxPath = join(config.baseDir, req.path.replace(/\.js$/, '.tsx'));
+		const srcPath = existsSync(tsPath) ? tsPath : existsSync(tsxPath) ? tsxPath : null;
+		if (srcPath === null) return next();
+		const source = readFileSync(srcPath, 'utf-8');
+		const { outputText } = transpileModule(source, {
+			compilerOptions: {
+				module: ModuleKind.ESNext,
+				target: ScriptTarget.ES2020,
+				sourceMap: false,
+				importsNotUsedAsValues: ImportsNotUsedAsValues.Remove,
+				verbatimModuleSyntax: true,
+				isolatedModules: true,
+			},
+			fileName: srcPath,
+			reportDiagnostics: false,
+		});
+		res.type('application/javascript').send(outputText);
+	});
+
 	// Serve static assets from the base directory
 	app.use(express.static(config.baseDir));
 
@@ -111,3 +135,6 @@ export const dev = () => {
 		});
 	});
 };
+
+// start directly, since this file is targeted directly by nodemon
+dev();
