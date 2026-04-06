@@ -17,6 +17,7 @@ const outRequire = createRequire(resolve(config.baseDir));
 // track state outside the function so that we only have to set one `onServerDefine` handler
 const renderState = {
 	markup: '',
+	insertedTags: new Set<string>(),
 };
 
 // ── Shared TypeScript compiler options (created once, reused everywhere) ──
@@ -43,6 +44,8 @@ export const bootstrapThunderous = () => {
 	const { insertTemplates, onServerDefine } = Thunderous;
 	// Update the markup each time a thunderous element is defined on the server
 	onServerDefine((tagName, innerHTML) => {
+		if (renderState.insertedTags.has(tagName)) return;
+		renderState.insertedTags.add(tagName);
 		renderState.markup = insertTemplates(
 			tagName,
 			innerHTML.replace(/\s+/gm, ' ').replace(/ >/g, '>'),
@@ -210,6 +213,7 @@ const extractTags = (markup: string) => {
  */
 export const generateStaticTemplate = (filePath: string) => {
 	renderState.markup = readFileSync(filePath, 'utf-8');
+	renderState.insertedTags.clear();
 
 	const name = basename(filePath, extname(filePath));
 
@@ -349,7 +353,10 @@ export const generateStaticTemplate = (filePath: string) => {
 			const js = transpileTs(`// @ts-nocheck\n${content}`, `${name}-${scriptIndex}.ts`);
 			const fixedJs = js
 				.replace(/(import\s+.+?\s+from\s+['"](?:\.\.?\/|\/)[^'"]+?)\.tsx?(['"])/gm, '$1.js$2')
-				.replace(/(import\s+.+?\s+from\s+['"](?:\.\.?\/|\/)[^'"]+?)(?<!\.m?js)(['"])/gm, '$1.js$2');
+				.replace(/(import\s+.+?\s+from\s+['"](?:\.\.?\/|\/)[^'"]+?)(?<!\.m?js)(['"])/gm, '$1.js$2')
+				// Convert relative ./ imports to absolute / so they resolve correctly
+				// regardless of the page's URL depth (e.g. /about/contact)
+				.replace(/(import\s+.+?\s+from\s+['"])\.\//gm, '$1/');
 			replacementMap.set(key, `<script type="module">\n${fixedJs}\n</script>`);
 
 			// Write .js to baseDir for vendorization (so relative imports resolve from source tree)
@@ -412,16 +419,17 @@ export const generateStaticTemplate = (filePath: string) => {
  * Generate import maps from entry files using vendorization.
  * Returns the import map JSON string that can be injected into HTML.
  */
-export const generateImportMap = (entryFiles: string[]): string => {
+export const generateImportMap = (entryFiles: string[], outputDir?: string): string => {
+	const outDir = outputDir ?? config.outDir;
 	if (entryFiles.length === 0) {
 		return JSON.stringify({ imports: {} }, null, 2);
 	}
 
 	console.log(`\x1b[90mVendorizing dependencies from ${entryFiles.length} entry file(s)...\x1b[0m`);
-	processNodeModules(entryFiles, config.outDir);
+	processNodeModules(entryFiles, outDir);
 	console.log(`\x1b[32m✓ Import map generated\x1b[0m`);
 
-	const importMapPath = join(config.outDir, 'importmap.json');
+	const importMapPath = join(outDir, 'importmap.json');
 	if (existsSync(importMapPath)) {
 		return readFileSync(importMapPath, 'utf-8');
 	}
