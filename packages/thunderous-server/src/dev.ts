@@ -52,7 +52,7 @@ const bootstrapRoutes = (dir: string, app: express.Express, vendorDir: string) =
 export const dev = () => {
 	console.log('\n\x1b[36m\x1b[1m⚡⚡ Starting development server... ⚡⚡\x1b[0m\x1b[0m\n');
 
-	const PORT = process.env['PORT'] ?? 3000;
+	const PORT = process.env.PORT ?? 3000;
 
 	// Set up simple express server
 	const app = express();

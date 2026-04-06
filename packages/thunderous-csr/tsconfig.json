@@ -1,16 +1,9 @@
 {
+	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"target": "ESNext",
-		"module": "ESNext",
-		"moduleResolution": "bundler",
-		"strict": true,
-		"esModuleInterop": true,
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true,
-		"outDir": "./dist",
 		"rootDir": "./src",
-		"types": ["dom-navigation"]
+		"types": ["dom-navigation"],
+		"typeRoots": ["../../node_modules/@types", "./node_modules/@types", "./types"]
 	},
-	"include": ["src"],
-	"exclude": ["node_modules", "__test__"]
+	"include": ["src"]
 }

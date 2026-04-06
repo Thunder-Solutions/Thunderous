@@ -13,7 +13,7 @@ if (args[0] === 'dev') {
 		const ignores = ignoreFile.split('\n').filter((line) => line.trim() !== '' && !line.startsWith('#'));
 
 		// Set up nodemon for auto-restart on server changes
-		if (process.env['NODE_ENV'] !== 'production') {
+		if (process.env.NODE_ENV !== 'production') {
 			nodemon({
 				script: resolve(`${import.meta.dirname}/dev.ts`),
 				ignore: ignores,

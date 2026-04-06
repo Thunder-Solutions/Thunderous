@@ -61,6 +61,7 @@ export const customElement = <Props extends CustomElementProps>(
 			) {
 				return shadowRootOptions.registry;
 			}
+			return undefined;
 		})();
 		return {
 			define(tagName) {

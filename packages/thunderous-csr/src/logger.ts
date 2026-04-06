@@ -10,5 +10,6 @@ export const logger = new Proxy(console, {
 				return value;
 			}
 		}
+		return value;
 	},
 });

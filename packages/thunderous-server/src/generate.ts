@@ -255,7 +255,8 @@ export const generateStaticTemplate = (filePath: string) => {
 	// ── Extract and apply layouts ──
 	const { layouts } = extractTags(renderState.markup);
 	for (let i = layouts.length - 1; i >= 0; i--) {
-		const l = layouts[i]!;
+		const l = layouts[i];
+		if (!l) continue;
 		renderState.markup = renderState.markup.slice(0, l.start) + renderState.markup.slice(l.end);
 	}
 	renderState.markup = renderState.markup.trim();
@@ -329,7 +330,7 @@ export const generateStaticTemplate = (filePath: string) => {
 				delete outRequire.cache[outRequire.resolve(tsScriptFile)];
 				module = outRequire(tsScriptFile);
 			}
-			const values = module['default'] ?? {};
+			const values = module.default ?? {};
 			for (const k in values) {
 				const val = (values as Record<string, unknown>)[k];
 				safeValues[k] = typeof val === 'string' ? escapeHtml(val) : val;
@@ -372,7 +373,8 @@ export const generateStaticTemplate = (filePath: string) => {
 	// ── Re-parse and apply all replacements in one reverse pass ──
 	const { scripts: freshScripts } = extractTags(renderState.markup);
 	for (let i = freshScripts.length - 1; i >= 0; i--) {
-		const script = freshScripts[i]!;
+		const script = freshScripts[i];
+		if (!script) continue;
 		const key = scriptKey(script);
 		const replacement = replacementMap.get(key);
 		if (replacement === undefined) continue;

@@ -1,7 +1,7 @@
 import { clientOnlyCallback } from 'thunderous';
 import { type ParsedDocument, parseHTML } from './render';
 import { validateHTML } from './validate';
-import { View, type ViewElement, viewRegistry } from './view';
+import { View, viewRegistry, type ViewElement } from './view';
 import { logger } from './logger';
 import { state } from './state';
 
@@ -38,8 +38,8 @@ const headElementKey = (el: Element): string => {
  * Identical elements are left in place to avoid FOUC.
  */
 const patchHead = (destHead: HTMLHeadElement) => {
-	const liveChildren = [...document.head.children];
-	const destChildren = [...destHead.children];
+	const liveChildren = Array.from(document.head.children);
+	const destChildren = Array.from(destHead.children);
 
 	// Build a map of destination elements keyed by identity
 	const destMap = new Map<string, Element[]>();
@@ -116,13 +116,13 @@ if (!globalThis.__GLOBAL_THUNDEROUS_VIEW_REGISTERED || parent.__GLOBAL_THUNDEROU
 							// a utility to render the entire document
 							const renderAll = () => {
 								return document.startViewTransition(() => {
-									document.body.replaceChildren(...destinationDocument.body.childNodes);
+									document.body.replaceChildren(...Array.from(destinationDocument.body.childNodes));
 								});
 							};
 
 							// collect all views currently in the document
 							const viewTagName = viewRegistry.getTagName(View) ?? 't-view';
-							const views = document.querySelectorAll(viewTagName) as NodeListOf<ViewElement>;
+							const views = document.querySelectorAll<ViewElement>(viewTagName);
 
 							// render everything if there's no views at all.
 							if (views.length === 0) {

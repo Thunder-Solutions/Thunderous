@@ -56,6 +56,7 @@ const metaState: Meta = {
 		name: '',
 		baseDir: '',
 		outDir: '',
+		configDir: null,
 	},
 	pathname: '/',
 	breadcrumbs: [],

@@ -63,12 +63,12 @@ export function processNodeModules(entryFiles: string[], outputDir?: string) {
 						// Prefer declared export for browser/import
 						const sub = resolveExports(pkg, '.', { conditions: CONDITIONS });
 						if (sub) {
-							pkg['main'] = sub;
+							pkg.main = sub;
 							return pkg;
 						}
 						// If no exports field, prefer "module" over "main" for ESM
-						if (pkg['module']) {
-							pkg['main'] = pkg['module'];
+						if (pkg.module) {
+							pkg.main = pkg.module;
 						}
 						// Otherwise fall back to pkg.main (default behavior)
 						return pkg;
@@ -108,7 +108,7 @@ function vendorizeFile(absPath: string, vendorRoot: string) {
 	// Find package root & metadata
 	const pkgRoot = findPkgRoot(absPath);
 	const pkg = JSON.parse(readFileSync(join(pkgRoot, 'package.json'), 'utf8')) as Record<string, string>;
-	const versionTag = `${pkg['name']!.replace('/', '__')}@${pkg['version']!}`;
+	const versionTag = `${pkg.name?.replace('/', '__') ?? 'unknown'}@${pkg.version ?? '0.0.0'}`;
 	const relFromPkg = relative(pkgRoot, absPath);
 	const outDir = join(vendorRoot, versionTag);
 	const outPath = join(outDir, relFromPkg.replace(/\.(ts|tsx)$/, '.js'));

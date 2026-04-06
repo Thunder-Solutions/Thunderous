@@ -130,11 +130,9 @@ export type Signal<T = unknown> = [SignalGetter<T>, SignalSetter<T>];
 export type SignalWithInit<T = unknown> = Signal<T> & { init: (value: T) => Signal<T> };
 
 // Flexible typing is necessary to support generic functions
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyFn = (...args: any[]) => any;
 
 export type HTMLCustomElement<T extends Record<PropertyKey, unknown>> = Omit<HTMLElement, keyof T> & T;
 
 // Again, flexible typing is necessary to support these generics
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Effect<T = any> = (args: { lastValue: T; destroy: () => void }) => T | void;
