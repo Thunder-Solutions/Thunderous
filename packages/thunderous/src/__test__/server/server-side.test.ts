@@ -12,7 +12,7 @@ import { describe, mock, it } from 'node:test';
 import assert from 'assert';
 import { createRegistry } from '../../registry';
 import { DEFAULT_RENDER_OPTIONS } from '../../constants';
-import { type ServerRenderOptions } from '../../types';
+import type { ServerRenderOptions } from '../../types.d.ts';
 import { NOOP } from '../../utilities';
 import { customElement } from '../../custom-element';
 import { html } from '../../render';

@@ -1,6 +1,6 @@
 {
 	"name": "thunderous",
-	"version": "2.4.1",
+	"version": "2.4.2",
 	"description": "A lightweight, functional web components library that brings the power of signals to your UI.",
 	"type": "module",
 	"main": "./dist/index.cjs",
@@ -35,7 +35,7 @@
 		"build": "tsup src/index.ts --format cjs,esm --dts --no-clean",
 		"test": "npm run test:server && npm run test:client",
 		"test:server": "find src/__test__/server -name '*.test.ts' | xargs c8 tsx --test",
-		"test:client": "playwright test",
+		"test:client": "PLAYWRIGHT_BROWSERS_PATH=../../.browsers playwright test",
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
