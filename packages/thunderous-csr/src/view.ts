@@ -93,7 +93,15 @@ export const View = customElement(
 
 			// Define navigation handlers
 			const handleNavigate = (event: NavigateEvent) => {
-				if (!event.canIntercept || getStatus() === 'pending') return;
+				if (
+					!event.canIntercept ||
+					getStatus() === 'pending' ||
+					event.destination.sameDocument ||
+					event.navigationType === 'reload'
+				) {
+					return;
+				}
+
 				setStatus('pending');
 				event.intercept({
 					async handler() {

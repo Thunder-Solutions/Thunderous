@@ -84,7 +84,7 @@ if (!globalThis.__GLOBAL_THUNDEROUS_VIEW_REGISTERED || parent.__GLOBAL_THUNDEROU
 	clientOnlyCallback(() => {
 		navigation.addEventListener('navigate', (event) => {
 			// Skip cross-origin and same-document navigations
-			if (!event.canIntercept || event.destination.sameDocument) return;
+			if (!event.canIntercept || event.destination.sameDocument || event.navigationType === 'reload') return;
 
 			// Intercept the navigation
 			event.intercept({
