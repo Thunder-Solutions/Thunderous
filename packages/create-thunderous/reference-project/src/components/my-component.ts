@@ -48,7 +48,7 @@ const stylesheet = css`
 		text-align: center;
 		position: relative;
 		overflow: hidden;
-		padding: 1.25em 1.5em;
+		padding: 2em 3em;
 		border-radius: 20px;
 		border: 1px solid var(--border);
 		background:
@@ -103,9 +103,9 @@ const stylesheet = css`
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.5rem;
-		margin-top: 1rem;
-		padding: 0.85rem 1.25rem;
+		gap: 0.5em;
+		margin: 1.5em 0 0.5em;
+		padding: 0.85em 1.25em;
 		border-radius: 999px;
 		border: 1px solid color-mix(in srgb, var(--border) 85%, white 15%);
 		background:

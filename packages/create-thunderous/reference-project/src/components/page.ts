@@ -1,37 +1,32 @@
 import { customElement, html, css } from 'thunderous';
 
-export const Page = customElement(
-	({ adoptStyleSheet, propSignals }) => {
-		adoptStyleSheet(stylesheet);
-		const { prominent } = propSignals;
-		const prominentClass = prominent ? 'prominent' : '';
-		return html`
-			<div class="page ${prominentClass}">
-				<header>
-					<slot name="header"></slot>
-					<nav class="header-nav">
-						<a href="/">Home</a>
-						<a href="/about">About Us</a>
-						<a href="/about/contact">Contact Us</a>
-					</nav>
-				</header>
-				<main>
-					<slot></slot>
-				</main>
-				<footer>
-					<nav class="footer-nav">
-						<a href="/">Home</a> | <a href="/about">About Us</a> | <a href="/about/contact">Contact Us</a>
-					</nav>
-					<slot name="footer"></slot>
-					<small>&copy; ${new Date().getFullYear()} &mdash; Powered by <a href="https://thunderous.dev">Thunderous</a></small>
-				</footer>
-			</div>
-		`;
-	},
-	{
-		attributesAsProperties: [['prominent', Boolean]],
-	},
-);
+export const Page = customElement(({ adoptStyleSheet }) => {
+	adoptStyleSheet(stylesheet);
+	return html`
+		<div class="page">
+			<header>
+				<slot name="header"></slot>
+				<nav class="header-nav">
+					<a href="/">Home</a>
+					<a href="/about">About Us</a>
+					<a href="/about/contact">Contact Us</a>
+				</nav>
+			</header>
+			<main>
+				<slot></slot>
+			</main>
+			<footer>
+				<nav class="footer-nav">
+					<a href="/">Home</a> | <a href="/about">About Us</a> | <a href="/about/contact">Contact Us</a>
+				</nav>
+				<slot name="footer"></slot>
+				<small
+					>&copy; ${new Date().getFullYear()} &mdash; Powered by <a href="https://thunderous.dev">Thunderous</a></small
+				>
+			</footer>
+		</div>
+	`;
+});
 
 const stylesheet = css`
 	:host {
@@ -69,7 +64,7 @@ const stylesheet = css`
 		-moz-osx-font-smoothing: grayscale;
 		-webkit-font-smoothing: antialiased;
 	}
-	.page.prominent {
+	:host([prominent]) .page {
 		align-items: center;
 	}
 	.header-nav {
@@ -148,10 +143,10 @@ const stylesheet = css`
 	}
 
 	header {
-		padding: 1em 1.5em;
+		padding: 1em 1.5em 0;
 	}
 	main {
-		padding: 3em 1.5em;
+		padding: 2em 1.5em 4em;
 	}
 
 	footer {

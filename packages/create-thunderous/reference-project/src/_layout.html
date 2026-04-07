@@ -6,46 +6,34 @@
 		<link rel="stylesheet" href="/global.css" />
 	</head>
 	<body>
-		<t-page>
-			<h1 slot="header">
-				<script expr>
-					title === '' ? 'Home' : title;
-				</script>
-			</h1>
+		<!-- This view element is used for CSR navigation, only this element will be replaced when navigating -->
+		<t-view id="main-content">
+			<x-page expr:prominent="pathname === '/'">
+				<h1 slot="header">
+					<script expr>
+						title === '' ? 'Home' : title;
+					</script>
+				</h1>
 
-			<!-- We can use multiple views to render different content in different regions - see main-content for more details -->
-			<t-view id="breadcrumbs">
 				<nav slot="header">
 					<p>
 						<script expr>
-							breadcrumbs.map(
-								(crumb, index) => html`
-									<a href="${crumb.pathname}">${crumb.name}</a>
-									${index < breadcrumbs.length - 1 ? html`<span> | </span>` : ''}
-								`,
-							);
+							breadcrumbs.map((crumb) => html`<x-crumb href="${crumb.pathname}">${crumb.name}</x-crumb>`);
 						</script>
 					</p>
 				</nav>
-			</t-view>
 
-			<!-- This view element is used for CSR navigation, only this element will be replaced when navigating -->
-			<t-view id="main-content">
 				<!-- This is where page content is inserted when this layout is used -->
 				<slot></slot>
-			</t-view>
-		</t-page>
+			</x-page>
+		</t-view>
 
-		<script isomorphic>
-			import { View } from 'thunderous-csr';
-			import { Page } from './components/page';
-			View.define('t-view');
-			Page.define('t-page');
-		</script>
+		<script isomorphic src="/component-registry.ts"></script>
 
-		<!-- This makes some handy data available to the template, like breadcrumbs -->
 		<script server>
 			import { getMeta } from 'thunderous-server';
+
+			// This makes some handy data available to the template, like breadcrumbs
 			export default getMeta();
 		</script>
 	</body>
