@@ -9,7 +9,7 @@
 	"packageManager": "pnpm@10.33.0",
 	"scripts": {
 		"postinstall": "test -d .browsers || PLAYWRIGHT_BROWSERS_PATH=.browsers/ playwright install",
-		"w:core": "cd packages/thunderous-core && pnpm",
+		"w:core": "cd packages/thunderous && pnpm",
 		"w:server": "cd packages/thunderous-server && pnpm",
 		"w:csr": "cd packages/thunderous-csr && pnpm",
 		"w:create": "cd packages/thunderous-create && pnpm",

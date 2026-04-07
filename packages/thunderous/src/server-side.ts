@@ -136,8 +136,9 @@ export const wrapTemplate = ({ tagName, serverRender, options }: WrapTemplateArg
 };
 
 export const insertTemplates = (tagName: string, template: string, inputString: string) => {
-	return inputString.replace(new RegExp(`(<\s*${tagName}([^>]*)>)`, 'gm'), ($1: string, _, $3: string) => {
-		const attrs = $3
+	const tagRegex = new RegExp(`<\\s*${tagName}((?:\\s+[^>]*)*)\\s*>`, 'gm');
+	return inputString.replace(tagRegex, ($match: string, $1: string) => {
+		const attrs = $1
 			.split(/(?<=")\s+/)
 			.filter((attr: string) => attr.trim() !== '')
 			.map((attr: string) => {
@@ -150,7 +151,7 @@ export const insertTemplates = (tagName: string, template: string, inputString: 
 		for (const [key, value] of attrs) {
 			scopedResult = scopedResult.replace(new RegExp(`{{attr:${key}}}`, 'gm'), value);
 		}
-		return $1 + scopedResult;
+		return $match + scopedResult;
 	});
 };
 
