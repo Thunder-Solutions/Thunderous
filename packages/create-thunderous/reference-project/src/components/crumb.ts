@@ -1,12 +1,15 @@
-import { css, customElement, html } from 'thunderous';
+import { createSignal, css, customElement, html } from 'thunderous';
+import { theme } from '../theme';
 
 export const Crumb = customElement(({ adoptStyleSheet, attrSignals }) => {
-	const { href } = attrSignals;
-	const [getHref] = href ?? [() => ''];
+	const [getHref] = attrSignals['href'] ?? createSignal('');
+
+	adoptStyleSheet(theme);
 	adoptStyleSheet(stylesheet);
+
 	return html`
 		<span class="crumb">
-			<a href=${getHref()}>
+			<a href="${getHref()}">
 				<slot></slot>
 			</a>
 		</span>
@@ -15,7 +18,7 @@ export const Crumb = customElement(({ adoptStyleSheet, attrSignals }) => {
 
 const stylesheet = css`
 	a {
-		color: var(--link);
+		color: var(--color-brand-1);
 		text-decoration: none;
 		font-weight: 600;
 		transition: color 180ms ease;
@@ -23,11 +26,11 @@ const stylesheet = css`
 
 	a:hover,
 	a:focus-visible {
-		color: var(--link-hover);
+		color: var(--color-brand-1-1);
 	}
 
 	a:focus-visible {
-		outline: 2px solid color-mix(in srgb, var(--link) 50%, white 20%);
+		outline: 2px solid color-mix(in srgb, var(--color-brand-1) 50%, white 20%);
 		outline-offset: 3px;
 		border-radius: 0.25rem;
 	}

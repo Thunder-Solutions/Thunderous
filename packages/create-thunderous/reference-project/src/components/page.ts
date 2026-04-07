@@ -1,7 +1,10 @@
 import { customElement, html, css } from 'thunderous';
+import { theme } from '../theme';
 
 export const Page = customElement(({ adoptStyleSheet }) => {
+	adoptStyleSheet(theme);
 	adoptStyleSheet(stylesheet);
+
 	return html`
 		<div class="page">
 			<header>
@@ -33,15 +36,6 @@ const stylesheet = css`
 		display: block;
 		height: 100%;
 		width: 100%;
-
-		--bg-1: rgba(255, 255, 255, 0.06);
-		--bg-2: rgba(255, 255, 255, 0.03);
-		--border: rgba(255, 255, 255, 0.1);
-		--text: #e5eefc;
-		--muted: #9fb0d1;
-		--link: #8fb4ff;
-		--link-hover: #2a4692;
-		--shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
 	}
 	.page {
 		display: grid;
@@ -50,10 +44,10 @@ const stylesheet = css`
 		min-width: 320px;
 		min-height: 100vh;
 		background:
-			radial-gradient(circle at top left, rgba(99, 102, 241, 0.22), transparent 30%),
-			radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.18), transparent 35%),
-			linear-gradient(180deg, #0f172a 0%, #111827 45%, #0b1120 100%);
-		color: #eaf2ff;
+			radial-gradient(circle at top left, var(--color-accent-1), transparent 30%),
+			radial-gradient(circle at bottom right, var(--color-accent-1-1), transparent 35%),
+			linear-gradient(180deg, var(--color-page-1) 0%, var(--color-page-1-1) 45%, var(--color-page-1-2) 100%);
+		color: var(--color-page-1-c);
 		font-family: 'Plus Jakarta Sans', Inter, ui-sans-serif, system-ui, sans-serif;
 		font-size: 1rem;
 		line-height: 1.6;
@@ -73,16 +67,16 @@ const stylesheet = css`
 		gap: 0.75rem;
 		align-items: center;
 		padding: 0.75rem 1rem;
-		border: 1px solid var(--border);
+		border: 1px solid var(--color-surface-1-2);
 		border-radius: 999px;
 		background: linear-gradient(
 			135deg,
-			color-mix(in srgb, var(--bg-1) 88%, transparent),
-			color-mix(in srgb, var(--bg-2) 92%, transparent)
+			color-mix(in srgb, var(--color-surface-1) 88%, transparent),
+			color-mix(in srgb, var(--color-surface-1-1) 92%, transparent)
 		);
 		backdrop-filter: blur(18px) saturate(160%);
 		-webkit-backdrop-filter: blur(18px) saturate(160%);
-		box-shadow: var(--shadow);
+		box-shadow: var(--shadow-1);
 	}
 
 	.header-nav a {
@@ -92,7 +86,7 @@ const stylesheet = css`
 		justify-content: center;
 		padding: 0.7rem 1rem;
 		border-radius: 999px;
-		color: var(--text);
+		color: var(--color-neutral-1);
 		font-weight: 600;
 		line-height: 1;
 		letter-spacing: 0.01em;
@@ -109,7 +103,7 @@ const stylesheet = css`
 		position: absolute;
 		inset: 0;
 		border-radius: inherit;
-		background: linear-gradient(135deg, var(--link), var(--link-hover));
+		background: linear-gradient(135deg, var(--color-brand-1), var(--color-brand-1-1));
 		opacity: 0;
 		transform: scale(0.96);
 		transition:
@@ -120,10 +114,10 @@ const stylesheet = css`
 
 	.header-nav a:hover,
 	.header-nav a:focus-visible {
-		color: var(--text);
+		color: var(--color-neutral-1);
 		transform: translateY(-1px);
 		box-shadow:
-			0 10px 24px color-mix(in srgb, var(--link-hover) 22%, transparent),
+			0 10px 24px color-mix(in srgb, var(--color-brand-1-1) 22%, transparent),
 			inset 0 1px 0 color-mix(in srgb, white 30%, transparent);
 	}
 
@@ -138,7 +132,7 @@ const stylesheet = css`
 	}
 
 	.header-nav a:focus-visible {
-		outline: 2px solid color-mix(in srgb, var(--link) 65%, white 35%);
+		outline: 2px solid color-mix(in srgb, var(--color-brand-1) 65%, white 35%);
 		outline-offset: 4px;
 	}
 
@@ -154,9 +148,9 @@ const stylesheet = css`
 		place-items: center;
 		gap: 1.5rem;
 		padding: 2rem 1.5rem;
-		border-top: 1px solid var(--border);
-		background: linear-gradient(180deg, var(--bg-2), transparent);
-		color: var(--muted);
+		border-top: 1px solid var(--color-surface-1-2);
+		background: linear-gradient(180deg, var(--color-surface-1-1), transparent);
+		color: var(--color-neutral-1-1);
 	}
 
 	.footer-nav {
@@ -179,7 +173,7 @@ const stylesheet = css`
 		align-items: center;
 		padding: 0.35rem 0.2rem;
 		border-radius: 0.5rem;
-		color: var(--muted);
+		color: var(--color-neutral-1-1);
 		font-weight: 500;
 		text-decoration: none;
 		transition:
@@ -193,8 +187,8 @@ const stylesheet = css`
 
 	.footer-nav a:hover,
 	.footer-nav a:focus-visible {
-		color: var(--text);
-		background: color-mix(in srgb, var(--bg-1) 70%, transparent);
+		color: var(--color-neutral-1);
+		background: color-mix(in srgb, var(--color-surface-1) 70%, transparent);
 		box-shadow: none;
 		transform: none;
 	}
@@ -204,19 +198,19 @@ const stylesheet = css`
 	}
 
 	.footer-nav a:focus-visible {
-		outline: 2px solid color-mix(in srgb, var(--link) 50%, white 20%);
+		outline: 2px solid color-mix(in srgb, var(--color-brand-1) 50%, white 20%);
 		outline-offset: 3px;
 	}
 
 	footer small {
 		display: block;
-		color: var(--muted);
+		color: var(--color-neutral-1-1);
 		font-size: 0.875rem;
 		line-height: 1.6;
 	}
 
 	footer small a {
-		color: var(--link);
+		color: var(--color-brand-1);
 		text-decoration: none;
 		font-weight: 600;
 		transition: color 180ms ease;
@@ -224,11 +218,11 @@ const stylesheet = css`
 
 	footer small a:hover,
 	footer small a:focus-visible {
-		color: var(--link-hover);
+		color: var(--color-brand-1-1);
 	}
 
 	footer small a:focus-visible {
-		outline: 2px solid color-mix(in srgb, var(--link) 50%, white 20%);
+		outline: 2px solid color-mix(in srgb, var(--color-brand-1) 50%, white 20%);
 		outline-offset: 3px;
 		border-radius: 0.25rem;
 	}

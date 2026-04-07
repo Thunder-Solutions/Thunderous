@@ -1,14 +1,17 @@
-import { customElement, html, css } from 'thunderous';
+import { customElement, html, css, createSignal } from 'thunderous';
+import { theme } from '../theme';
 
-export const MyComponent = customElement(({ clientOnlyCallback, adoptStyleSheet }) => {
-	clientOnlyCallback(() => {
-		console.log('MyComponent has been mounted on the client side.');
-	});
+export const Feature = customElement(({ adoptStyleSheet, attrSignals }) => {
+	const [getHref] = attrSignals['href'] ?? createSignal('');
+	const [getButtonText] = attrSignals['buttontext'] ?? createSignal('Learn More');
+
+	adoptStyleSheet(theme);
 	adoptStyleSheet(stylesheet);
+
 	return html`
-		<div class="my-component">
+		<div class="feature">
 			<slot></slot>
-			<a href="https://thunderous.dev">Learn More</a>
+			${getHref() !== '' ? html`<a href=${getHref()}>${getButtonText()}</a>` : ''}
 		</div>
 	`;
 });
@@ -17,53 +20,33 @@ const stylesheet = css`
 	:host {
 		display: block;
 		font-size: 2rem;
-
-		--bg-1: rgba(255, 255, 255, 0.72);
-		--bg-2: rgba(255, 255, 255, 0.5);
-		--border: rgba(255, 255, 255, 0.35);
-		--text: #1e293b;
-		--muted: #b8c7e6;
-		--link: #7dd3fc;
-		--link-hover: #c4b5fd;
-		--shadow: 0 18px 50px rgba(15, 23, 42, 0.35);
-
-		@media (prefers-color-scheme: light) {
-			--bg-1: rgba(255, 255, 255, 0.88);
-			--bg-2: rgba(240, 249, 255, 0.74);
-			--border: rgba(99, 102, 241, 0.16);
-			--text: #1e293b;
-			--muted: #475569;
-			--link: #2563eb;
-			--link-hover: #7c3aed;
-			--shadow: 0 18px 40px rgba(51, 65, 85, 0.14);
-		}
 	}
 
 	::slotted(*) {
 		margin: 0;
-		color: var(--text);
+		color: var(--color-neutral-2);
 	}
 
-	.my-component {
+	.feature {
 		text-align: center;
 		position: relative;
 		overflow: hidden;
 		padding: 2em 3em;
 		border-radius: 20px;
-		border: 1px solid var(--border);
+		border: 1px solid var(--color-surface-2-2);
 		background:
 			linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(14, 165, 233, 0.16)),
-			linear-gradient(180deg, var(--bg-1), var(--bg-2));
+			linear-gradient(180deg, var(--color-surface-2), var(--color-surface-2-1));
 		backdrop-filter: blur(18px) saturate(160%);
 		-webkit-backdrop-filter: blur(18px) saturate(160%);
-		box-shadow: var(--shadow);
+		box-shadow: var(--shadow-2);
 		isolation: isolate;
 		margin: 1em auto;
 		max-width: 20em;
 	}
 
-	.my-component::before,
-	.my-component::after {
+	.feature::before,
+	.feature::after {
 		content: '';
 		position: absolute;
 		inset: auto;
@@ -74,7 +57,7 @@ const stylesheet = css`
 		pointer-events: none;
 	}
 
-	.my-component::before {
+	.feature::before {
 		top: -60px;
 		right: -40px;
 		width: 180px;
@@ -82,7 +65,7 @@ const stylesheet = css`
 		background: radial-gradient(circle, rgba(125, 211, 252, 0.35), transparent 65%);
 	}
 
-	.my-component::after {
+	.feature::after {
 		bottom: -70px;
 		left: -30px;
 		width: 160px;
@@ -90,16 +73,16 @@ const stylesheet = css`
 		background: radial-gradient(circle, rgba(196, 181, 253, 0.28), transparent 65%);
 	}
 
-	.my-component p {
+	.feature p {
 		margin: 0;
 		font-size: 1rem;
 		line-height: 1.75;
 		letter-spacing: 0.01em;
-		color: var(--text);
+		color: var(--color-neutral-2);
 		text-wrap: pretty;
 	}
 
-	.my-component a {
+	.feature a {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -107,13 +90,14 @@ const stylesheet = css`
 		margin: 1.5em 0 0.5em;
 		padding: 0.85em 1.25em;
 		border-radius: 999px;
-		border: 1px solid color-mix(in srgb, var(--border) 85%, white 15%);
+		border: 1px solid color-mix(in srgb, var(--color-surface-2-2) 85%, white 15%);
 		background:
-			linear-gradient(135deg, var(--link), var(--link-hover)), linear-gradient(180deg, var(--bg-1), var(--bg-2));
+			linear-gradient(135deg, var(--color-brand-2), var(--color-brand-2-1)),
+			linear-gradient(180deg, var(--color-surface-2), var(--color-surface-2-1));
 		box-shadow:
-			0 10px 30px color-mix(in srgb, var(--link-hover) 28%, transparent),
+			0 10px 30px color-mix(in srgb, var(--color-brand-2-1) 28%, transparent),
 			inset 0 1px 0 color-mix(in srgb, white 35%, transparent);
-		color: var(--text);
+		color: var(--color-neutral-2);
 		font-weight: 700;
 		line-height: 1;
 		letter-spacing: 0.01em;
@@ -127,37 +111,37 @@ const stylesheet = css`
 			color 180ms ease;
 	}
 
-	.my-component a:hover,
-	.my-component a:focus-visible {
+	.feature a:hover,
+	.feature a:focus-visible {
 		transform: translateY(-2px);
 		filter: brightness(1.05);
-		border-color: color-mix(in srgb, var(--link) 55%, var(--border));
+		border-color: color-mix(in srgb, var(--color-brand-2) 55%, var(--color-surface-2-2));
 		box-shadow:
-			0 16px 36px color-mix(in srgb, var(--link-hover) 36%, transparent),
+			0 16px 36px color-mix(in srgb, var(--color-brand-2-1) 36%, transparent),
 			inset 0 1px 0 color-mix(in srgb, white 45%, transparent);
-		color: var(--text);
+		color: var(--color-neutral-2);
 	}
 
-	.my-component a:active {
+	.feature a:active {
 		transform: translateY(0);
 		box-shadow:
-			0 8px 20px color-mix(in srgb, var(--link-hover) 22%, transparent),
+			0 8px 20px color-mix(in srgb, var(--color-brand-2-1) 22%, transparent),
 			inset 0 1px 0 color-mix(in srgb, white 25%, transparent);
 	}
 
-	.my-component a:focus-visible {
-		outline: 2px solid color-mix(in srgb, var(--link) 65%, white 35%);
+	.feature a:focus-visible {
+		outline: 2px solid color-mix(in srgb, var(--color-brand-2) 65%, white 35%);
 		outline-offset: 4px;
 	}
 
-	.my-component a::after {
+	.feature a::after {
 		content: '→';
 		font-size: 0.95em;
 		transition: transform 180ms ease;
 	}
 
-	.my-component a:hover::after,
-	.my-component a:focus-visible::after {
+	.feature a:hover::after,
+	.feature a:focus-visible::after {
 		transform: translateX(3px);
 	}
 `;

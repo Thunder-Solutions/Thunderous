@@ -1,11 +1,11 @@
 <?layout href="_layout.html">
 
-<my-component>
+<x-feature href="https://thunderous.dev" buttontext="Read the Docs">
 	<script expr>
 		// These <script expr> tags are evaluated in-place as expressions and replaced by the result.
 		html`<p>The ${stack} stack is dead simple and feels like there's no framework at all.</p>`;
 	</script>
-</my-component>
+</x-feature>
 
 <script>
 	// This is ordinary client-only code.
@@ -23,10 +23,10 @@
 	// This code runs on both the client and server.
 	// Isomorphic scripts are always modules.
 	// Since it runs on the client, it will also vendorize NPM dependencies.
-	import { MyComponent } from './components/my-component';
+	import { Feature } from './components/feature';
 
 	// Thunderous components render declarative shadow DOM when defined on the server.
-	MyComponent.define('my-component');
+	Feature.define('x-feature');
 </script>
 
 <script server>
