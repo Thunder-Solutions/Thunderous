@@ -51,7 +51,7 @@ export const bootstrapThunderous = () => {
 			innerHTML.replace(/\s+/gm, ' ').replace(/ >/g, '>'),
 			renderState.markup,
 		);
-		console.log(`\x1b[90mInserted template for <${tagName}> into markup.\x1b[0m`);
+		console.log(`\x1b[90m  |--- Inserted SSR template for <${tagName}> into markup.\x1b[0m`);
 	});
 };
 
@@ -212,6 +212,8 @@ const extractTags = (markup: string) => {
  * ```
  */
 export const generateStaticTemplate = (filePath: string) => {
+	const configDir = config.configDir ?? process.cwd();
+	console.log(`Building: ${relative(configDir, filePath)}`);
 	renderState.markup = readFileSync(filePath, 'utf-8');
 	renderState.insertedTags.clear();
 
@@ -280,7 +282,9 @@ export const generateStaticTemplate = (filePath: string) => {
 		}
 		renderState.markup =
 			layoutContent.slice(0, slotIndex) + renderState.markup + layoutContent.slice(slotIndex + slotTag.length);
-		console.log(`\x1b[90mApplied layout: ${layout.href}\x1b[0m`);
+
+		const absLayoutPath = resolve(dirname(filePath), layout.href);
+		console.log(`\x1b[90m  | Applied layout: ${relative(configDir, absLayoutPath)}\x1b[0m`);
 	}
 	// ── Extract and process scripts ──
 	const { scripts } = extractTags(renderState.markup);
@@ -440,7 +444,7 @@ export const generateStaticTemplate = (filePath: string) => {
 						if (value === true) return ` ${attrName}`;
 						return ` ${attrName}="${escapeHtml(String(value))}"`;
 					} catch (e) {
-						console.warn(`\x1b[33mWarning: Failed to evaluate expr:${attrName}="${expression}": ${e}\x1b[0m`);
+						console.warn(`\x1b[33mWarning: Failed to evaluate expr:${attrName}="${expression}":\x1b[0m`, e);
 						return '';
 					}
 				},
@@ -450,6 +454,7 @@ export const generateStaticTemplate = (filePath: string) => {
 	);
 
 	renderState.markup = renderState.markup.trim();
+	console.log('');
 
 	// Return the final rendered markup, client entry files, and cleanup function
 	return {

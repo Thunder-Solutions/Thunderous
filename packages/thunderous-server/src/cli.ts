@@ -1,48 +1,31 @@
 import { build } from './build';
-import nodemon from 'nodemon';
-import { existsSync, readFileSync } from 'fs';
-import { config } from './config';
-import { relative, resolve } from 'path';
-import chalk from 'chalk';
 
 const args = process.argv.slice(2);
 
 if (args[0] === 'dev') {
-	try {
-		const ignores = existsSync('.gitignore')
-			? readFileSync('.gitignore', 'utf-8')
-					.split('\n')
-					.filter((line) => line.trim() !== '' && !line.startsWith('#'))
-			: [];
-
-		// Set up nodemon for auto-restart on server changes
-		if (process.env.NODE_ENV !== 'production') {
-			nodemon({
-				script: resolve(`${import.meta.dirname}/dev.ts`),
-				ignore: ignores,
-				watch: [config.baseDir],
-				exec: 'tsx',
-			});
-
-			nodemon
-				.on('start', () => {
-					// console.log('App has started');
-				})
-				.on('quit', () => {
-					console.log(chalk.green('\nServer shut down successfully.\n'));
-					process.exit();
-				})
-				.on('restart', (files) => {
-					const filesList = (files ?? ['(none)']).map(
-						(file) => `  • ${chalk.cyan.underline(relative(config.configDir ?? process.cwd(), file))}\n`,
-					);
-					console.log('\nUpdates detected:\n', filesList.join(''));
-				});
+	// Parse port from command line arguments
+	process.env.PORT = process.env.PORT ?? '3000';
+	args.forEach((arg, i) => {
+		if (arg.startsWith('--port')) {
+			let port: string | undefined;
+			if (arg.includes('=')) {
+				port = arg.split('=')[1];
+			} else {
+				port = args[i + 1];
+			}
+			if (port !== '' && port !== undefined) {
+				process.env.PORT = port;
+			}
 		}
-	} catch (error) {
-		console.error('\x1b[31mFailed to start server:\x1b[0m', error);
-		process.exit(1);
-	}
+	});
+
+	// Vite handles HMR, port finding, and file watching
+	import('./dev')
+		.then(({ dev }) => dev())
+		.catch((error) => {
+			console.error('\x1b[31mFailed to start server:\x1b[0m', error);
+			process.exit(1);
+		});
 } else if (args[0] === 'build') {
 	try {
 		build();
