@@ -12,7 +12,7 @@
 		"w:core": "cd packages/thunderous && pnpm",
 		"w:server": "cd packages/thunderous-server && pnpm",
 		"w:csr": "cd packages/thunderous-csr && pnpm",
-		"w:create": "cd packages/thunderous-create && pnpm",
+		"w:create": "cd packages/create-thunderous && pnpm",
 		"www": "cd www && pnpm dev"
 	},
 	"devDependencies": {

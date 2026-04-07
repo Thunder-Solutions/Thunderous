@@ -35,7 +35,7 @@
 		"undici-types": "^7.16.0"
 	},
 	"dependencies": {
-		"thunderous": "^2.4.2",
+		"thunderous": "^2.4.3",
 		"thunderous-csr": "^0.0.3"
 	}
 }
