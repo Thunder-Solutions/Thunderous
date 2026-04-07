@@ -141,6 +141,18 @@ await describe('insertTemplates', async () => {
 
 		assert.strictEqual(result, expectedResult);
 	});
+	await it('does NOT capture similar tags, only exact matches', () => {
+		const inputString = /* html */ `<my-element-7-other></my-element-7-other>`;
+		const template = /* html */ `<div>Hello, world!</div>`;
+
+		const result = stripWhitespace(insertTemplates('my-element-7', template, inputString));
+
+		const expectedResult = stripWhitespace(/* html */ `
+			<my-element-7-other></my-element-7-other>
+		`);
+
+		assert.strictEqual(result, expectedResult);
+	});
 	await it('inserts the template into the input string and parses attribute references', () => {
 		const inputString = /* html */ `<my-element-8 test="Hello, world!"></my-element-8>`;
 		const template = /* html */ `<div>{{attr:test}}</div>`;
