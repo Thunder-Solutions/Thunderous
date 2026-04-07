@@ -55,11 +55,28 @@ export const bootstrapThunderous = () => {
 	});
 };
 
+/** Rewrite relative import specifiers so the browser can resolve them (e.g. '../theme' → '../theme.js'). */
+const rewriteRelativeImports = (code: string, jsFilePath: string): string =>
+	code.replace(
+		/((?:^|[\s;,])(?:import|export)\s.*?from\s+['"])([^'"]+)(['"])/gm,
+		(_match, prefix: string, spec: string, suffix: string) => {
+			if (!spec.startsWith('.')) return `${prefix}${spec}${suffix}`;
+			if (/\.[a-z]+$/i.test(spec)) return `${prefix}${spec}${suffix}`;
+			const dir = dirname(jsFilePath);
+			if (existsSync(join(dir, spec + '.js')) || existsSync(join(dir, spec, 'index.js'))) {
+				const resolved = existsSync(join(dir, spec + '.js')) ? spec + '.js' : spec + '/index.js';
+				return `${prefix}${resolved}${suffix}`;
+			}
+			return `${prefix}${spec}.js${suffix}`;
+		},
+	);
+
 /** Transpile a .ts file on disk to .js, writing the output next to it. Returns the .js path. */
 export const transpileTsFile = (tsFilePath: string) => {
 	const source = readFileSync(tsFilePath, 'utf-8');
-	const js = transpileTs(source, basename(tsFilePath));
+	let js = transpileTs(source, basename(tsFilePath));
 	const jsPath = tsFilePath.replace(/\.ts$/, '.js');
+	js = rewriteRelativeImports(js, jsPath);
 	writeFileSync(jsPath, js, 'utf-8');
 	rmSync(tsFilePath);
 	return jsPath;

@@ -42,7 +42,12 @@ export const build = () => {
 
 	cpSync(baseDir, outDir, {
 		recursive: true,
-		filter: (src) => !/\.server\.(ts|js)$/.test(src),
+		filter: (src) => {
+			const name = src.split('/').pop() ?? '';
+			if (name.startsWith('_')) return false;
+			if (/\.server\.(ts|mts|cts|tsx|js|mjs|cjs|jsx)$/.test(name)) return false;
+			return true;
+		},
 	});
 	bootstrapThunderous();
 
