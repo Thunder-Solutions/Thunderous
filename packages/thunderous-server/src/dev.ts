@@ -8,11 +8,7 @@ export const dev = async () => {
 		root: resolve(config.baseDir),
 		plugins: [thunderousPlugin()],
 		server: {
-			port: Number(process.env.PORT) || 3000,
-			watch: {
-				// Ignore temp files written by generateStaticTemplate
-				ignored: ['**/*.tmp.*'],
-			},
+			port: Number(process.env.PORT ?? '3000'),
 		},
 	});
 
