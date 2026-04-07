@@ -1,28 +1,12 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<script>
-			history.replaceState({}, '', '/404');
-		</script>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta
-			name="description"
-			content="Thunderous is a functional-style web component authoring library, supercharged with signals!"
-		/>
-		<meta property="og:image" content="/meta.png" />
-		<meta name="twitter:image" content="/meta.png" />
-		<title>Thunderous</title>
-		<link rel="stylesheet" href="/global.css" />
-		<link rel="favicon" href="/favicon.ico" />
-	</head>
-	<body>
-		<th-page>
-			<th-error-message heading="404 | Not Found">
-				<p>The page you are looking for does not exist. Please check the URL and try again.</p>
-			</th-error-message>
-			<th-footer slot="footer"></th-footer>
-		</th-page>
-		<script type="module" src="/main.ts"></script>
-	</body>
-</html>
+<?layout href="_layout.html">
+
+<script>
+	history.replaceState({}, '', '/404');
+</script>
+
+<th-page>
+	<th-error-message heading="404 | Not Found">
+		<p>The page you are looking for does not exist. Please check the URL and try again.</p>
+	</th-error-message>
+	<th-footer slot="footer"></th-footer>
+</th-page>

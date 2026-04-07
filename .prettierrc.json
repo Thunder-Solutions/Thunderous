@@ -10,6 +10,12 @@
 				"printWidth": 80,
 				"useTabs": false
 			}
+		},
+		{
+			"files": "*.html",
+			"options": {
+				"htmlWhitespaceSensitivity": "css"
+			}
 		}
 	]
 }

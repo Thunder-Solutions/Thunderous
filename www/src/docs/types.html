@@ -1,0 +1,53 @@
+<?layout href="../_layout.html">
+
+<th-doc-page>
+	<th-page-header>Types</th-page-header>
+	<th-content-group>
+		<th-text> Thunderous is written in TypeScript, and some types are exported for convenience. </th-text>
+		<ul>
+			<li>
+				<th-content-group>
+					<th-text>
+						<th-code>HTMLCustomElement</th-code> - A generic type that represents the HTMLElement and additional
+						properties.
+					</th-text>
+					<th-code-block lang="ts">
+						<script expr>
+							snippetAsHTML('types-html-custom-element.ts');
+						</script>
+					</th-code-block>
+				</th-content-group>
+			</li>
+			<li>
+				<th-content-group>
+					<th-text>
+						<th-code>Signal</th-code>, <th-code>SignalSetter</th-code>, and <th-code>SignalGetter</th-code> - Types that
+						represent the signal and its setter and getter functions.
+					</th-text>
+					<th-code-block lang="ts">
+						<script expr>
+							snippetAsHTML('types-signals.ts');
+						</script>
+					</th-code-block>
+				</th-content-group>
+			</li>
+			<li>
+				<th-content-group>
+					<th-text>
+						<th-code>RenderFunction</th-code> and <th-code>RenderArgs</th-code> - Types that represent the render
+						function and its arguments.
+					</th-text>
+					<th-code-block lang="ts">
+						<script expr>
+							snippetAsHTML('types-render.ts');
+						</script>
+					</th-code-block>
+				</th-content-group>
+			</li>
+		</ul>
+	</th-content-group>
+</th-doc-page>
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

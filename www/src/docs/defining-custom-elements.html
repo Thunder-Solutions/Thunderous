@@ -1,0 +1,61 @@
+<?layout href="../_layout.html">
+
+<th-doc-page>
+	<th-page-header>Defining Custom Elements</th-page-header>
+	<th-content-group>
+		<th-text>
+			The <th-code>customElement()</th-code> function allows you to author a web component, returning an
+			<th-code>ElementResult</th-code> that has some helpful methods like <th-code>define()</th-code> and
+			<th-code>eject()</th-code>.
+		</th-text>
+		<ul>
+			<li>
+				<th-text>
+					<th-code>ElementResult.define()</th-code> is a little safer than
+					<th-code>customElements.define()</th-code> because it first checks if the component was already defined,
+					without throwing an error. It will, however, log a warning. There's no need to pass the element class since it
+					already has that information, but you may pass
+					<th-link href="https://developer.mozilla.org/en-US/docs/Web/API/CustomElementRegistry/define#options">
+						<th-code>ElementDefinitionOptions</th-code>
+					</th-link>
+					as the second argument if necessary.
+				</th-text>
+				<th-code-block lang="ts">
+					<script expr>
+						snippetAsHTML('defining-custom-elements.ts');
+					</script>
+				</th-code-block>
+			</li>
+			<li>
+				<th-text>
+					<th-code>ElementResult.eject()</th-code> is useful in case you need to access the underlying class for some
+					reason; perhaps you want to extend it and/or set static properties.
+				</th-text>
+				<th-code-block lang="ts">
+					<script expr>
+						snippetAsHTML('eject.ts');
+					</script>
+				</th-code-block>
+			</li>
+			<li>
+				<th-text>
+					<th-code>ElementResult.register()</th-code> allows you to register the custom element with a registry. See
+					<th-link href="/docs/registries">Registries</th-link> for more information.
+				</th-text>
+				<th-code-block lang="ts">
+					<script expr>
+						snippetAsHTML('registry.ts');
+					</script>
+				</th-code-block>
+			</li>
+		</ul>
+		<th-text>
+			These may also be chained together, like
+			<th-code>MyElement.register(registry).define('my-element').eject()</th-code>.
+		</th-text>
+	</th-content-group>
+</th-doc-page>
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

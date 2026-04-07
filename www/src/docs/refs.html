@@ -1,0 +1,20 @@
+<?layout href="../_layout.html">
+
+<th-doc-page>
+	<th-page-header>Refs</th-page-header>
+	<th-content-group>
+		<th-text>
+			The refs property exists for convenience to avoid manually querying the DOM. Since the DOM is only available after
+			rendering, refs will be null until the <th-code>connectedCallback</th-code> runs in the lifecycle.
+		</th-text>
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('refs.ts');
+			</script>
+		</th-code-block>
+	</th-content-group>
+</th-doc-page>
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

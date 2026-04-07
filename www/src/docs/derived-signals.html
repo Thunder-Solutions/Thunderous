@@ -1,0 +1,21 @@
+<?layout href="../_layout.html">
+
+<th-doc-page>
+	<th-page-header>Derived Signals</th-page-header>
+	<th-content-group>
+		<th-text>
+			If you want to calculate a value based on another signal's value, you should use the
+			<th-code>derived()</th-code> function. This signal will trigger its subscribers each time the signals inside
+			change.
+		</th-text>
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('derived-signals.ts');
+			</script>
+		</th-code-block>
+	</th-content-group>
+</th-doc-page>
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

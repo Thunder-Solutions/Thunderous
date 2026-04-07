@@ -1,0 +1,48 @@
+<?layout href="../_layout.html">
+
+<th-doc-page>
+	<th-page-header>Attribute Signals</th-page-header>
+	<th-content-group>
+		<th-text>
+			By default, each element is observed with a <th-code>MutationObserver</th-code> watching all attributes. Changes
+			to <em>any</em> attribute trigger the <th-code>attributeChangedCallback</th-code> and you can access all
+			attributes as signals. This makes it much less cumbersome to write reactive attributes.
+		</th-text>
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('attribute-signals.ts');
+			</script>
+		</th-code-block>
+
+		<th-text>
+			However, the <th-code>MutationObserver</th-code> does impose a small performance tradeoff that may add up if you
+			render a lot of elements. To better optimize for performance, you can pass
+			<th-code>observedAttributes</th-code> to the options. Doing so will disable the
+			<th-code>MutationObserver</th-code>, and only the observed attributes will trigger the
+			<th-code>attributeChangedCallback</th-code>.
+		</th-text>
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('observed-attributes.ts');
+			</script>
+		</th-code-block>
+		<th-text>Usage:</th-text>
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('attributes-usage.html');
+			</script>
+		</th-code-block>
+		<th-block-quote>
+			NOTICE: Since <th-code>attrSignals</th-code> is a <th-code>Proxy</th-code> object, <em>any</em> property will
+			return a signal and auto-bind it to the attribute it corresponds with.
+		</th-block-quote>
+		<th-text>
+			For information on syncing attributes with properties, see the
+			<th-link href="/docs/property-signals">Property Signals</th-link> documentation.
+		</th-text>
+	</th-content-group>
+</th-doc-page>
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

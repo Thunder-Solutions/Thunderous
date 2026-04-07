@@ -1,112 +1,94 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<script>
-			// dev-only scripts
-			(() => {
-				if (!location.host.startsWith('localhost')) return;
-				if (!location.pathname.endsWith('/')) {
-					location.href = location.href + '/';
-					return;
-				}
-				if (location.pathname !== '/' && !location.pathname !== '/404.html') {
-					location.href = '/404.html';
-					return;
-				}
-			})();
-		</script>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta
-			name="description"
-			content="Thunderous is a functional-style web component authoring library, supercharged with signals!"
-		/>
-		<meta property="og:image" content="/meta.png" />
-		<meta name="twitter:image" content="/meta.png" />
-		<title>Thunderous</title>
-		<link rel="stylesheet" href="/global.css" />
-		<link rel="favicon" href="/favicon.ico" />
-	</head>
-	<body>
-		<th-page splash>
-			<th-splash slot="header"></th-splash>
-			<th-marketing-content>
-				<th-code-block lang="ts"><%= include('_code-snippets/usage.ejs') %></th-code-block>
-				<th-marketing-content>
-					<th-heading><h2>Why Thunderous?</h2></th-heading>
-					<th-text>
-						Unlike web component frameworks, the Thunderous library doesn't impose a particular approach to building
-						entire applications. Instead, it provides a set of tools to help you build interoperable web components that
-						can be used in any framework or vanilla JavaScript.
-					</th-text>
-					<th-text>
-						Thunderous works best for building component libraries as design systems. Components may be distributed
-						through standalone packages to be consumed by multiple projects. It's designed to be agnostic, even offering
-						a standard way to defer the tag name definitions until the components are used by the consumer, with
-						<th-link href="/docs/registries">registries</th-link>.
-					</th-text>
-					<th-text>
-						The biggest advantage Thunderous provides over similar libraries is its "render-once" approach and
-						fine-grained reactivity; <th-link href="/docs/binding-signals">signals bind to templates</th-link> and apply
-						changes directly where needed. Putting aside the performance benefits, this approach also avoids the
-						complexity and cognitive burden of additional lifecycle methods. It's a more natural way to write
-						JavaScript.
-					</th-text>
-				</th-marketing-content>
-				<th-marketing-content>
-					<th-heading><h2>Why Functions?</h2></th-heading>
-					<th-text>
-						With the rising popularity of functional components in modern frameworks, Thunderous provides a familiar and
-						more approachable DX for web components - a common complaint among developers. This shared experience can
-						largely be attributed to the fact that functions are more concise and easier to reason about than classes.
-						For example:
-					</th-text>
-					<ul>
-						<li>There's less boilerplate code to write</li>
-						<li>One scope is easier to manage than several smaller scopes</li>
-						<li>Class methods are in danger of losing their binding context</li>
-						<li>Repetition may be necessary for each method's scope</li>
-						<li>Encapsulation tends to be stronger in function closures than in classes</li>
-						<li>Functions are more predictable and less prone to side effects</li>
-					</ul>
-					<th-text>
-						While functions may deviate from the native web component API, Thunderous is actually designed to keep the
-						developer closer to the web platform than other libraries. It avoids deep inheritance chains that introduce
-						extra behavior; each component only builds upon the native HTMLElement. There's no build step required, so
-						you can integrate Thunderous into your existing projects without any hassle.
-					</th-text>
-				</th-marketing-content>
-				<th-code-block lang="ts"><%=include('_code-snippets/functional-class-comparison.ejs')%></th-code-block>
-			</th-marketing-content>
-			<th-marketing-content standalone>
-				<th-heading><h2>What about SSR?</h2></th-heading>
-				<th-text>
-					A common concern with web components is server-side rendering (SSR). While Thunderous doesn't provide its own
-					server, it does offer a way to transform response text before it's sent back to the client. When a Thunderous
-					component is defined on the server, its function runs once to return a plain HTML string using
-					<th-link
-						href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM#declaratively_with_html"
-						>declarative shadow DOM</th-link
-					>
-					if necessary. With the
-					<th-link href="/docs/server-side-rendering">
-						<th-code>onServerDefine()</th-code> and <th-code>insertTemplates()</th-code>
-					</th-link>
-					functions, you can inject that content into the server rendered HTML.
-				</th-text>
-			</th-marketing-content>
-			<th-marketing-content standalone>
-				<th-heading><h2>Contributing</h2></th-heading>
-				<th-text>
-					Thunderous is still in its early stages, but it's already being used in production. The library is being
-					actively developed and maintained, with new features and improvements being added regularly. If you're
-					interested in contributing, please check out the
-					<th-link href="https://github.com/Thunder-Solutions/Thunderous">GitHub repository</th-link> and feel free to
-					open an issue or submit a pull request.
-				</th-text>
-			</th-marketing-content>
-			<th-footer slot="footer"></th-footer>
-		</th-page>
-		<script type="module" src="/main.ts"></script>
-	</body>
-</html>
+<?layout href="_layout.html">
+
+<th-page splash>
+	<th-splash slot="header"></th-splash>
+	<th-marketing-content>
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('usage.ts');
+			</script>
+		</th-code-block>
+		<th-marketing-content>
+			<th-heading><h2>Why Thunderous?</h2></th-heading>
+			<th-text>
+				Unlike web component frameworks, the Thunderous library doesn't impose a particular approach to building entire
+				applications. Instead, it provides a set of tools to help you build interoperable web components that can be
+				used in any framework or vanilla JavaScript.
+			</th-text>
+			<th-text>
+				Thunderous works best for building component libraries as design systems. Components may be distributed through
+				standalone packages to be consumed by multiple projects. It's designed to be agnostic, even offering a standard
+				way to defer the tag name definitions until the components are used by the consumer, with
+				<th-link href="/docs/registries">registries</th-link>.
+			</th-text>
+			<th-text>
+				The biggest advantage Thunderous provides over similar libraries is its "render-once" approach and fine-grained
+				reactivity; <th-link href="/docs/binding-signals">signals bind to templates</th-link> and apply changes directly
+				where needed. Putting aside the performance benefits, this approach also avoids the complexity and cognitive
+				burden of additional lifecycle methods. It's a more natural way to write JavaScript.
+			</th-text>
+		</th-marketing-content>
+		<th-marketing-content>
+			<th-heading><h2>Why Functions?</h2></th-heading>
+			<th-text>
+				With the rising popularity of functional components in modern frameworks, Thunderous provides a familiar and
+				more approachable DX for web components - a common complaint among developers. This shared experience can
+				largely be attributed to the fact that functions are more concise and easier to reason about than classes. For
+				example:
+			</th-text>
+			<ul>
+				<li>There's less boilerplate code to write</li>
+				<li>One scope is easier to manage than several smaller scopes</li>
+				<li>Class methods are in danger of losing their binding context</li>
+				<li>Repetition may be necessary for each method's scope</li>
+				<li>Encapsulation tends to be stronger in function closures than in classes</li>
+				<li>Functions are more predictable and less prone to side effects</li>
+			</ul>
+			<th-text>
+				While functions may deviate from the native web component API, Thunderous is actually designed to keep the
+				developer closer to the web platform than other libraries. It avoids deep inheritance chains that introduce
+				extra behavior; each component only builds upon the native HTMLElement. There's no build step required, so you
+				can integrate Thunderous into your existing projects without any hassle.
+			</th-text>
+		</th-marketing-content>
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('functional-class-comparison.ts');
+			</script>
+		</th-code-block>
+	</th-marketing-content>
+	<th-marketing-content standalone>
+		<th-heading><h2>What about SSR?</h2></th-heading>
+		<th-text>
+			A common concern with web components is server-side rendering (SSR). While Thunderous doesn't provide its own
+			server, it does offer a way to transform response text before it's sent back to the client. When a Thunderous
+			component is defined on the server, its function runs once to return a plain HTML string using
+			<th-link
+				href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM#declaratively_with_html"
+			>
+				declarative shadow DOM
+			</th-link>
+			if necessary. With the
+			<th-link href="/docs/server-side-rendering">
+				<th-code>onServerDefine()</th-code> and <th-code>insertTemplates()</th-code>
+			</th-link>
+			functions, you can inject that content into the server rendered HTML.
+		</th-text>
+	</th-marketing-content>
+	<th-marketing-content standalone>
+		<th-heading><h2>Contributing</h2></th-heading>
+		<th-text>
+			Thunderous is still in its early stages, but it's already being used in production. The library is being actively
+			developed and maintained, with new features and improvements being added regularly. If you're interested in
+			contributing, please check out the
+			<th-link href="https://github.com/Thunder-Solutions/Thunderous">GitHub repository</th-link> and feel free to open
+			an issue or submit a pull request.
+		</th-text>
+	</th-marketing-content>
+	<th-footer slot="footer"></th-footer>
+</th-page>
+
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

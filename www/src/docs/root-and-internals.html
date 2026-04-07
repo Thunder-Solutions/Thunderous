@@ -1,0 +1,56 @@
+<?layout href="../_layout.html">
+
+<th-doc-page>
+	<th-page-header>Root and Element Internals</th-page-header>
+	<th-content-group>
+		<th-text>
+			You can always define the internals the same as you usually would, and if for some reason you need access to
+			either the element itself or the shadow root, you can do so as illustrated below.
+		</th-text>
+
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('internals.ts');
+			</script>
+		</th-code-block>
+
+		<th-text>
+			If you need to pass certain options to the <th-code>attachShadow()</th-code> call, you can do so by passing
+			<th-code>shadowRootOptions</th-code>.
+		</th-text>
+
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('shadow-root-options.ts');
+			</script>
+		</th-code-block>
+
+		<th-text>
+			To opt out of using shadow DOM at all, pass <th-code>false</th-code> to <th-code>attachShadow</th-code>. This will
+			change <th-code>root</th-code> above to reference the element itself, and stylesheets will apply to the global
+			document rather than being encapsulated within the component.
+		</th-text>
+
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('no-shadow.ts');
+			</script>
+		</th-code-block>
+
+		<th-text>
+			Keep in mind that opting out of shadow DOM means that <th-code>&lt;slot&gt;</th-code> tags will no longer work.
+			For light DOM content, you can use the <th-code>innerHTML</th-code> property to reference the original content of
+			the element.
+		</th-text>
+
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('light-dom.ts');
+			</script>
+		</th-code-block>
+	</th-content-group>
+</th-doc-page>
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

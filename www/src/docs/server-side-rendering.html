@@ -1,0 +1,45 @@
+<?layout href="../_layout.html">
+
+<th-doc-page>
+	<th-page-header>Server-Side Rendering (SSR)</th-page-header>
+	<th-content-group>
+		<th-text>
+			SSR is now possible with the provided <th-code>onServerDefine</th-code> and
+			<th-code>insertTemplates</th-code> functions.
+		</th-text>
+		<ul>
+			<li>
+				<th-code>onServerDefine()</th-code> lets you pass a callback that runs each time a custom element is defined on
+				the server. When an element is defined on the server, its render function will run once to get its initial HTML,
+				which will then trigger this callback. Assuming you configured the element to use shadow DOM, this will render
+				declarative shadow DOM template tags, using the same options.
+			</li>
+			<li>
+				<th-code>insertTemplates()</th-code> takes the tag name and inner HTML of the custom element and inserts it into
+				the provided HTML string, parsing any variables that could not be resolved upon defining, (e.g. attributes).
+			</li>
+		</ul>
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('ssr.ts');
+			</script>
+		</th-code-block>
+		<th-text>
+			Introducing server compatibility also opens up a host of new potential errors, mainly as a result of accessing
+			client-side APIs on the server. To avoid these errors, you can use the
+			<th-code>clientOnlyCallback()</th-code> function to conditionally run code only on the client. This is provided in
+			the arguments of the render callback passed to <th-code>customElement()</th-code>, but can also be imported
+			directly from the library. These two methods have distinct use cases - pay close attention to the comments in the
+			code snippet below.
+		</th-text>
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('client-only.ts');
+			</script>
+		</th-code-block>
+	</th-content-group>
+</th-doc-page>
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

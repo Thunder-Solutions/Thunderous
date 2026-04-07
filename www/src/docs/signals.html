@@ -1,0 +1,25 @@
+<?layout href="../_layout.html">
+
+<th-doc-page>
+	<th-page-header>Signals</th-page-header>
+	<th-content-group>
+		<th-text> Creating signals should look pretty familiar to most modern developers. </th-text>
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('signals.ts');
+			</script>
+		</th-code-block>
+		<th-text>
+			Signals are the new hot way to manage reactive state in your application. Combined with effects, they behave
+			similarly to observables, but subscribers are added automatically with each effect.
+		</th-text>
+		<th-text>
+			Unlike traditional state, where the state changes and everything runs again, signals only trigger the effects that
+			depend on them.
+		</th-text>
+	</th-content-group>
+</th-doc-page>
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

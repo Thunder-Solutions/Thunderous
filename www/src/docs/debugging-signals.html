@@ -1,0 +1,22 @@
+<?layout href="../_layout.html">
+
+<th-doc-page>
+	<th-page-header>Debugging Signals</th-page-header>
+	<th-content-group>
+		<th-text>
+			If you're having a tough time tracing an issue, you can provide the <th-code>debugMode</th-code> option to any
+			signal to log potentially helpful information to the console. For differentiating values, you can also provide an
+			optional <th-code>label</th-code> property to easily associate logs with their respective sources. These options
+			can be passed to signals themselves, or to specific calls to setters and getters.
+		</th-text>
+		<th-code-block lang="ts">
+			<script expr>
+				snippetAsHTML('debugging-signals.ts');
+			</script>
+		</th-code-block>
+	</th-content-group>
+</th-doc-page>
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>
