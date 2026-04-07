@@ -34,6 +34,8 @@ const stylesheet = css`
 	:host(:not(:last-child)) {
 		.crumb::after {
 			content: ' > ';
+			display: inline-block;
+			padding: 0 0.5em;
 		}
 	}
 `;
