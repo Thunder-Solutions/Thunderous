@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 import { join, relative, resolve } from 'path';
 import { createRequire } from 'node:module';
 import { html } from 'thunderous';
-import { setMeta as setMeta, type Breadcrumb } from './meta';
+import { type Breadcrumb } from './meta';
 import { basename, dirname, extname } from 'node:path';
 import { config } from './config';
 import { ModuleKind, ScriptTarget, transpileModule, ImportsNotUsedAsValues } from 'typescript';
@@ -90,7 +90,7 @@ export const processFiles = (args: ProcessFilesArgs) => {
 };
 
 type ScriptKind = 'expr' | 'server' | 'isomorphic' | 'module';
-type ParsedScript = { kind: ScriptKind; content: string; href?: string | undefined; start: number; end: number };
+type ParsedScript = { kind: ScriptKind; content: string; src?: string | undefined; start: number; end: number };
 type ParsedLayout = { href: string; start: number; end: number };
 
 // ── Cached resolved paths (computed once at module load) ──
@@ -150,9 +150,9 @@ const extractTags = (markup: string) => {
 			else if (/\bisomorphic\b/.test(attrs)) kind = 'isomorphic';
 			else if (/\btype\s*=\s*"module"/.test(attrs)) kind = 'module';
 
-			let href: string | undefined;
-			const hrefMatch = /\bhref\s*=\s*"([^"]*)"/.exec(attrs);
-			if (hrefMatch) href = hrefMatch[1];
+			let src: string | undefined;
+			const srcMatch = /\bsrc\s*=\s*"([^"]*)"/.exec(attrs);
+			if (srcMatch) src = srcMatch[1];
 
 			let endPos = -1;
 			let j = tagClose + 1;
@@ -172,7 +172,7 @@ const extractTags = (markup: string) => {
 
 			if (kind !== null) {
 				const content = markup.slice(tagClose + 1, markup.lastIndexOf('</', endPos - 1)).trim();
-				scripts.push({ kind, content, href, start: i, end: endPos });
+				scripts.push({ kind, content, src, start: i, end: endPos });
 			}
 			i = endPos;
 			continue;
@@ -217,33 +217,37 @@ export const generateStaticTemplate = (filePath: string) => {
 
 	const name = basename(filePath, extname(filePath));
 
+	// quick local utility to convert kebab/camel/snake case to title case
+	const toTitleFormat = (str: string) =>
+		str
+			.replace(/[-_]|(?<=[a-z])(?=[A-Z])/g, ' ')
+			.replace(/(?:\b|^)\w/g, (m) => m.toUpperCase())
+			.trim();
+
 	// Set metadata context for the current page before server scripts run
 	const relativePath = relative(resolvedBaseDir, filePath);
 	const parentDir = dirname(relativePath).replace(/^\./, '');
 	const pathname = `/${parentDir}${name === 'index' ? '' : `/${name}`}`;
 	const titleWord = name === 'index' ? (pathname.split('/').pop() ?? '') : name;
-	const title = titleWord
-		.split(/[-_]/)
-		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(' ');
+	const title = toTitleFormat(titleWord);
 	const path = pathname.split('/').filter((segment) => segment !== '');
-	let crumbPathname = '/';
 	const breadcrumbs: Breadcrumb[] = [
 		{
 			// always add the home page
-			name: config.name,
-			pathname: crumbPathname,
+			name: toTitleFormat(config.name),
+			pathname: '/',
 		},
 	];
 	// add each segment of the path as a breadcrumb
+	let crumbPathname = '';
 	for (const segment of path) {
 		crumbPathname += `/${segment}`;
 		breadcrumbs.push({
-			name: segment,
+			name: toTitleFormat(segment),
 			pathname: crumbPathname,
 		});
 	}
-	setMeta({
+	outRequire('thunderous-server').setMeta({
 		config,
 		pathname,
 		title,
@@ -286,7 +290,7 @@ export const generateStaticTemplate = (filePath: string) => {
 	const tempFilesToCleanup: string[] = [];
 
 	// Map from scriptKey → replacement text (built during processing, applied later)
-	const scriptKey = (s: ParsedScript) => `${s.kind}|${s.href ?? ''}|${s.content}`;
+	const scriptKey = (s: ParsedScript) => `${s.kind}|${s.src ?? ''}|${s.content}`;
 	const replacementMap = new Map<string, string>();
 
 	mkdirSync(resolvedOutDir, { recursive: true });
@@ -295,17 +299,21 @@ export const generateStaticTemplate = (filePath: string) => {
 	for (const script of scripts) {
 		const key = scriptKey(script);
 
-		// ── Resolve content: from href file or inline ──
+		// ── Resolve content: from src file or inline ──
 		let content = script.content;
-		let hrefAbsPath: string | undefined;
-		if (script.href) {
-			hrefAbsPath = resolve(fileDir, script.href);
-			if (!existsSync(hrefAbsPath)) {
-				console.warn(`\x1b[33mWarning: Script href file not found: ${hrefAbsPath}\x1b[0m`);
+		let srcAbsPath: string | undefined;
+		if (script.src) {
+			if (script.src.startsWith('/')) {
+				srcAbsPath = resolve(resolvedBaseDir, script.src.slice(1));
+			} else {
+				srcAbsPath = resolve(fileDir, script.src);
+			}
+			if (!existsSync(srcAbsPath)) {
+				console.warn(`\x1b[33mWarning: Script src file not found: ${srcAbsPath}\x1b[0m`);
 				continue;
 			}
 			if (script.kind === 'expr') {
-				content = readFileSync(hrefAbsPath, 'utf-8').trim();
+				content = readFileSync(srcAbsPath, 'utf-8').trim();
 			}
 		}
 
@@ -318,10 +326,10 @@ export const generateStaticTemplate = (filePath: string) => {
 		// ── Server/isomorphic: execute server-side to collect exported values ──
 		if (script.kind === 'server' || script.kind === 'isomorphic') {
 			let module: Record<string, unknown>;
-			if (hrefAbsPath) {
+			if (srcAbsPath) {
 				// href: require the file directly from source
-				delete outRequire.cache[outRequire.resolve(hrefAbsPath)];
-				module = outRequire(hrefAbsPath);
+				delete outRequire.cache[outRequire.resolve(srcAbsPath)];
+				module = outRequire(srcAbsPath);
 			} else {
 				// inline: write temp .ts into baseDir so relative imports resolve correctly
 				const tsScriptFile = join(resolvedBaseDir, `${name}-${scriptIndex}.tmp.ts`);
@@ -341,12 +349,12 @@ export const generateStaticTemplate = (filePath: string) => {
 		if (script.kind === 'server') {
 			// Server scripts are fully discarded from client output
 			replacementMap.set(key, '');
-		} else if (hrefAbsPath) {
+		} else if (srcAbsPath) {
 			// href isomorphic/module: output a <script src> pointing to the .js file
-			const jsSrc = script.href!.replace(/\.tsx?$/, '.js');
+			const jsSrc = script.src!.replace(/\.tsx?$/, '.js');
 			replacementMap.set(key, `<script type="module" src="${jsSrc}"></script>`);
 			// Resolve the outDir .js path for vendorization
-			const hrefRelPath = relative(resolvedBaseDir, hrefAbsPath);
+			const hrefRelPath = relative(resolvedBaseDir, srcAbsPath);
 			const hrefOutJsPath = join(resolvedOutDir, hrefRelPath).replace(/\.tsx?$/, '.js');
 			clientEntryFiles.push(resolve(hrefOutJsPath));
 		} else {
@@ -370,6 +378,16 @@ export const generateStaticTemplate = (filePath: string) => {
 		scriptIndex++;
 	}
 
+	// ── Pick up any new scripts added by template insertion (e.g. expr inside components) ──
+	const { scripts: postInsertScripts } = extractTags(renderState.markup);
+	for (const script of postInsertScripts) {
+		const key = scriptKey(script);
+		if (replacementMap.has(key)) continue;
+		if (script.kind === 'expr') {
+			replacementMap.set(key, '__expr__');
+		}
+	}
+
 	// ── Re-parse and apply all replacements in one reverse pass ──
 	const { scripts: freshScripts } = extractTags(renderState.markup);
 	for (let i = freshScripts.length - 1; i >= 0; i--) {
@@ -383,8 +401,8 @@ export const generateStaticTemplate = (filePath: string) => {
 		if (replacement === '__expr__') {
 			// Evaluate expr: content may come from href file
 			let content = script.content;
-			if (script.href) {
-				const hrefPath = resolve(fileDir, script.href);
+			if (script.src) {
+				const hrefPath = resolve(fileDir, script.src);
 				content = readFileSync(hrefPath, 'utf-8').trim();
 			}
 			const expression = content.replace(/;$/, '');
@@ -401,6 +419,36 @@ export const generateStaticTemplate = (filePath: string) => {
 		}
 		renderState.markup = renderState.markup.slice(0, script.start) + text + renderState.markup.slice(script.end);
 	}
+	// ── Evaluate expr: attributes ──
+	renderState.markup = renderState.markup.replace(
+		/(<[a-zA-Z][\w-]*\b)((?:\s+[^>]*?)?)(\s*\/?>)/g,
+		(_match, openTag: string, attrs: string, close: string) => {
+			if (!attrs.includes('expr:')) return _match;
+			const result = attrs.replace(
+				/\s+expr:([a-zA-Z][\w-]*)=(["'])([\s\S]*?)\2/g,
+				(_attrMatch: string, attrName: string, _quote: string, expression: string) => {
+					try {
+						// eslint-disable-next-line @typescript-eslint/no-implied-eval
+						const value = Function(
+							'html',
+							'escapeHtml',
+							'raw',
+							...Object.keys(safeValues),
+							`'use strict'; return (${expression});`,
+						)(html, escapeHtml, raw, ...Object.values(safeValues));
+						if (value == null || value === false || value === '') return '';
+						if (value === true) return ` ${attrName}`;
+						return ` ${attrName}="${escapeHtml(String(value))}"`;
+					} catch (e) {
+						console.warn(`\x1b[33mWarning: Failed to evaluate expr:${attrName}="${expression}": ${e}\x1b[0m`);
+						return '';
+					}
+				},
+			);
+			return openTag + result + close;
+		},
+	);
+
 	renderState.markup = renderState.markup.trim();
 
 	// Return the final rendered markup, client entry files, and cleanup function

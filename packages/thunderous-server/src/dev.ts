@@ -102,7 +102,11 @@ export const dev = () => {
 			fileName: srcPath,
 			reportDiagnostics: false,
 		});
-		res.type('application/javascript').send(outputText);
+		// Rewrite relative imports to include .js extension for browser resolution
+		const rewritten = outputText
+			.replace(/(import\s+.+?\s+from\s+['"](?:\.\.?\/|\/)[^'"]+?)\.tsx?(['"])/gm, '$1.js$2')
+			.replace(/(import\s+.+?\s+from\s+['"](?:\.\.?\/|\/)[^'"]+?)(?<!\.m?js)(['"])/gm, '$1.js$2');
+		res.type('application/javascript').send(rewritten);
 	});
 
 	// Serve static assets from the base directory

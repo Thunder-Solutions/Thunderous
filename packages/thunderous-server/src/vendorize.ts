@@ -38,12 +38,19 @@ export function processNodeModules(entryFiles: string[], outputDir?: string) {
 		} else {
 			const tsFile = file.replace(/\.js$/, '.ts');
 			const tsxFile = file.replace(/\.js$/, '.tsx');
+			const srcFile = file.replace(`/${config.outDir}/`, `/${config.baseDir}/`);
+			const srcTsFile = srcFile.replace(/\.js$/, '.ts');
+			const srcTsxFile = srcFile.replace(/\.js$/, '.tsx');
 			if (existsSync(tsFile)) {
 				code = transpileTsFast(readFileSync(tsFile, 'utf8'), tsFile);
 			} else if (existsSync(tsxFile)) {
 				code = transpileTsFast(readFileSync(tsxFile, 'utf8'), tsxFile);
+			} else if (existsSync(srcTsFile)) {
+				code = transpileTsFast(readFileSync(srcTsFile, 'utf8'), srcTsFile);
+			} else if (existsSync(srcTsxFile)) {
+				code = transpileTsFast(readFileSync(srcTsxFile, 'utf8'), srcTsxFile);
 			} else {
-				throw new Error(`Cannot find module: ${file} (also tried .ts/.tsx)`);
+				throw new Error(`Cannot find module: ${file} (also tried .ts/.tsx and ${config.baseDir}/ equivalents)`);
 			}
 		}
 		const [imports] = parse(code);
