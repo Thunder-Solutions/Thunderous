@@ -291,6 +291,7 @@ function visibleWidth(value) {
 }
 
 function printSuccess(projectName, targetDir, originalCwd, packageManager) {
+	const devCommand = packageManager === 'npm' ? 'npm run dev' : `${packageManager} dev`;
 	const lines = [
 		`${chalk.blue(emojify(':cloud_with_lightning:'))}  ${chalk.magenta('Thunderous project created successfully!')} ${chalk.blue(emojify(':cloud_with_lightning:'))}`,
 		'',
@@ -300,7 +301,7 @@ function printSuccess(projectName, targetDir, originalCwd, packageManager) {
 		'',
 		`    ${chalk.bold(targetDir !== originalCwd ? 'Next steps:' : 'Next step:')}`,
 		...(targetDir !== originalCwd ? [chalk.blue(`      cd ${path.relative(originalCwd, targetDir) || '.'}`)] : []),
-		chalk.blue(`      ${packageManager} dev`),
+		chalk.blue(`      ${devCommand}`),
 	];
 
 	printBox(lines, {
