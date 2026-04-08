@@ -6,6 +6,13 @@
 	"bin": {
 		"create-thunderous": "./bin/index.js"
 	},
+	"files": [
+		"bin",
+		"!reference-project/node_modules",
+		"reference-project",
+		"package.json",
+		"LICENSE"
+	],
 	"keywords": [
 		"thunderous",
 		"create",
