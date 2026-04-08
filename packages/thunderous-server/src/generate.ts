@@ -34,25 +34,33 @@ const tsCompilerOptions = {
 const transpileTs = (source: string, fileName = 'inline.ts'): string =>
 	transpileModule(source, { compilerOptions: tsCompilerOptions, fileName, reportDiagnostics: false }).outputText;
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+const Thunderous: typeof import('thunderous') = outRequire('thunderous');
+const { insertTemplates, onServerDefine, clearRenderState } = Thunderous;
+
+// Keep one persistent reference to the same function, so that
+// `onServerDefine` overrides only THAT unique reference. This avoids
+// accumulating garbage that never gets collected.
+const serverDefineHandler = (tagName: string, innerHTML: string) => {
+	if (renderState.insertedTags.has(tagName)) return;
+	renderState.insertedTags.add(tagName);
+	renderState.markup = insertTemplates(
+		tagName,
+		innerHTML.replace(/\s+/gm, ' ').replace(/ >/g, '>'),
+		renderState.markup,
+	);
+	console.debug(`\x1b[90m  |--- Inserted SSR template for <${tagName}> into markup.\x1b[0m`);
+};
+
 /**
  * Import Thunderous (core lib, not server) and set up server-side rendering state.
  * This should be called once at the start of the build process.
  */
 export const bootstrapThunderous = () => {
-	// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-	const Thunderous: typeof import('thunderous') = outRequire('thunderous');
-	const { insertTemplates, onServerDefine } = Thunderous;
+	// Clear accumulated render state from previous dev server sessions
+	clearRenderState?.();
 	// Update the markup each time a thunderous element is defined on the server
-	onServerDefine((tagName, innerHTML) => {
-		if (renderState.insertedTags.has(tagName)) return;
-		renderState.insertedTags.add(tagName);
-		renderState.markup = insertTemplates(
-			tagName,
-			innerHTML.replace(/\s+/gm, ' ').replace(/ >/g, '>'),
-			renderState.markup,
-		);
-		console.log(`\x1b[90m  |--- Inserted SSR template for <${tagName}> into markup.\x1b[0m`);
-	});
+	onServerDefine(serverDefineHandler);
 };
 
 /** Rewrite relative import specifiers so the browser can resolve them (e.g. '../theme' → '../theme.js'). */
@@ -301,7 +309,7 @@ export const generateStaticTemplate = (filePath: string) => {
 			layoutContent.slice(0, slotIndex) + renderState.markup + layoutContent.slice(slotIndex + slotTag.length);
 
 		const absLayoutPath = resolve(dirname(filePath), layout.href);
-		console.log(`\x1b[90m  | Applied layout: ${relative(configDir, absLayoutPath)}\x1b[0m`);
+		console.debug(`\x1b[90m  | Applied layout: ${relative(configDir, absLayoutPath)}\x1b[0m`);
 	}
 	// ── Extract and process scripts ──
 	const { scripts } = extractTags(renderState.markup);
@@ -309,6 +317,8 @@ export const generateStaticTemplate = (filePath: string) => {
 	const safeValues: Record<string, unknown> = {};
 	const clientEntryFiles: string[] = [];
 	const tempFilesToCleanup: string[] = [];
+	// Unique identifier for this render to prevent temp file name collisions
+	const renderId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
 	// Map from scriptKey → replacement text (built during processing, applied later)
 	const scriptKey = (s: ParsedScript) => `${s.kind}|${s.src ?? ''}|${s.content}`;
@@ -346,14 +356,14 @@ export const generateStaticTemplate = (filePath: string) => {
 
 		// ── Server/isomorphic: execute server-side to collect exported values ──
 		if (script.kind === 'server' || script.kind === 'isomorphic') {
-			let module: Record<string, unknown>;
+			let module: Record<string, unknown> = {};
 			if (srcAbsPath) {
 				// href: require the file directly from source
 				delete outRequire.cache[outRequire.resolve(srcAbsPath)];
 				module = outRequire(srcAbsPath);
 			} else {
 				// inline: write temp .ts into baseDir so relative imports resolve correctly
-				const tsScriptFile = join(resolvedBaseDir, `${name}-${scriptIndex}.tmp.ts`);
+				const tsScriptFile = join(resolvedBaseDir, `${name}-${scriptIndex}-${renderId}.tmp.ts`);
 				writeFileSync(tsScriptFile, `// @ts-nocheck\n${content}`, 'utf-8');
 				tempFilesToCleanup.push(tsScriptFile);
 				delete outRequire.cache[outRequire.resolve(tsScriptFile)];
@@ -390,7 +400,7 @@ export const generateStaticTemplate = (filePath: string) => {
 			replacementMap.set(key, `<script type="module">\n${fixedJs}\n</script>`);
 
 			// Write .js to baseDir for vendorization (so relative imports resolve from source tree)
-			const jsOutPath = join(resolvedBaseDir, `${name}-${scriptIndex}.tmp.js`);
+			const jsOutPath = join(resolvedBaseDir, `${name}-${scriptIndex}-${renderId}.tmp.js`);
 			writeFileSync(jsOutPath, js, 'utf-8');
 			tempFilesToCleanup.push(jsOutPath);
 			clientEntryFiles.push(resolve(jsOutPath));
@@ -471,7 +481,7 @@ export const generateStaticTemplate = (filePath: string) => {
 	);
 
 	renderState.markup = renderState.markup.trim();
-	console.log('');
+	console.debug('');
 
 	// Return the final rendered markup, client entry files, and cleanup function
 	return {

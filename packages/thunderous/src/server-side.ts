@@ -14,8 +14,45 @@ export const isServer = typeof window === 'undefined';
 
 export const serverDefineFns = new Set<ServerDefineFn>();
 
+/**
+ * Add a callback to handle each call to `define()` on the server.
+ *
+ * This enables you to intercept those definitions and respond to them,
+ * for example to inject declarative shadow DOM templates.
+ *
+ * @example
+ * ```ts
+ * let response = originalResponse;
+ * onServerDefine((tagName, htmlString) => {
+ *   // ...
+ *   response = htmlString.replace(tagName, `my-${tagName}`);
+ * });
+ * ```
+ */
 export const onServerDefine = (fn: ServerDefineFn) => {
 	serverDefineFns.add(fn);
+};
+
+/**
+ * Thunderous tracks its state using several maps to associate values with
+ * their respective elements.
+ *
+ * This function clears the map that tracks CSS on the server side, to prevent
+ * memory leaks and purge stale data from previous renders.
+ *
+ * If you are building a framework or plugin that depends on Thunderous, you
+ * should call this function before every render. Otherwise, the map will
+ * accumulate stale data and may create significant performance issues.
+ *
+ * @example
+ * ```ts
+ * import { clearServerCss } from 'thunderous'
+ *
+ * clearServerCss();
+ * ```
+ */
+export const clearServerCss = () => {
+	serverCss.clear();
 };
 
 export const serverDefine = ({

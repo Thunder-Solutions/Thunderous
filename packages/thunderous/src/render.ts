@@ -18,6 +18,32 @@ export const renderState = {
 	registry: typeof customElements !== 'undefined' ? customElements : ({} as CustomElementRegistry),
 };
 
+/**
+ * Thunderous tracks its state using several maps to associate values with
+ * their respective elements.
+ *
+ * This function clears the maps tracking render state, to prevent memory
+ * leaks and purge stale data from previous renders.
+ *
+ * If you are building a framework or plugin that depends on Thunderous, you
+ * should call this function before every render. Otherwise, the maps will
+ * accumulate stale data and may create significant performance issues.
+ *
+ * @example
+ * ```ts
+ * import { clearRenderState } from 'thunderous'
+ *
+ * clearRenderState();
+ * ```
+ */
+export const clearRenderState = () => {
+	renderState.signalMap.clear();
+	renderState.callbackMap.clear();
+	renderState.propertyMap.clear();
+	renderState.fragmentMap.clear();
+	renderState.childrenMap.clear();
+};
+
 const logPropertyWarning = (propName: string, element: Element) => {
 	console.warn(
 		`Property "${propName}" does not exist on element:`,
@@ -28,7 +54,7 @@ const logPropertyWarning = (propName: string, element: Element) => {
 
 const asNodeList = (value: unknown, parent: ElementParent): Node[] => {
 	if (typeof value === 'string') return [new Text(value)];
-	if (value instanceof DocumentFragment) return [...value.children];
+	if (value instanceof DocumentFragment) return Array.from(value.children);
 	if (Array.isArray(value)) {
 		const nodeList: Node[] = [];
 		let count = 0;
@@ -99,7 +125,7 @@ const processValue = (value: unknown): string => {
 
 // Bind signals and callbacks to DOM nodes in a DocumentFragment.
 const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) => {
-	for (const child of [...element.childNodes]) {
+	for (const child of Array.from(element.childNodes)) {
 		if (child instanceof Text && SIGNAL_BINDING_REGEX.test(child.data)) {
 			const textList = child.data.split(SIGNAL_BINDING_REGEX);
 			const nextSibling = child.nextSibling;
@@ -200,12 +226,12 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 									}
 
 									// Remove attributes that are not present in the new child.
-									for (const attr of [...persistedChild.attributes]) {
+									for (const attr of Array.from(persistedChild.attributes)) {
 										if (!newChild.hasAttribute(attr.name)) persistedChild.removeAttribute(attr.name);
 									}
 
 									// Copy attributes from the new child to the persisted child.
-									for (const newAttr of [...newChild.attributes]) {
+									for (const newAttr of Array.from(newChild.attributes)) {
 										const oldAttrValue = persistedChild.getAttribute(newAttr.name);
 
 										// Skip if the last attribute value is a custom callback. It's important to maintain the original callback key.
@@ -225,7 +251,7 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 
 				const bindFragment = (signal: SignalGetter<unknown>) => {
 					const initialFragment = signal() as DocumentFragment;
-					renderState.childrenMap.set(initialFragment, [...initialFragment.childNodes]);
+					renderState.childrenMap.set(initialFragment, Array.from(initialFragment.childNodes));
 					createEffect(({ destroy }) => {
 						const result = signal();
 						const cachedChildren = renderState.childrenMap.get(initialFragment);
@@ -271,7 +297,7 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 				child.replaceWith(childFragment);
 			}
 		} else if (child instanceof Element) {
-			for (const attr of [...child.attributes]) {
+			for (const attr of Array.from(child.attributes)) {
 				const attrName = attr.name;
 				if (SIGNAL_BINDING_REGEX.test(attr.value)) {
 					const textList = attr.value.split(SIGNAL_BINDING_REGEX);

@@ -1,10 +1,11 @@
 import type { Plugin, ViteDevServer, Connect } from 'vite';
+import { clearServerCss, clearRenderState } from 'thunderous';
 import type { ServerResponse } from 'http';
-import { createRequire } from 'module';
 import { existsSync, readdirSync, statSync } from 'fs';
 import { dirname, join, relative, resolve } from 'path';
 import { bootstrapThunderous, generateStaticTemplate } from './generate';
 import { config } from './config';
+import chalk from 'chalk';
 
 /**
  * Resolve a URL pathname to an HTML file in the base directory.
@@ -35,14 +36,22 @@ const resolveHtmlPath = (url: string, root: string): string | null => {
 const collectHtmlPages = (root: string): Array<{ filePath: string; urlPath: string }> => {
 	const pages: Array<{ filePath: string; urlPath: string }> = [];
 	const walk = (dir: string) => {
+		if (dir.split('/').pop()?.startsWith('_')) return;
 		for (const entry of readdirSync(dir)) {
+			// Skip temp files created during template generation
+			if (entry.includes('.tmp.')) continue;
 			const full = join(dir, entry);
-			if (statSync(full).isDirectory()) {
-				walk(full);
-			} else if (entry.endsWith('.html') && !entry.startsWith('_')) {
-				const rel = relative(root, dirname(full));
-				const urlPath = `/${rel}${entry === 'index.html' ? '' : `/${entry.replace('.html', '')}`}`;
-				pages.push({ filePath: full, urlPath });
+			try {
+				if (statSync(full).isDirectory()) {
+					walk(full);
+				} else if (entry.endsWith('.html') && !entry.startsWith('_')) {
+					const rel = relative(root, dirname(full));
+					const urlPath = `/${rel}${entry === 'index.html' ? '' : `/${entry.replace('.html', '')}`}`;
+					pages.push({ filePath: full, urlPath });
+				}
+			} catch {
+				// Skip files that may have been deleted during walk
+				continue;
 			}
 		}
 	};
@@ -60,70 +69,66 @@ const collectHtmlPages = (root: string): Array<{ filePath: string; urlPath: stri
  */
 export const thunderousPlugin = (): Plugin => {
 	const root = resolve(config.baseDir);
-	const outRequire = createRequire(resolve(config.baseDir));
 
 	// Pre-rendered SSR markup cache: urlPath → markup
 	const pageCache = new Map<string, string>();
 
-	const invalidateRequireCache = () => {
-		for (const key of Object.keys(outRequire.cache)) {
-			if (key.startsWith(root)) {
-				delete outRequire.cache[key];
-			}
+	// Global cleanup queue for temp files - prevents race conditions between concurrent renders
+	const pendingCleanups: Array<() => void> = [];
+	const flushPendingCleanups = () => {
+		while (pendingCleanups.length > 0) {
+			const cleanup = pendingCleanups.shift();
+			cleanup?.();
+		}
+	};
+
+	/** Pre-render a single page and cache it. */
+	const renderPage = (filePath: string, urlPath: string) => {
+		try {
+			const result = generateStaticTemplate(filePath);
+			pageCache.set(urlPath, result.markup);
+			// Queue cleanup - deferred until batch completes
+			pendingCleanups.push(result.cleanup);
+		} catch (error) {
+			console.error(`\x1b[31mError pre-rendering ${urlPath}:\x1b[0m`, error);
 		}
 	};
 
 	/** Pre-render every routable page so SSR markup is ready before reload. */
 	const renderAllPages = () => {
+		// Flush any stale cleanups from previous batch before starting new one
+		flushPendingCleanups();
+		clearRenderState?.();
+		clearServerCss?.();
 		pageCache.clear();
-		for (const { filePath, urlPath } of collectHtmlPages(root)) {
-			try {
-				const result = generateStaticTemplate(filePath);
-				pageCache.set(urlPath, result.markup);
-				result.cleanup();
-			} catch (error) {
-				console.error(`\x1b[31mError pre-rendering ${urlPath}:\x1b[0m`, error);
-			}
+		for (const { filePath, urlPath } of getPages()) {
+			renderPage(filePath, urlPath);
 		}
+		// Clean up all temp files only after entire batch completes
+		flushPendingCleanups();
+		console.log('');
 	};
 
-	const virtualId = 'virtual:thunderous-hmr-client';
-	const resolvedVirtualId = '\0' + virtualId;
+	// Cache the pages list to avoid walking directory on every file change
+	let cachedPages: Array<{ filePath: string; urlPath: string }> | null = null;
+	const getPages = (): Array<{ filePath: string; urlPath: string }> => {
+		cachedPages ??= collectHtmlPages(root);
+		return cachedPages;
+	};
+	const invalidatePagesCache = () => {
+		cachedPages = null;
+	};
+
+	/** Find the page URL path for a given file path. */
+	const findPageForFile = (filePath: string): { filePath: string; urlPath: string } | null => {
+		for (const page of getPages()) {
+			if (page.filePath === filePath) return page;
+		}
+		return null;
+	};
 
 	return {
 		name: 'thunderous',
-
-		// resolveId(id) {
-		// 	if (id === virtualId) return resolvedVirtualId;
-		// 	return id;
-		// },
-
-		// load(id) {
-		// 	if (id === resolvedVirtualId) {
-		// 		return `
-		// 			if (import.meta.hot) {
-		// 				import.meta.hot.on('thunderous:reload', () => {
-		// 					location.reload();
-		// 				})
-		// 			}
-		// 		`;
-		// 	}
-		// 	return '';
-		// },
-
-		// transformIndexHtml(html) {
-		// 	return {
-		// 		html,
-		// 		tags: [
-		// 			{
-		// 				tag: 'script',
-		// 				attrs: { type: 'module' },
-		// 				children: `import "virtual:thunderous-hmr-client"`,
-		// 				injectTo: 'head',
-		// 			},
-		// 		],
-		// 	};
-		// },
 
 		configureServer(server: ViteDevServer) {
 			bootstrapThunderous();
@@ -131,16 +136,38 @@ export const thunderousPlugin = (): Plugin => {
 			// Initial pre-render so the first request is served from cache.
 			renderAllPages();
 
-			// On any file change in baseDir: bust cache → re-render all pages → reload.
-			// All three steps are synchronous, so the pre-render logs appear before the reload.
+			// On file change: re-render affected pages → reload.
+			// For HTML files, only re-render that page. For other files, re-render all pages
+			// since they may be imported by multiple pages.
 			const onFileChange = (file: string) => {
 				if (!file.startsWith(root)) return;
-				invalidateRequireCache();
-				renderAllPages();
+				// Ignore temp files created during template generation
+				if (file.includes('.tmp.ts') || file.includes('.tmp.js')) return;
+				console.log(chalk.cyan.bold('\nChanges detected. Rebuilding...\n'));
+
+				// Check if the changed file is a page itself
+				const changedPage = findPageForFile(file);
+				if (changedPage) {
+					// Re-render only the changed page
+					pageCache.delete(changedPage.urlPath);
+					renderPage(changedPage.filePath, changedPage.urlPath);
+				} else {
+					// For non-page files (components, scripts, etc.), re-render all pages
+					renderAllPages();
+				}
+				console.log('');
 				server.ws.send({ type: 'full-reload' });
 			};
 			server.watcher.on('change', onFileChange);
-			server.watcher.on('add', onFileChange);
+
+			// On file add: invalidate cache since pages list may have changed
+			const onFileAdd = (file: string) => {
+				// Ignore temp files created during template generation
+				if (file.includes('.tmp.ts') || file.includes('.tmp.js')) return;
+				invalidatePagesCache();
+				onFileChange(file);
+			};
+			server.watcher.on('add', onFileAdd);
 
 			// Rewrite .js requests to .ts/.tsx when the .js file doesn't exist
 			// (generateStaticTemplate outputs .js src paths but source files are .ts)
@@ -161,41 +188,45 @@ export const thunderousPlugin = (): Plugin => {
 
 			// Serve pre-rendered HTML pages, applying Vite's transforms at serve time.
 			return () => {
-				server.middlewares.use(
-					async (req: Connect.IncomingMessage, res: ServerResponse, next: Connect.NextFunction) => {
-						const url = req.originalUrl ?? req.url;
-						if (!url) return next();
+				server.middlewares.use((req: Connect.IncomingMessage, res: ServerResponse, next: Connect.NextFunction) => {
+					const url = req.originalUrl ?? req.url;
+					if (!url) return next();
 
-						const urlPath = url.split('?')[0]?.split('#')[0] ?? '/';
+					const urlPath = url.split('?')[0]?.split('#')[0] ?? '/';
 
-						// Try cache first, fall back to on-demand render
-						let markup = pageCache.get(urlPath);
-						if (!markup) {
-							const htmlPath = resolveHtmlPath(url, root);
-							if (!htmlPath) return next();
-							try {
-								const result = generateStaticTemplate(htmlPath);
-								markup = result.markup;
-								result.cleanup();
-							} catch (error) {
-								console.error(`\x1b[31mError processing ${htmlPath}:\x1b[0m`, error);
-								return next(error);
-							}
-						}
-
+					// Try cache first, fall back to on-demand render
+					let markup = pageCache.get(urlPath);
+					if (!markup) {
+						const htmlPath = resolveHtmlPath(url, root);
+						if (!htmlPath) return next();
 						try {
-							// Let Vite inject its HMR client and process module scripts
-							markup = await server.transformIndexHtml(url, markup);
+							const result = generateStaticTemplate(htmlPath);
+							markup = result.markup;
+							// Queue cleanup - will be flushed after response sent
+							pendingCleanups.push(result.cleanup);
+						} catch (error) {
+							console.error(`\x1b[31mError processing ${htmlPath}:\x1b[0m`, error);
+							return next(error);
+						}
+					}
 
+					// Let Vite inject its HMR client and process module scripts
+					server
+						.transformIndexHtml(url, markup)
+						.then((markup) => {
 							res.statusCode = 200;
 							res.setHeader('Content-Type', 'text/html');
 							res.end(markup);
-						} catch (error) {
+							// Clean up temp files after response is sent
+							flushPendingCleanups();
+						})
+						.catch((error) => {
 							console.error(`\x1b[31mError transforming HTML for ${url}:\x1b[0m`, error);
+							// Clean up temp files even on error
+							flushPendingCleanups();
 							next(error);
-						}
-					},
-				);
+						});
+				});
 			};
 		},
 	};

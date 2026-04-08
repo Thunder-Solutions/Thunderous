@@ -2,6 +2,10 @@ import { build } from './build';
 
 const args = process.argv.slice(2);
 
+if (!process.argv.includes('--verbose')) {
+	console.debug = () => {};
+}
+
 if (args[0] === 'dev') {
 	// Parse port from command line arguments
 	process.env.PORT = process.env.PORT ?? '3000';
