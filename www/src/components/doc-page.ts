@@ -205,8 +205,10 @@ const styles = css`
 		grid-template-rows: minmax(0, 1fr) auto;
 		min-height: 100vh;
 	}
+	.doc-page,
 	header,
 	main {
+		max-height: 100vh;
 		overflow: auto;
 		scrollbar-width: thin;
 		scrollbar-color: rgba(255, 255, 255, 0.1) var(--color-site-1-1);
