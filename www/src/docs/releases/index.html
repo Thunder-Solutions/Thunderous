@@ -13,7 +13,50 @@
 		<ul>
 			<li>
 				<th-content-group>
-					<th-text> <th-code>2.3.13</th-code> (Latest)</th-text>
+					<th-text> <th-code>2.4.4</th-code> (Latest)</th-text>
+					<th-content-group>
+						<th-text>
+							Added specialized exports to enable consumers to patch memory leaks in render state. E.g.,
+							<th-code>clearRenderState()</th-code> and <th-code>clearServerCss()</th-code>.
+						</th-text>
+					</th-content-group>
+				</th-content-group>
+			</li>
+			<li>
+				<th-content-group>
+					<th-text> <th-code>2.4.3</th-code> </th-text>
+					<th-content-group>
+						<th-text> Enhanced server-side rendering support and fixed shadow root re-attachment issue. </th-text>
+					</th-content-group>
+				</th-content-group>
+			</li>
+			<li>
+				<th-content-group>
+					<th-text> <th-code>2.4.2</th-code> </th-text>
+					<th-content-group>
+						<th-text> Fixed SSR template parsing issue. </th-text>
+					</th-content-group>
+				</th-content-group>
+			</li>
+			<li>
+				<th-content-group>
+					<th-text> <th-code>2.4.1</th-code> </th-text>
+					<th-text>
+						Fixed render issue where <th-code>null</th-code> would cause the template to lose track of reactive values.
+					</th-text>
+				</th-content-group>
+			</li>
+			<li>
+				<th-content-group>
+					<th-text> <th-code>2.4.0</th-code> </th-text>
+					<th-text>
+						Minor release, see <th-link href="/docs/releases/2.0.0">release 2.0.0</th-link> for details.
+					</th-text>
+				</th-content-group>
+			</li>
+			<li>
+				<th-content-group>
+					<th-text> <th-code>2.3.13</th-code> </th-text>
 					<th-content-group>
 						<th-text>
 							Fixed a bug in <th-code>prop:</th-code> binding where uppercase characters were not persisting after
