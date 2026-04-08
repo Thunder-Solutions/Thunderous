@@ -2,6 +2,7 @@
 	"name": "create-thunderous",
 	"version": "0.0.11",
 	"description": "A CLI tool to scaffold a new project using the Thunderous stack.",
+	"type": "module",
 	"main": "index.js",
 	"bin": {
 		"create-thunderous": "./bin/index.js"
