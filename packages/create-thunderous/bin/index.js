@@ -27,7 +27,6 @@ program
 	.description('Scaffold a new Thunderous project')
 	.version('0.0.0')
 	.argument('[project-name]', 'project name, or "." to scaffold in the current directory')
-	.option('--current-dir', 'scaffold in the current directory')
 	.option('-p, --package-manager <name>', `package manager to use (${PACKAGE_MANAGERS.join(', ')})`)
 	.showHelpAfterError('(add --help for additional information)')
 	.configureOutput({
@@ -41,16 +40,15 @@ const rawNameArg = program.args[0];
 
 await main({
 	rawNameArg,
-	currentDir: Boolean(options.currentDir),
 	packageManager: options.packageManager,
 });
 
-async function main({ rawNameArg, currentDir, packageManager }) {
+async function main({ rawNameArg, packageManager }) {
 	const cwd = process.cwd();
 	const currentDirName = path.basename(cwd);
-	const dotMeansCurrentDir = rawNameArg === '.';
+	const useCurrentDir = rawNameArg === '.';
 
-	let projectName = dotMeansCurrentDir ? currentDirName : rawNameArg;
+	let projectName = useCurrentDir ? currentDirName : rawNameArg;
 
 	if (!projectName) {
 		projectName = await input({
@@ -66,7 +64,7 @@ async function main({ rawNameArg, currentDir, packageManager }) {
 	let targetDir = cwd;
 	let createdFolder = false;
 
-	if (currentDir || dotMeansCurrentDir) {
+	if (useCurrentDir) {
 		targetDir = cwd;
 	} else if (!namesMatch) {
 		targetDir = path.join(cwd, toKebabCase(projectName));
