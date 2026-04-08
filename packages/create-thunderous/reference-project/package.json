@@ -36,6 +36,6 @@
 	},
 	"dependencies": {
 		"thunderous": "^2.4.4",
-		"thunderous-csr": "^0.0.5"
+		"thunderous-csr": "^0.0.6"
 	}
 }
