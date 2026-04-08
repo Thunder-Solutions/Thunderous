@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "thunderous dev",
+		"prebuild": "pnpm --filter thunderous build && pnpm --filter thunderous-server build",
 		"build": "thunderous build",
 		"start": "pnpm dlx serve dist",
 		"format": "prettier . --check --ignore-path ../.gitignore --ignore-path ../.prettierignore",
