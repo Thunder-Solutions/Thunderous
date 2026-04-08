@@ -1,4 +1,4 @@
-import { css } from "thunderous";
+import { css } from 'thunderous';
 
 export const theme = css`
 	:host {

@@ -39,5 +39,5 @@
 		"noUncheckedSideEffectImports": true
 	},
 	"include": ["packages/*/src/**/*", "eslint.config.mjs"],
-	"exclude": ["node_modules", "dist", "packages/create-thunderous/reference-project/**"] // Exclude reference project
+	"exclude": ["node_modules", "dist", "reference-project"] // Exclude reference project
 }

@@ -1,7 +1,7 @@
-name: "Install Dependencies"
-description: "Installs dependencies defined in package.json"
+name: 'Install Dependencies'
+description: 'Installs dependencies defined in package.json'
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - uses: actions/checkout@v6
     - uses: pnpm/action-setup@v4
@@ -9,8 +9,8 @@ runs:
         version: 10.33.0
     - uses: actions/setup-node@v6
       with:
-        node-version-file: ".nvmrc"
-        cache: "pnpm"
+        node-version-file: '.nvmrc'
+        cache: 'pnpm'
     - name: Cache node modules
       uses: actions/cache@v5
       id: cache
