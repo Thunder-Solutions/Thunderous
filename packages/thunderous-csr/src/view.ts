@@ -121,10 +121,7 @@ export const View = customElement(
 								// Clone each child node of the view -- avoid cloning the view itself,
 								// since doing so will trigger the component lifecycle again and
 								// clutter the console with extra noise.
-								const childNodes = [];
-								for (const child of destinationViewElement.childNodes) {
-									childNodes.push(child.cloneNode(true));
-								}
+								const childNodes = Array.from(destinationViewElement.childNodes).map((n) => n.cloneNode(true));
 								elementRef.replaceChildren(...childNodes);
 								logger.debug(`THUNDEROUS-CSR: Replaced view content for "${elementRef.id}"`);
 							}).updateCallbackDone;
