@@ -1,11 +1,11 @@
 import { isServer } from './server-side';
 import { createEffect } from './signals';
 import type { ElementParent, Styles, SignalGetter, AnyFn } from './types';
-import { queryChildren, queryComment } from './utilities';
+import { queryChildren } from './utilities';
 
 const CALLBACK_BINDING_REGEX = /(\{\{callback:.+\}\})/;
 const LEGACY_CALLBACK_BINDING_REGEX = /(this.getRootNode\(\).host.__customCallbackFns.get\('.+'\)\(event\))/;
-const SIGNAL_BINDING_REGEX = /(\{\{signal:.+\}\})/;
+const SIGNAL_BINDING_REGEX = /(\{\{signal:.+?\}\})/;
 const FRAGMENT_ATTRIBUTE = '___thunderous-fragment';
 
 export const renderState = {
@@ -52,19 +52,38 @@ const logPropertyWarning = (propName: string, element: Element) => {
 	);
 };
 
-const asNodeList = (value: unknown, parent: ElementParent): Node[] => {
+const asNodeList = (value: unknown, parent: ElementParent, autoKey?: number): Node[] => {
+	if (value === null || value === undefined) return [];
 	if (typeof value === 'string') return [new Text(value)];
-	if (value instanceof DocumentFragment) return Array.from(value.children);
+	if (typeof value === 'number' || typeof value === 'boolean') return [new Text(String(value))];
+	if (value instanceof DocumentFragment) {
+		const children = Array.from(value.children);
+		// If autoKey is provided, apply it to the first child element
+		if (autoKey !== undefined && children.length > 0) {
+			const child = children[0];
+			if (child instanceof Element && child.getAttribute('key') === null) {
+				child.setAttribute('key', String(autoKey));
+			}
+		}
+		return children;
+	}
 	if (Array.isArray(value)) {
 		const nodeList: Node[] = [];
 		let count = 0;
 		const keys = new Set<string>();
 		for (const item of value) {
 			const cachedItem = item instanceof DocumentFragment ? renderState.childrenMap.get(item) : undefined;
-			const children = cachedItem ?? asNodeList(item, parent);
+			// Pass the current count as autoKey for DocumentFragments
+			const children = cachedItem ?? asNodeList(item, parent, item instanceof DocumentFragment ? count : undefined);
 			if (cachedItem === undefined && item instanceof DocumentFragment) {
 				renderState.childrenMap.set(item, children);
 			}
+			// For primitives (Text nodes), just add them without key handling
+			if (!(item instanceof DocumentFragment)) {
+				nodeList.push(...children);
+				continue;
+			}
+			// For DocumentFragments, apply key handling
 			if (children.length > 1) {
 				console.error(
 					'When rendering arrays, fragments must contain only one top-level element at a time. Error occured in:',
@@ -120,7 +139,7 @@ const processValue = (value: unknown): string => {
 		renderState.callbackMap.set(uniqueKey, value as AnyFn);
 		return isServer ? String(value()) : `{{callback:${uniqueKey}}}`;
 	}
-	return String(value);
+	return value === null || value === undefined ? '' : String(value);
 };
 
 // Bind signals and callbacks to DOM nodes in a DocumentFragment.
@@ -128,39 +147,48 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 	for (const child of Array.from(element.childNodes)) {
 		if (child instanceof Text && SIGNAL_BINDING_REGEX.test(child.data)) {
 			const textList = child.data.split(SIGNAL_BINDING_REGEX);
-			const nextSibling = child.nextSibling;
-			const prevSibling = child.previousSibling;
-			textList.forEach((text, i) => {
+			const allInitialChildren: Node[] = [];
+			const signalEntries: {
+				uniqueKey: string;
+				signal: SignalGetter<unknown>;
+				initialChildren: Node[];
+				autoKey?: number;
+			}[] = [];
+
+			let signalIndex = 0;
+			const totalSignals = textList.filter((t) => SIGNAL_BINDING_REGEX.test(t)).length;
+			textList.forEach((text) => {
 				const uniqueKey = SIGNAL_BINDING_REGEX.test(text) ? text.replace(/\{\{signal:(.+)\}\}/, '$1') : undefined;
 				const signal = uniqueKey !== undefined ? renderState.signalMap.get(uniqueKey) : undefined;
 				const newValue = signal !== undefined ? signal() : text;
-				const initialChildren = asNodeList(newValue, element);
+				// Pass signalIndex as autoKey for DocumentFragments only when there are multiple signals
+				const autoKey = signal !== undefined && totalSignals > 1 ? signalIndex++ : undefined;
+				const initialChildren = asNodeList(newValue, element, autoKey);
+				allInitialChildren.push(...initialChildren);
 
-				// there is only one text node, originally, so we have to replace it before inserting additional nodes
-				if (i === 0) {
-					child.replaceWith(...initialChildren);
-				} else {
-					const endAnchor = queryComment(element, `${uniqueKey}:end`) ?? nextSibling;
-					if (endAnchor !== null) {
-						endAnchor.before(...initialChildren);
-					} else {
-						element.append(...initialChildren);
-					}
+				if (uniqueKey !== undefined && signal !== undefined) {
+					signalEntries.push({ uniqueKey, signal, initialChildren, autoKey });
 				}
+			});
 
-				if (uniqueKey === undefined) return;
+			// Replace the text node with all initial children at once
+			child.replaceWith(...allInitialChildren);
+
+			// Now set up anchors and effects for each signal
+			signalEntries.forEach(({ uniqueKey, signal, initialChildren, autoKey }) => {
+				const firstChild = initialChildren[0];
+				const lastChild = initialChildren[initialChildren.length - 1];
+
+				if (uniqueKey === undefined || firstChild === undefined) return;
 
 				const startAnchor = document.createComment(`${uniqueKey}:start`);
-				if (prevSibling !== null) {
-					prevSibling.after(startAnchor);
-				} else {
-					element.prepend(startAnchor);
-				}
+				(firstChild as ChildNode).before(startAnchor);
+
 				const endAnchor = document.createComment(`${uniqueKey}:end`);
-				if (nextSibling !== null) {
-					nextSibling.before(endAnchor);
+				if (lastChild !== undefined) {
+					(lastChild as ChildNode).after(endAnchor);
 				} else {
-					element.append(endAnchor);
+					(startAnchor as ChildNode).after(endAnchor);
 				}
 
 				const bindText = (node: Text, signal: SignalGetter<unknown>) => {
@@ -170,37 +198,44 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 						// If the type of the result changes, destroy this effect in favor of the appropriate one.
 						if (Array.isArray(result)) {
 							destroy();
-							bindArray(signal);
+							bindArray(signal, autoKey);
 							return;
 						}
 						if (result instanceof DocumentFragment) {
 							destroy();
-							bindFragment(signal);
+							bindFragment(signal, initialChildren, autoKey);
 							return;
 						}
 
 						// Handle the string content of the text node.
-						node.data = result === null ? '' : String(result);
+						node.data = result === null || result === undefined ? '' : String(result);
 					});
 				};
 
-				const bindArray = (signal: SignalGetter<unknown>) => {
+				const bindArray = (signal: SignalGetter<unknown>, autoKey?: number) => {
 					createEffect(
 						({ lastValue: oldChildren, destroy }) => {
 							const result = signal();
-							const newChildren = asNodeList(result, element);
+							const newChildren = asNodeList(result, element, autoKey);
 							const firstChild = newChildren[0];
 
 							// If the type of the result changes, destroy this effect in favor of the appropriate one.
-							if (!Array.isArray(result) && newChildren.length === 1 && firstChild instanceof DocumentFragment) {
-								destroy();
-								bindFragment(signal);
-								return;
-							}
-							if (newChildren.length === 1 && firstChild instanceof Text) {
-								destroy();
-								bindText(firstChild, signal);
-								return;
+							if (!Array.isArray(result)) {
+								if (newChildren.length === 1 && firstChild instanceof DocumentFragment) {
+									destroy();
+									bindFragment(signal, initialChildren, autoKey);
+									return;
+								}
+								if (newChildren.length === 1 && firstChild instanceof Text) {
+									// Clear content and insert the Text node before switching
+									while (startAnchor.nextSibling !== endAnchor) {
+										startAnchor.nextSibling?.remove();
+									}
+									startAnchor.after(firstChild);
+									destroy();
+									bindText(firstChild, signal);
+									return;
+								}
 							}
 
 							// Remove all previous children between the anchor comments.
@@ -249,40 +284,66 @@ const evaluateBindings = (element: ElementParent, fragment: DocumentFragment) =>
 					);
 				};
 
-				const bindFragment = (signal: SignalGetter<unknown>) => {
+				const bindFragment = (signal: SignalGetter<unknown>, initialChildren: Node[], autoKey?: number) => {
 					const initialFragment = signal() as DocumentFragment;
-					renderState.childrenMap.set(initialFragment, Array.from(initialFragment.childNodes));
+					// Only cache initialChildren if they belong to the initialFragment.
+					// During type switching from primitive, initialChildren will be [Text].
+					// During initial render, initialChildren will be the fragment's Element children.
+					const firstInitialChild = initialChildren[0];
+					if (firstInitialChild instanceof Element) {
+						renderState.childrenMap.set(initialFragment, initialChildren);
+					}
 					createEffect(({ destroy }) => {
 						const result = signal();
-						const cachedChildren = renderState.childrenMap.get(initialFragment);
-						const children = cachedChildren ?? asNodeList(result, element);
+						// Use cached children if available (for initial render or previously seen fragments)
+						const cachedChildren = result instanceof DocumentFragment ? renderState.childrenMap.get(result) : undefined;
+						const children = cachedChildren ?? asNodeList(result, element, autoKey);
+						// Cache children for new fragments
+						if (result instanceof DocumentFragment && !renderState.childrenMap.has(result)) {
+							renderState.childrenMap.set(result, children);
+						}
 
 						// If the type of the result changes, destroy this effect in favor of the appropriate one.
 						if (Array.isArray(result)) {
 							destroy();
-							bindArray(signal);
+							bindArray(signal, autoKey);
 							return;
 						}
-						if (result instanceof Text) {
-							const children = asNodeList(result, element);
+						// Check if result is a primitive (not DocumentFragment, not Array, not null/undefined)
+						if (!(result instanceof DocumentFragment) && result !== null && result !== undefined) {
+							// Clear content and insert the Text node before switching
+							while (startAnchor.nextSibling !== endAnchor) {
+								startAnchor.nextSibling?.remove();
+							}
+							const children = asNodeList(result, element, autoKey);
 							const text = children[0] as Text;
+							startAnchor.after(text);
 							destroy();
 							bindText(text, signal);
 							return;
 						}
+
+						// Clear content between anchors
 						while (startAnchor.nextSibling !== endAnchor) {
 							startAnchor.nextSibling?.remove();
 						}
+
+						// Handle null/undefined by leaving empty (cleared above)
+						if (result === null || result === undefined) {
+							return;
+						}
+
 						startAnchor.after(...children);
 					});
 				};
 
 				// evaluate signals and subscribe to them
 				if (signal !== undefined) {
-					if (Array.isArray(newValue)) {
-						bindArray(signal);
-					} else if (initialChildren instanceof DocumentFragment) {
-						bindFragment(signal);
+					const currentValue = signal();
+					if (Array.isArray(currentValue)) {
+						bindArray(signal, autoKey);
+					} else if (currentValue instanceof DocumentFragment) {
+						bindFragment(signal, initialChildren, autoKey);
 					} else {
 						const initialChild = initialChildren[0] as Text;
 						bindText(initialChild, signal);

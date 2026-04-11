@@ -141,7 +141,9 @@ export const customElement = <Props extends CustomElementProps>(
 						for (const mutation of mutations) {
 							const attrName = mutation.attributeName;
 							if (mutation.type !== 'attributes' || attrName === null) continue;
-							if (!(attrName in this.#attrSignals)) this.#attrSignals[attrName] = createSignal<string | null>(null);
+							if (!(attrName in this.#attrSignals)) {
+								this.#attrSignals[attrName] = createSignal<string | null>(this.getAttribute(attrName));
+							}
 							const [getter, setter] = this.#attrSignals[attrName]!;
 							const oldValue = getter();
 							const newValue = this.getAttribute(attrName);
@@ -240,7 +242,9 @@ Element: <${this.tagName.toLowerCase()}>
 					{},
 					{
 						get: (_, prop: string) => {
-							if (!(prop in this.#attrSignals)) this.#attrSignals[prop] = createSignal<string | null>(null);
+							if (!(prop in this.#attrSignals)) {
+								this.#attrSignals[prop] = createSignal<string | null>(this.getAttribute(prop));
+							}
 							const [getter] = this.#attrSignals[prop]!;
 							const setter = (newValue: string) => this.setAttribute(prop, newValue);
 							return [getter, setter];
@@ -330,7 +334,9 @@ Element: <${this.tagName.toLowerCase()}>
 		}
 		connectedCallback() {
 			for (const [attrName, attr] of this.#attributesAsPropertiesMap) {
-				if (!(attrName in this.#attrSignals)) this.#attrSignals[attrName] = createSignal<string | null>(null);
+				if (!(attrName in this.#attrSignals)) {
+					this.#attrSignals[attrName] = createSignal<string | null>(this.getAttribute(attrName));
+				}
 				const propName = attr.prop as Extract<keyof Props, string>;
 				const [getter] = this.#getPropSignal(propName, { allowUndefined: true });
 				let busy = false;
@@ -346,6 +352,18 @@ Element: <${this.tagName.toLowerCase()}>
 					}
 					busy = false;
 				});
+			}
+			// Sync signal values with current attribute values
+			// (attributes may have been set before observer started)
+			for (const attrName of Object.keys(this.#attrSignals)) {
+				const signal = this.#attrSignals[attrName];
+				if (signal) {
+					const [getter, setter] = signal;
+					const currentValue = this.getAttribute(attrName);
+					if (getter() !== currentValue) {
+						setter(currentValue);
+					}
+				}
 			}
 			if (this.#observer !== null) {
 				this.#observer.observe(this, { attributes: true });
