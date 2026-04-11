@@ -1,0 +1,454 @@
+<?layout href="../../_layout.html">
+
+<th-doc-page>
+	<th-page-header>thunderous-server</th-page-header>
+	<th-content-group>
+		<th-block-quote variant="warning">
+			<strong>Experimental:</strong> This package is experimental and may not be suitable for production use. It is
+			subject to bugs and breaking changes.
+		</th-block-quote>
+
+		<th-text> <th-code>thunderous-server</th-code> is a static site generator that enhances plain HTML. </th-text>
+		<th-text>
+			Think of it as "HTML with superpowers": you write standard HTML files, but you gain composable layouts, template
+			expressions, and server-side scripts.
+		</th-text>
+		<th-text>
+			This isn't intended to serve as a <em>"framework"</em> in the traditional sense, but rather a tool that makes it
+			<em>more feasible to work without one</em>.
+		</th-text>
+
+		<th-content-header>Key Features</th-content-header>
+
+		<ul>
+			<li>
+				<strong>Pure HTML files with enhanced capabilities</strong> — No special file extensions, just plain
+				<th-code>.html</th-code> files.
+			</li>
+			<li>
+				<strong>Layout composition</strong> — Use standard <th-code>&lt;slot&gt;</th-code> elements to wrap pages in
+				layouts via processing instructions.
+			</li>
+			<li>
+				<strong>Server-side expressions</strong> — Evaluate JavaScript on the server using
+				<th-code>&lt;script expr&gt;</th-code> tags.
+			</li>
+			<li>
+				<strong>TypeScript support</strong> — All <th-code>&lt;script&gt;</th-code> tags support TypeScript out of the
+				box.
+			</li>
+			<li>
+				<strong>No-bundle dependencies</strong> — NPM dependencies are automatically "vendorized" and loaded via native
+				<th-code>&lt;script type="importmap"&gt;</th-code> tags.
+			</li>
+			<li>
+				<strong>Component SSR</strong> — Thunderous web components render server-side using declarative shadow DOM.
+			</li>
+		</ul>
+
+		<th-content-header>Philosophy: "Just HTML"</th-content-header>
+
+		<th-sub-header>What You Won't Find Here</th-sub-header>
+
+		<ul>
+			<li>Special file extensions (Just plain <th-code>.html</th-code> files)</li>
+			<li>Template syntax mixed into HTML</li>
+			<li>Complex routing configuration</li>
+			<li>Magic compiler transformations</li>
+			<li>Framework-specific components</li>
+		</ul>
+
+		<th-sub-header>What You Do Get</th-sub-header>
+
+		<ul>
+			<li>Pure HTML files with enhanced capabilities</li>
+			<li>Layout composition using standard <th-code>&lt;slot&gt;</th-code> elements</li>
+			<li>Template expressions via <th-code>&lt;script expr&gt;</th-code></li>
+			<li>Server-only scripts via <th-code>&lt;script server&gt;</th-code></li>
+			<li>Shared server-and-client scripts via <th-code>&lt;script isomorphic&gt;</th-code></li>
+			<li>TypeScript support in all <th-code>&lt;script&gt;</th-code> tags</li>
+			<li>No-bundle dependencies via generated <th-code>&lt;script type="importmap"&gt;</th-code> tags</li>
+			<li>Native browser behavior preserved</li>
+		</ul>
+
+		<th-content-header>Installation</th-content-header>
+
+		<th-text> Add Thunderous Server to an existing project: </th-text>
+
+		<th-code-block lang="bash">
+			<script expr>
+				snippetAsHTML('install-server.sh');
+			</script>
+		</th-code-block>
+
+		<th-text>
+			Or run
+			<th-link href="https://www.npmjs.com/package/create-thunderous"> <th-code>npm init thunderous</th-code> </th-link>
+			to create a new project with the full Thunderous Stack.
+		</th-text>
+
+		<th-content-header>Core Concepts</th-content-header>
+
+		<th-sub-header>1. File-Based Routing</th-sub-header>
+
+		<th-text>
+			Routing works exactly like a static file server. Create an <th-code>about.html</th-code> file, and it's available
+			at <th-code>/about</th-code>. Create a folder <th-code>blog/post-1.html</th-code>, and it's at
+			<th-code>/blog/post-1</th-code>.
+		</th-text>
+
+		<th-code-block lang="text">
+			<script expr>
+				snippetAsHTML('server-file-structure.txt');
+			</script>
+		</th-code-block>
+
+		<th-text>
+			<strong>Files starting with underscore (<th-code>_</th-code>) are excluded from the final output</strong>—perfect
+			for layouts.
+		</th-text>
+
+		<th-sub-header>2. Layouts</th-sub-header>
+
+		<th-text> Use the processing instruction syntax to wrap content in a layout: </th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('layout-example.html');
+			</script>
+		</th-code-block>
+
+		<th-text> The layout file uses standard <th-code>&lt;slot&gt;</th-code> elements for content insertion: </th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('layout-file.html');
+			</script>
+		</th-code-block>
+
+		<th-block-quote>
+			<strong>Why processing instructions?</strong><br />
+			They're valid XML syntax that browsers treat as comments. Thunderous strips them during rendering, leaving clean
+			HTML.<br /><br />
+			This was inspired by
+			<a
+				href="https://github.com/WICG/declarative-partial-updates/blob/main/patching-explainer.md#proposed-markup"
+				target="_blank"
+				>the declarative partial updates proposal</a
+			>
+			to the HTML spec, and many other proposals also explore the use of processing instructions, so we may soon see
+			native support for this kind of pattern.
+		</th-block-quote>
+
+		<th-sub-header>3. Server-Side Expressions</th-sub-header>
+
+		<th-text>
+			The <th-code>&lt;script expr&gt;</th-code> tag evaluates JavaScript on the server and inserts the result:
+		</th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('server-expr-example.html');
+			</script>
+		</th-code-block>
+
+		<th-text> <strong>Key points:</strong> </th-text>
+
+		<ul>
+			<li>Runs <strong>only on the server</strong>—never reaches the browser</li>
+			<li>Has access to exports from <th-code>&lt;script server&gt;</th-code></li>
+			<li>Uses the <th-code>html</th-code> template tag for safe interpolation</li>
+		</ul>
+
+		<th-sub-header>4. Server Scripts</th-sub-header>
+
+		<th-text>
+			Use <th-code>&lt;script server&gt;</th-code> to prepare data for your page. The default export becomes available
+			to <th-code>&lt;script expr&gt;</th-code> tags:
+		</th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('server-script-example.html');
+			</script>
+		</th-code-block>
+
+		<th-sub-header>5. Isomorphic Scripts</th-sub-header>
+
+		<th-text> <th-code>&lt;script isomorphic&gt;</th-code> runs on <strong>both server and client</strong>: </th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('isomorphic-script-example.html');
+			</script>
+		</th-code-block>
+
+		<th-sub-header>6. Client Modules</th-sub-header>
+
+		<th-text>
+			Standard <th-code>&lt;script type="module"&gt;</th-code> tags work as expected, but with a twist:
+			<strong>imports are automatically vendorized</strong>.
+		</th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('client-module-example.html');
+			</script>
+		</th-code-block>
+
+		<th-text> Thunderous will: </th-text>
+
+		<ol>
+			<li>Extract the package to your output folder</li>
+			<li>Generate an import map so the browser can resolve it</li>
+			<li>Rewrite import specifiers to point to the vendored copy</li>
+		</ol>
+
+		<th-text> <strong>No bundler needed.</strong> The browser loads modules natively via import maps. </th-text>
+
+		<th-sub-header>7. TypeScript Support</th-sub-header>
+
+		<th-text>
+			Any <th-code>.ts</th-code> file is automatically transpiled to <th-code>.js</th-code>. This works for:
+		</th-text>
+
+		<ul>
+			<li>Module imports in scripts</li>
+			<li>Isomorphic scripts</li>
+			<li>Server scripts</li>
+		</ul>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('server-ts-example.html');
+			</script>
+		</th-code-block>
+
+		<th-content-header>Configuration</th-content-header>
+
+		<th-text> Create <th-code>thunderous.config.ts</th-code> in your project root: </th-text>
+
+		<th-code-block lang="typescript">
+			<script expr>
+				snippetAsHTML('server-config.ts');
+			</script>
+		</th-code-block>
+
+		<th-content-header>Development & Build</th-content-header>
+
+		<th-sub-header>Development Server</th-sub-header>
+
+		<th-code-block lang="bash">
+			<script expr>
+				snippetAsHTML('server-dev.sh');
+			</script>
+		</th-code-block>
+
+		<th-sub-header>Production Build</th-sub-header>
+
+		<th-code-block lang="bash">
+			<script expr>
+				snippetAsHTML('server-build.sh');
+			</script>
+		</th-code-block>
+
+		<th-content-header>Common Patterns</th-content-header>
+
+		<th-sub-header>Dynamic Lists</th-sub-header>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('dynamic-list.html');
+			</script>
+		</th-code-block>
+
+		<th-sub-header>Conditional Rendering</th-sub-header>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('conditional-render.html');
+			</script>
+		</th-code-block>
+
+		<th-sub-header>Component SSR</th-sub-header>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('component-ssr.html');
+			</script>
+		</th-code-block>
+
+		<th-content-header>API</th-content-header>
+
+		<th-sub-header>Programmatic Usage</th-sub-header>
+
+		<th-code-block lang="typescript">
+			<script expr>
+				snippetAsHTML('server-api-usage.ts');
+			</script>
+		</th-code-block>
+
+		<th-sub-header>Utilities</th-sub-header>
+
+		<th-code-block lang="typescript">
+			<script expr>
+				snippetAsHTML('server-api-utils.ts');
+			</script>
+		</th-code-block>
+
+		<th-content-header>Anti-Patterns to Avoid</th-content-header>
+
+		<th-text>
+			<strong>Don't: Define Multiple <th-code>&lt;script server&gt;</th-code> Exports</strong>
+		</th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('server-anti-pattern-multiple.html');
+			</script>
+		</th-code-block>
+
+		<th-text> <strong>Do:</strong> Consolidate into a single <th-code>&lt;script server&gt;</th-code> block. </th-text>
+
+		<th-text>
+			<strong
+				>Don't: Directly Access DOM in <th-code>&lt;script server&gt;</th-code> or
+				<th-code>&lt;script isomorphic&gt;</th-code></strong
+			>
+		</th-text>
+
+		<th-text>
+			<em>*Unless you bring your own DOM implementation (e.g., JSDOM) to the server environment.</em>
+		</th-text>
+
+		<th-text>
+			The server has no <th-code>document</th-code> or <th-code>window</th-code>.* Unless you bring your own DOM
+			implementation (e.g., JSDOM) to the server environment.
+		</th-text>
+		<th-text>
+			<strong>Do:</strong> Conditionally run client-side code by checking if
+			<th-code>typeof window !== 'undefined'</th-code>, or use regular <th-code>&lt;script&gt;</th-code> tags for DOM
+			access.
+		</th-text>
+		<th-text>
+			If you're using Thunderous, you can use
+			<th-link href="/docs/server-side-rendering">clientOnlyCallback()</th-link> for this purpose.
+		</th-text>
+
+		<th-text>
+			<strong>Don't: Forget the <th-code>html</th-code> Tag in Expressions</strong>
+		</th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('server-anti-pattern-html-tag.html');
+			</script>
+		</th-code-block>
+
+		<th-content-header>FAQ</th-content-header>
+
+		<th-text>
+			<strong>Q: Do I need a build step for development?</strong><br />
+			A: Not really! <th-code>thunderous dev</th-code> starts a Vite-based dev server with hot module replacement. You
+			only need <th-code>thunderous build</th-code> when you're ready to deploy static files.
+		</th-text>
+
+		<th-text>
+			<strong>Q: Can I use React/Vue/Svelte components?</strong><br />
+			A: You can mount any client-side framework after a page loads. Thunderous Server isn't opinionated about that, but
+			it does provide built-in support for Thunderous web components if you choose to use them.
+		</th-text>
+		<th-text>
+			While Thunderous Server doesn't <em>currently*</em> support direct integrations with full-stack frameworks like
+			Next.js, Nuxt, or SvelteKit, the HTML it generates may be used as a mount point for frameworks that manage their
+			own server separately.
+		</th-text>
+		<th-text>
+			<em>*Plugin support for third-party integrations is planned, but not yet available.</em>
+		</th-text>
+
+		<th-text>
+			<strong>Q: How do I handle form submissions?</strong><br />
+			A: There is no special handling for form submissions. Use standard form actions to a backend API, or enhance with
+			client-side JavaScript.
+		</th-text>
+		<th-text>
+			In fact, any pattern to generate endpoints or introduce any other non-native behavior is contrary to the
+			principles of Thunderous Server. The path your code takes should be clear and easy to follow at every point on its
+			journey from request to response.
+		</th-text>
+		<th-text>
+			That being said, you are free to use any patterns or libraries you want, but providing out-of-the-box tools for
+			this purpose is not planned.
+		</th-text>
+
+		<th-text>
+			<strong>Q: What about CSS preprocessors?</strong><br />
+			A: Thunderous Server is compatible with any CSS preprocessor, but it doesn't handle the preprocessing itself. You
+			can use your preferred tool (Sass, PostCSS, etc.) and output the result to your source folder.
+		</th-text>
+		<th-text>
+			As the CSS spec continues to evolve, the need for preprocessors is diminishing. Native CSS now supports variables,
+			nesting, and even functions like <th-code>calc()</th-code>, <th-code>clamp()</th-code>,
+			<th-code>color-mix()</th-code>, and so on. With the introduction of
+			<a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Custom_functions_and_mixins" target="_blank"
+				>CSS functions and mixins</a
+			>, the remaining gap is closing fast.
+		</th-text>
+		<th-text>
+			Thunderous Server is committed to keeping things simple and native, so we currently don't plan to add built-in
+			support for preprocessors. If you need them, there are no restrictions on using them in your project.
+		</th-text>
+
+		<th-content-header>Troubleshooting</th-content-header>
+
+		<th-sub-header>Issue: "Cannot find module" in browser</th-sub-header>
+
+		<th-text> <strong>Cause:</strong> Import maps weren't generated. </th-text>
+		<th-text>
+			<strong>Fix:</strong> Ensure your script is <th-code>type="module"</th-code> or <th-code>isomorphic</th-code>.
+			Check that the import is from an NPM package, not a local file (those should use relative paths).
+		</th-text>
+
+		<th-sub-header
+			>Issue: <th-code>&lt;script expr&gt;</th-code> shows <th-code>[object Object]</th-code></th-sub-header
+		>
+
+		<th-text> <strong>Cause:</strong> Expression returned an object instead of an HTML-serializable value. </th-text>
+		<th-text>
+			<strong>Fix:</strong> Ensure you return an <th-code>html</th-code> tagged template string or a primitive value.
+		</th-text>
+
+		<th-content-header>Related Packages</th-content-header>
+
+		<ul>
+			<li>
+				<th-link href="https://www.npmjs.com/package/thunderous">thunderous</th-link> — Web component authoring library
+			</li>
+			<li>
+				<th-link href="https://www.npmjs.com/package/thunderous-csr">thunderous-csr</th-link> — Client-side rendering
+				for partial updates to HTML
+			</li>
+			<li>
+				<th-link href="https://www.npmjs.com/package/create-thunderous">create-thunderous</th-link> — Project
+				scaffolding CLI
+			</li>
+		</ul>
+
+		<th-content-header>Roadmap</th-content-header>
+
+		<ul>
+			<li>Named slots in layouts (<th-code>&lt;slot name="sidebar"&gt;</th-code>)</li>
+			<li>
+				IDE extensions for <th-code>&lt;script expr&gt;</th-code> and <th-code>&lt;script server&gt;</th-code>
+				(autocomplete, type checking, go-to-definition)
+			</li>
+			<li>Enhanced hot reload reliability</li>
+		</ul>
+	</th-content-group>
+</th-doc-page>
+
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

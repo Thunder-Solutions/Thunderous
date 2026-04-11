@@ -1,0 +1,7 @@
+<script isomorphic>
+  import { UserCard } from './components/user-card';
+  UserCard.define('user-card');
+</script>
+
+<!-- This renders as declarative shadow DOM on the server -->
+<user-card name="Alice" role="Admin"></user-card>

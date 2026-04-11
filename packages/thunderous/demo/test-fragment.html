@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>DocumentFragment Signal Test</title>
+    <script src="https://unpkg.com/@webcomponents/scoped-custom-element-registry@0.0.10/scoped-custom-element-registry.min.js"></script>
+</head>
+<body>
+    <h1>DocumentFragment Signal Test</h1>
+    <div id="results"></div>
+    
+    <script type="module">
+        import { customElement, html, derived } from 'thunderous';
+        
+        // Define a test icon component with OPEN shadow root (so we can inspect it)
+        const TestIcon = customElement(({ attrSignals }) => {
+            const [iconName] = attrSignals['icon-name'];
+            
+            const iconMap = {
+                warning: html`<svg viewBox="0 0 512 512" class="warning-icon"><path d="M256 32L40 480h432L256 32z"/></svg>`,
+                info: html`<svg viewBox="0 0 512 512" class="info-icon"><circle cx="256" cy="256" r="200"/></svg>`
+            };
+            
+            const icon = derived(() => iconMap[iconName()] ?? iconMap.info);
+            
+            return html`${icon}`;
+        }, { shadowRootOptions: { mode: 'open' } });
+        
+        TestIcon.define('test-icon');
+        
+        const results = document.getElementById('results');
+        
+        // Test 1: Initial render
+        const el1 = document.createElement('test-icon');
+        el1.setAttribute('icon-name', 'warning');
+        document.body.appendChild(el1);
+        
+        setTimeout(() => {
+            const shadow1 = el1.shadowRoot;
+            const test1 = shadow1.innerHTML.includes('<svg') && shadow1.innerHTML.includes('warning-icon');
+            results.innerHTML += `<p>Test 1 (Initial render): ${test1 ? 'PASS' : 'FAIL'} - Shadow root contains: ${shadow1.innerHTML.substring(0, 100)}...</p>`;
+            
+            // Test 2: Toggle to info
+            el1.setAttribute('icon-name', 'info');
+            
+            setTimeout(() => {
+                const test2 = shadow1.innerHTML.includes('<svg') && shadow1.innerHTML.includes('info-icon');
+                results.innerHTML += `<p>Test 2 (Toggle to info): ${test2 ? 'PASS' : 'FAIL'} - Shadow root contains: ${shadow1.innerHTML.substring(0, 100)}...</p>`;
+                
+                // Test 3: Toggle back to warning
+                el1.setAttribute('icon-name', 'warning');
+                
+                setTimeout(() => {
+                    const test3 = shadow1.innerHTML.includes('<svg') && shadow1.innerHTML.includes('warning-icon');
+                    results.innerHTML += `<p>Test 3 (Toggle back to warning): ${test3 ? 'PASS' : 'FAIL'} - Shadow root contains: ${shadow1.innerHTML.substring(0, 100)}...</p>`;
+                    
+                    if (test1 && test2 && test3) {
+                        results.innerHTML += '<p style="color: green; font-weight: bold;">ALL TESTS PASSED!</p>';
+                    } else {
+                        results.innerHTML += '<p style="color: red; font-weight: bold;">SOME TESTS FAILED!</p>';
+                    }
+                }, 50);
+            }, 50);
+        }, 50);
+    </script>
+</body>
+</html>

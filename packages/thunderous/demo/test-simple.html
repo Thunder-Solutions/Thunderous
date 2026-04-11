@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Simple SVG Test</title>
+	</head>
+	<body>
+		<h1>Simple Test</h1>
+		<div id="results">Loading...</div>
+
+		<script type="module">
+			try {
+				const { html } = await import('../dist/index.js');
+
+				// Test: Create SVG with viewBox
+				const fragment = html`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+					<circle cx="50" cy="50" r="40" />
+				</svg>`;
+
+				const div = document.createElement('div');
+				div.appendChild(fragment.cloneNode(true));
+
+				const hasViewBox = div.innerHTML.includes('viewBox');
+				const hasSvg = div.innerHTML.includes('<svg');
+
+				document.getElementById('results').innerHTML = `
+                <p>Has SVG: ${hasSvg}</p>
+                <p>Has viewBox: ${hasViewBox}</p>
+                <p>HTML: ${div.innerHTML.substring(0, 200)}</p>
+                <p>${hasViewBox ? 'PASS' : 'FAIL'}</p>
+            `;
+			} catch (err) {
+				document.getElementById('results').innerHTML = `<p style="color:red">ERROR: ${err.message}</p>`;
+			}
+		</script>
+	</body>
+</html>

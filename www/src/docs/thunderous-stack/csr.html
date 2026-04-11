@@ -1,0 +1,508 @@
+<?layout href="../../_layout.html">
+
+<th-doc-page>
+	<th-page-header>thunderous-csr</th-page-header>
+	<th-content-group>
+		<th-block-quote variant="warning">
+			<strong>Experimental:</strong> This package is experimental and may not be suitable for production use. It is
+			subject to bugs and breaking changes.
+		</th-block-quote>
+
+		<th-text>
+			<th-code>thunderous-csr</th-code> (Client-Side Rendering) brings <strong>SPA-like navigation</strong> to
+			traditional multi-page apps (MPAs).
+		</th-text>
+		<th-text>
+			It intercepts navigation and updates only select parts of the page, enabling smoother transitions and better
+			performance.
+		</th-text>
+		<th-text>
+			The best part? <strong>Your pages are still just HTML.</strong> No router, no framework, no server needed.
+		</th-text>
+
+		<th-content-header>What Problem Does This Solve?</th-content-header>
+
+		<th-text>
+			Traditional MPAs (Multi-Page Applications) have a major UX drawback: every navigation triggers a full page reload,
+			causing:
+		</th-text>
+
+		<ul>
+			<li>Flash of white screen</li>
+			<li>Re-execution of all JavaScript</li>
+			<li>Broken transient UI state (open dropdowns, playing videos, etc.)</li>
+		</ul>
+
+		<th-text> SPAs (Single-Page Applications) solve this, but introduce complexity: </th-text>
+
+		<ul>
+			<li>Client-side routing libraries</li>
+			<li>State management headaches</li>
+			<li>Large JavaScript bundles</li>
+			<li>SEO challenges</li>
+		</ul>
+
+		<th-text>
+			<strong>Thunderous CSR gives you the best of both worlds:</strong> the simplicity of MPAs with the smooth UX of
+			SPAs.
+		</th-text>
+
+		<th-content-header>Key Features</th-content-header>
+
+		<ul>
+			<li><strong>No routing configuration</strong> — Works with your existing HTML files and links.</li>
+			<li>
+				<strong>Modern Navigation API</strong> — Uses the native Navigation API for interception, not fragile click
+				handlers.
+			</li>
+			<li>
+				<strong>Partial updates</strong> — Only swaps content inside matching view elements, preserving scroll position
+				and transient state.
+			</li>
+			<li><strong>View transitions</strong> — Native CSS View Transitions support for smooth animations.</li>
+			<li><strong>Progressive enhancement</strong> — Works without JavaScript; enhanced when available.</li>
+			<li><strong>State tracking</strong> — Built-in pending, ready, and error states with CSS classes.</li>
+		</ul>
+
+		<th-content-header>Installation</th-content-header>
+
+		<th-text> <th-code>create-thunderous</th-code> includes CSR by default. To add it to an existing project: </th-text>
+
+		<th-code-block lang="bash">
+			<script expr>
+				snippetAsHTML('install-csr.sh');
+			</script>
+		</th-code-block>
+
+		<th-content-header>Quick Start</th-content-header>
+
+		<th-text> Define the View element once in your application: </th-text>
+
+		<th-code-block lang="javascript">
+			<script expr>
+				snippetAsHTML('csr-init.js');
+			</script>
+		</th-code-block>
+
+		<th-text> Wrap your page content in view elements with matching IDs: </th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('csr-view-example.html');
+			</script>
+		</th-code-block>
+
+		<th-text>
+			That's it—navigation will be captured by the <th-code>&lt;t-view&gt;</th-code> element, which looks for itself on
+			the incoming page and swaps its content.
+		</th-text>
+		<th-text>
+			<strong>Note:</strong> Thunderous CSR only handles the client side. It expects HTML to be served separately.
+			<th-link href="/docs/thunderous-stack/server">Thunderous Server</th-link> makes it easy, but any server works, as
+			long as the responses are valid HTML.
+		</th-text>
+
+		<th-content-header>How It Works</th-content-header>
+
+		<th-sub-header>The Core Concept: View Elements with IDs</th-sub-header>
+
+		<th-text>
+			Thunderous CSR uses the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation">Navigation API</a>—a
+			modern web platform feature—to intercept navigations. When you click a link:
+		</th-text>
+
+		<ol>
+			<li>The navigation is intercepted</li>
+			<li>The destination page is fetched in the background</li>
+			<li>The <th-code>&lt;t-view&gt;</th-code> element with a matching ID swaps its content</li>
+			<li>The URL updates using the History API</li>
+		</ol>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('csr-page1.html');
+			</script>
+		</th-code-block>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('csr-page2.html');
+			</script>
+		</th-code-block>
+
+		<th-text>
+			When navigating from Page 1 to Page 2, the <th-code>&lt;t-view id="content"&gt;</th-code> on Page 1 gets its inner
+			content replaced with the content from the matching view on Page 2.
+		</th-text>
+
+		<th-sub-header>Why the ID Matters</th-sub-header>
+
+		<th-text>
+			The <th-code>id</th-code> attribute <strong>must</strong> be identical across pages for content swapping to work.
+			This allows you to have multiple independent views on the same page:
+		</th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('csr-multiple-views.html');
+			</script>
+		</th-code-block>
+
+		<th-content-header>API Reference</th-content-header>
+
+		<th-sub-header>View.define(tagName)</th-sub-header>
+
+		<th-text> Registers the View custom element with your preferred tag name. Call this exactly once: </th-text>
+
+		<th-code-block lang="javascript">
+			<script expr>
+				snippetAsHTML('csr-define.js');
+			</script>
+		</th-code-block>
+
+		<th-sub-header>viewRegistry</th-sub-header>
+
+		<th-text> If you need to dynamically look up the registered tag name: </th-text>
+
+		<th-code-block lang="javascript">
+			<script expr>
+				snippetAsHTML('csr-registry.js');
+			</script>
+		</th-code-block>
+
+		<th-content-header>Features</th-content-header>
+
+		<th-sub-header>View States & CSS Classes</th-sub-header>
+
+		<th-text> The View element automatically toggles CSS classes based on its state: </th-text>
+
+		<table>
+			<tr>
+				<th>State</th>
+				<th>Class</th>
+				<th>When Active</th>
+			</tr>
+			<tr>
+				<td>Loading</td>
+				<td><th-code>.pending</th-code></td>
+				<td>During navigation, before content swaps</td>
+			</tr>
+			<tr>
+				<td>Complete</td>
+				<td><th-code>.ready</th-code></td>
+				<td>After successful content swap</td>
+			</tr>
+			<tr>
+				<td>Error</td>
+				<td><th-code>.error</th-code></td>
+				<td>If navigation fails</td>
+			</tr>
+		</table>
+
+		<th-code-block lang="css">
+			<script expr>
+				snippetAsHTML('csr-view-states.css');
+			</script>
+		</th-code-block>
+
+		<th-sub-header>Loading Overlay</th-sub-header>
+
+		<th-text>
+			By default, a semi-transparent overlay appears during navigation. Customize it with the
+			<th-code>loading-overlay</th-code> slot:
+		</th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('csr-loading-overlay.html');
+			</script>
+		</th-code-block>
+
+		<th-sub-header>Native Support</th-sub-header>
+
+		<th-text>
+			Since this uses the built-in
+			<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API">Navigation API</a>, you may also take
+			advantage of its corresponding CSS features:
+		</th-text>
+
+		<ul>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@view-transition" target="_blank"
+					><th-code>@view-transition</th-code></a
+				>
+			</li>
+			<li>
+				<a
+					href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/view-transition-name"
+					target="_blank"
+					><th-code>view-transition-name</th-code></a
+				>
+			</li>
+			<li>
+				<a
+					href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/view-transition-class"
+					target="_blank"
+					><th-code>view-transition-class</th-code></a
+				>
+			</li>
+			<li>
+				<a
+					href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:active-view-transition"
+					target="_blank"
+					><th-code>:active-view-transition</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/::view-transition" target="_blank"
+					><th-code>::view-transition</th-code></a
+				>
+				(and related pseudo-elements)
+			</li>
+		</ul>
+
+		<th-text> There are also several related events that you can listen to: </th-text>
+
+		<ul>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/navigate_event" target="_blank"
+					><th-code>navigate</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/navigateerror_event" target="_blank"
+					><th-code>navigateerror</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/navigatesuccess_event" target="_blank"
+					><th-code>navigatesuccess</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/currententrychange_event" target="_blank"
+					><th-code>currententrychange</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/pageswap_event" target="_blank"
+					><th-code>pageswap</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/pagereveal_event" target="_blank"
+					><th-code>pagereveal</th-code></a
+				>
+			</li>
+		</ul>
+
+		<th-text>
+			And of course it's worth reviewing the
+			<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation" target="_blank">Navigation Interface</a>
+			itself. That is, the methods and properties available on the global <th-code>navigation</th-code> object:
+		</th-text>
+
+		<ul>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/activation" target="_blank"
+					><th-code>activation</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/canGoBack" target="_blank"
+					><th-code>canGoBack</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/canGoForward" target="_blank"
+					><th-code>canGoForward</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/currentEntry" target="_blank"
+					><th-code>currentEntry</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/entries" target="_blank"
+					><th-code>entries()</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/back" target="_blank"
+					><th-code>back()</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/forward" target="_blank"
+					><th-code>forward()</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/navigate" target="_blank"
+					><th-code>navigate()</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/traverseTo" target="_blank"
+					><th-code>traverseTo()</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigation/updateCurrentEntry" target="_blank"
+					><th-code>updateCurrentEntry()</th-code></a
+				>
+			</li>
+			<li>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/NavigateEvent" target="_blank"
+					><th-code>NavigationEvent</th-code></a
+				>
+				(with properties like <th-code>destination</th-code>, <th-code>canIntercept</th-code>,
+				<th-code>intercept()</th-code>, etc.)
+			</li>
+		</ul>
+
+		<th-block-quote variant="caution">
+			<strong>Browser Support:</strong> Browser support for these features may be limited. Please check the support
+			tables on the linked MDN pages before using them in production.
+		</th-block-quote>
+
+		<th-content-header>Common Anti-Patterns</th-content-header>
+
+		<th-text> <strong>Don't: Define Different IDs on Different Pages</strong> </th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('csr-anti-pattern-different-ids.html');
+			</script>
+		</th-code-block>
+
+		<th-text> <strong>Do:</strong> Use identical IDs across pages. </th-text>
+
+		<th-text> <strong>Don't: Nest Views in Other Views</strong> </th-text>
+
+		<th-code-block lang="html">
+			<script expr>
+				snippetAsHTML('csr-nested-views.html');
+			</script>
+		</th-code-block>
+
+		<th-text> <strong>Do:</strong> Define all views in parallel scopes. </th-text>
+
+		<th-content-header>FAQ</th-content-header>
+
+		<th-text>
+			<strong>Q: Does this work without JavaScript?</strong><br />
+			A: Yes, sort of! Thunderous CSR is built with progressive enhancement in mind, so without JavaScript, users just
+			get the standard MPA experience (full page loads). There will be no partial updates, but disabling JavaScript will
+			not <em>break</em> the page.
+		</th-text>
+
+		<th-text>
+			<strong>Q: What browsers are supported?</strong><br />
+			A: The Navigation API is considered baseline as of January 2026, so it's widely supported.
+		</th-text>
+		<th-text>
+			Not everyone supports the additional features <em>surrounding</em> navigations, but the core functionality
+			employed by Thunderous CSR is expected to work consistently across all major browsers.
+		</th-text>
+
+		<th-text>
+			<strong>Q: How does this differ from HTMX or Turbo?</strong><br />
+			A: HTMX uses attributes to define endpoints that fetch partial HTML, while Thunderous CSR selectively swaps
+			content from whole-page responses.
+		</th-text>
+		<th-text>
+			Turbo uses a very similar approach, but it's more opinionated and requires global scripts. Thunderous CSR is a
+			single web component you explicitly import and register yourself.
+		</th-text>
+		<th-text>
+			Out of these three, only Thunderous CSR operates on the baseline Navigation API, which also plugs into a whole
+			cluster of emerging browser features surrounding it. While not all of them are fully supported yet, it's a solid
+			foundation for future-facing apps.
+		</th-text>
+
+		<th-text>
+			<strong>Q: Can I use this with React/Vue/Svelte?</strong><br />
+			A: Technically yes, but Thunderous CSR's partial update model overlaps with the way those frameworks manage DOM
+			updates. In most cases, if you're building the page around one of those frameworks, it's better to use that
+			framework's own routing system instead.
+		</th-text>
+		<th-text>
+			One case where they can still work well together is a microfrontend architecture, where Thunderous CSR handles
+			top-level navigation and React, Vue, or Svelte are mounted onto specific elements within each view.
+		</th-text>
+
+		<th-text>
+			<strong>Q: Does this intercept form submissions?</strong><br />
+			A: Yes. Thunderous CSR intercepts all navigations, including form submissions. It shouldn't change the handling of
+			the form submission itself, but it does intercept the navigation that results from it.
+		</th-text>
+
+		<th-text>
+			<strong>Q: What if the destination page has different CSS/JS?</strong><br />
+			A: Thunderous CSR always swaps the head content, in addition to view content. Each view adds its own handler for
+			navigation, while one global handler manages the overall navigation process. In that global handler, the head
+			content is swapped first, and then it queues a validation to ensure the final rendered content reflects the same
+			HTML you would get by loading the destination page directly. If the validation fails, it swaps the entire root
+			HTML tag.
+		</th-text>
+
+		<th-content-header>Troubleshooting</th-content-header>
+
+		<th-sub-header>Issue: "View not found in destination document" warning</th-sub-header>
+
+		<th-text>
+			<strong>Cause:</strong> The destination page doesn't have a <th-code>&lt;t-view&gt;</th-code> with the matching
+			ID.
+		</th-text>
+		<th-text>
+			<strong>Fix:</strong> Ensure all pages that participate in SPA navigation have matching view IDs. The view will be
+			removed from the DOM when navigating to pages without a matching view.
+		</th-text>
+		<th-text>
+			<strong>NOTE:</strong> You may not need to fix this warning if it's expected (e.g., navigating to a page that
+			doesn't have a view). The warning is informational to call attention to a view being removed from the DOM. It's
+			your discretion whether it warrants attention.
+		</th-text>
+
+		<th-sub-header>Issue: Full page reloads happening anyway</th-sub-header>
+
+		<th-text>
+			<strong>Cause:</strong> Server returns different HTML than expected, triggering fallback behavior.
+		</th-text>
+		<th-text>
+			<strong>Fix:</strong> Check that your server is serving consistent HTML structures. Check the logs for validation
+			errors and verify there are no network errors.
+		</th-text>
+
+		<th-content-header>Related Packages</th-content-header>
+
+		<ul>
+			<li>
+				<th-link href="https://www.npmjs.com/package/thunderous">thunderous</th-link> — Web component authoring library
+			</li>
+			<li>
+				<th-link href="https://www.npmjs.com/package/thunderous-server">thunderous-server</th-link> — Static site
+				generator and dev server (pairs perfectly with CSR)
+			</li>
+			<li>
+				<th-link href="https://www.npmjs.com/package/create-thunderous">create-thunderous</th-link> — Project
+				scaffolding CLI (includes CSR by default)
+			</li>
+		</ul>
+
+		<th-content-header>Roadmap</th-content-header>
+
+		<ul>
+			<li>Form submission design and review</li>
+			<li>Scroll position restoration options</li>
+			<li>Enhanced prefetching strategies</li>
+		</ul>
+	</th-content-group>
+</th-doc-page>
+
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

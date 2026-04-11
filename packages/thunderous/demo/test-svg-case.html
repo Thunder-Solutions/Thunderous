@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head><title>SVG Case Test</title></head>
+<body>
+    <h1>SVG Case Sensitivity Test</h1>
+    <div id="results"></div>
+    
+    <script type="module">
+        import { html } from '../dist/index.js';
+        
+        const results = document.getElementById('results');
+        
+        // Test 1: Static SVG with viewBox
+        const fragment1 = html`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40"/></svg>`;
+        const div1 = document.createElement('div');
+        div1.appendChild(fragment1.cloneNode(true));
+        
+        const html1 = div1.innerHTML;
+        const hasViewBox = html1.includes('viewBox');
+        const hasLowercaseViewbox = html1.includes('viewbox');
+        
+        results.innerHTML += `<h2>Test 1: Static SVG</h2>`;
+        results.innerHTML += `<p>Rendered HTML: ${html1.substring(0, 200)}...</p>`;
+        results.innerHTML += `<p>viewBox preserved (case-sensitive): ${hasViewBox ? '<span style="color:green">YES</span>' : '<span style="color:red">NO</span>'}</p>`;
+        results.innerHTML += `<p>viewbox lowercase present: ${hasLowercaseViewbox ? '<span style="color:red">YES (BUG!)</span>' : '<span style="color:green">NO</span>'}</p>`;
+        
+        // Test 2: SVG via signal
+        const { createSignal, derived, customElement } = await import('../dist/index.js');
+        
+        const TestIcon = customElement(({ attrSignals }) => {
+            const [name] = attrSignals['name'];
+            
+            const icons = {
+                warning: html`<svg viewBox="0 0 512 512" class="warning"><path d="M256 32L40 480h432L256 32z"/></svg>`,
+                info: html`<svg viewBox="0 0 512 512" class="info"><circle cx="256" cy="256" r="200"/></svg>`
+            };
+            
+            const icon = derived(() => icons[name()] ?? icons.info);
+            return html`${icon}`;
+        }, { shadowRootOptions: { mode: 'open' } });
+        
+        TestIcon.define('test-icon-2');
+        
+        const el = document.createElement('test-icon-2');
+        el.setAttribute('name', 'warning');
+        document.body.appendChild(el);
+        
+        setTimeout(() => {
+            const shadowHTML = el.shadowRoot.innerHTML;
+            const hasViewBox2 = shadowHTML.includes('viewBox');
+            
+            results.innerHTML += `<h2>Test 2: SVG via Signal</h2>`;
+            results.innerHTML += `<p>Shadow root HTML: ${shadowHTML.substring(0, 300)}...</p>`;
+            results.innerHTML += `<p>viewBox preserved: ${hasViewBox2 ? '<span style="color:green">YES</span>' : '<span style="color:red">NO (BUG!)</span>'}</p>`;
+            
+            // Toggle test
+            el.setAttribute('name', 'info');
+            setTimeout(() => {
+                el.setAttribute('name', 'warning');
+                setTimeout(() => {
+                    const shadowHTML3 = el.shadowRoot.innerHTML;
+                    const hasViewBox3 = shadowHTML3.includes('viewBox');
+                    const hasSvg = shadowHTML3.includes('<svg');
+                    
+                    results.innerHTML += `<h2>Test 3: After Toggle Back</h2>`;
+                    results.innerHTML += `<p>Shadow root HTML: ${shadowHTML3.substring(0, 300)}...</p>`;
+                    results.innerHTML += `<p>viewBox preserved: ${hasViewBox3 ? '<span style="color:green">YES</span>' : '<span style="color:red">NO (BUG!)</span>'}</p>`;
+                    results.innerHTML += `<p>SVG element present: ${hasSvg ? '<span style="color:green">YES</span>' : '<span style="color:red">NO (CRITICAL BUG!)</span>'}</p>`;
+                    
+                    if (hasViewBox && hasViewBox2 && hasViewBox3 && hasSvg) {
+                        results.innerHTML += '<h2 style="color:green">ALL TESTS PASSED!</h2>';
+                    } else {
+                        results.innerHTML += '<h2 style="color:red">TESTS FAILED!</h2>';
+                    }
+                }, 50);
+            }, 50);
+        }, 50);
+    </script>
+</body>
+</html>

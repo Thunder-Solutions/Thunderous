@@ -1,0 +1,85 @@
+<?layout href="../../_layout.html">
+
+<th-doc-page>
+	<th-page-header>The Thunderous Stack</th-page-header>
+	<th-content-group>
+		<th-block-quote variant="warning">
+			<strong>Experimental:</strong> The Thunderous stack packages are experimental and may not be suitable for
+			production use. They are subject to bugs and breaking changes.
+		</th-block-quote>
+
+		<th-text>
+			The <strong>Thunderous Stack</strong> is a collection of packages that work together to provide a complete
+			full-stack development experience. While the core <th-code>thunderous</th-code> library focuses on web components,
+			these additional packages enable server-side rendering, static site generation, and client-side navigation.
+		</th-text>
+
+		<th-content-header>Stack Components</th-content-header>
+
+		<th-text> The full Thunderous stack consists of three complementary packages: </th-text>
+
+		<ul>
+			<li>
+				<strong>
+					<th-link href="/">thunderous</th-link>
+				</strong>
+				— The core library for building web components with a simplified functional API.
+			</li>
+			<li>
+				<strong>
+					<th-link href="/docs/thunderous-stack/csr">thunderous-csr</th-link>
+				</strong>
+				— Client-side navigation that brings SPA-like UX to traditional multi-page apps. Intercepts navigation and
+				selectively updates content using the modern Navigation API.
+			</li>
+			<li>
+				<strong>
+					<th-link href="/docs/thunderous-stack/server">thunderous-server</th-link>
+				</strong>
+				— A static site generator and development server that enhances plain HTML with server-side rendering, TypeScript
+				compilation, and NPM dependency management via import maps.
+			</li>
+		</ul>
+
+		<th-content-header>Quick Start</th-content-header>
+
+		<th-text> The easiest way to get started with the full stack is using the project scaffolding tool: </th-text>
+
+		<th-code-block lang="bash">
+			<script expr>
+				snippetAsHTML('quickstart.sh');
+			</script>
+		</th-code-block>
+
+		<th-text>
+			This creates a complete project with TypeScript, a development server, and all three stack packages configured and
+			ready to use.
+		</th-text>
+
+		<th-content-header>Philosophy</th-content-header>
+
+		<th-text>
+			The Thunderous stack embraces a <strong>"HTML-first"</strong> philosophy. Unlike frameworks that require you to
+			learn new syntax or file formats, everything in the Thunderous stack is built around standard web platform
+			features:
+		</th-text>
+
+		<ul>
+			<li>Your pages are <strong>HTML files</strong>, not JavaScript components</li>
+			<li>Routing is <strong>file-based</strong>, not configured in code</li>
+			<li>Layouts use <strong>standard slot elements</strong>, not framework-specific templates</li>
+			<li>Dependencies load via <strong>native import maps</strong>, not bundled JavaScript</li>
+			<li>Navigation uses the <strong>native Navigation API</strong>, not a custom router</li>
+		</ul>
+
+		<th-text>
+			This approach means your knowledge transfers directly to and from the broader web platform. You're not learning
+			"Thunderous-specific" patterns—you're learning modern web development patterns that work everywhere.
+		</th-text>
+	</th-content-group>
+</th-doc-page>
+
+<script server>
+	import { snippetAsHTML } from './code-snippets.server';
+	export default { snippetAsHTML };
+</script>

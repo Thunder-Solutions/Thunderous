@@ -1,0 +1,17 @@
+<script server>
+  export default {
+    title: 'My Page',
+    items: ['Apple', 'Banana', 'Cherry'],
+    fetchData: async () => {
+      // Fetch from APIs, read files, etc.
+      return { message: 'Hello from server!' };
+    }
+  };
+</script>
+
+<h1><script expr>title</script></h1>
+<ul>
+  <script expr>
+    items.map(item => html`<li>${item}</li>`);
+  </script>
+</ul>

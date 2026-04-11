@@ -1,0 +1,12 @@
+<!-- BAD: Only the last default export wins -->
+<script server>
+  export default { a: 1 };
+</script>
+<script server>
+  export default { b: 2 };  // This overwrites the first!
+</script>
+
+<!-- GOOD: Consolidate into a single block -->
+<script server>
+  export default { a: 1, b: 2 };
+</script>

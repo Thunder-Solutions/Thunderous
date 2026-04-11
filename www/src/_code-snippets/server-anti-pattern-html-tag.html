@@ -1,0 +1,9 @@
+<!-- BAD: Returns raw string, not trusted HTML -->
+<script expr>
+  '<div>' + content + '</div>'; // Will be escaped!
+</script>
+
+<!-- GOOD: -->
+<script expr>
+  html`<div>${content}</div>`; // Properly handled
+</script>

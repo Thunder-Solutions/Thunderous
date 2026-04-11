@@ -1,0 +1,11 @@
+<script server>
+  export default { isLoggedIn: true, username: 'Alice' };
+</script>
+
+<nav>
+  <script expr>
+    isLoggedIn
+      ? html`<span>Welcome, ${username}!</span>`
+      : html`<a href="/login">Sign In</a>`;
+  </script>
+</nav>

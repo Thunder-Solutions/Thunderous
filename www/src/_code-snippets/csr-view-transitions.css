@@ -1,0 +1,13 @@
+/* Enable view transitions for all navigations */
+@view-transition {
+  navigation: auto;
+}
+
+/* Animate specific elements */
+.page-header {
+  view-transition-name: header;
+}
+
+.article-image {
+  view-transition-name: hero-image;
+}

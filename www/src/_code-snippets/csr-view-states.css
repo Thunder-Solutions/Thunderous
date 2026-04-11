@@ -1,0 +1,12 @@
+t-view.pending {
+  opacity: 0.7;
+}
+
+t-view.ready {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+t-view.error {
+  border: 2px solid red;
+}

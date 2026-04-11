@@ -1,0 +1,9 @@
+<!-- page1.html -->
+<t-view id="content">...</t-view>
+
+<!-- page2.html -->
+<!-- ❌ Different ID! Will cause full page reload -->
+<t-view id="main">...</t-view>
+
+<!-- ✅ Both pages should use the same ID -->
+<t-view id="content">...</t-view>

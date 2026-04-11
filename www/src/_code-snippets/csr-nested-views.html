@@ -1,0 +1,23 @@
+<!-- BAD: Confusing behavior, will cause errors -->
+<main>
+  <t-view id="main">
+    <p>Main content</p>
+    <aside>
+      <t-view id="aside">
+        <p>Side content</p>
+      </t-view>
+    </aside>
+  </t-view>
+</main>
+
+<!-- GOOD: Define all views in parallel scopes -->
+<main>
+  <t-view id="main">
+    <p>Main content</p>
+  </t-view>
+  <aside>
+    <t-view id="aside">
+      <p>Side content</p>
+    </t-view>
+  </aside>
+</main>

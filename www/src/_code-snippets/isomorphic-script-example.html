@@ -1,0 +1,7 @@
+<script isomorphic>
+  import { MyComponent } from './components/my-element';
+  MyComponent.define('my-element');
+</script>
+
+<!-- Renders as declarative shadow DOM on the server -->
+<my-element name="Alice"></my-element>
