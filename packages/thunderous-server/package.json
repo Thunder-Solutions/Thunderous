@@ -1,6 +1,6 @@
 {
 	"name": "thunderous-server",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"description": "A simple server to enhance Thunderous components with SSR.",
 	"license": "MIT",
 	"author": "Jonathan DeWitt <jon.dewitt@thunder.solutions>",
@@ -18,7 +18,8 @@
 		"format:fix": "prettier --write . --ignore-path ../../.gitignore",
 		"typecheck": "tsc --noEmit",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"version": "node postversion.js"
+		"version": "node postversion.js",
+		"prepublishOnly": "npm run typecheck && npm run lint && npm run build"
 	},
 	"bin": {
 		"thunderous": "./bin/thunderous"
@@ -59,6 +60,6 @@
 		"vite": "^6.3.5"
 	},
 	"peerDependencies": {
-		"thunderous": ">=2.4.4"
+		"thunderous": ">=2.4.5"
 	}
 }

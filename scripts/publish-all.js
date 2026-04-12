@@ -121,22 +121,27 @@ async function main() {
 		}
 	}
 
+	// Run prepublishOnly on all packages first (quality checks + build)
+	console.log('\n🚀 Running prepublishOnly checks on all packages...\n');
+
+	for (const pkg of publishPlan) {
+		const pkgJson = JSON.parse(readFileSync(join(pkg.path, 'package.json'), 'utf8'));
+		if (pkgJson.scripts?.prepublishOnly) {
+			console.log(`Running prepublishOnly for ${pkg.name}...`);
+			const prepublishResult = exec('npm', ['run', 'prepublishOnly'], { cwd: pkg.path });
+			if (prepublishResult.status !== 0) {
+				console.error(`❌ prepublishOnly failed for ${pkg.name}`);
+				process.exit(1);
+			}
+			console.log(`✅ prepublishOnly passed for ${pkg.name}\n`);
+		}
+	}
+
 	// Publish in dependency order
 	console.log('\n🚀 Publishing packages...\n');
 
 	for (const pkg of publishPlan) {
 		console.log(`Publishing ${pkg.name}@${pkg.version}...`);
-
-		// Build first if there's a build script
-		const pkgJson = JSON.parse(readFileSync(join(pkg.path, 'package.json'), 'utf8'));
-		if (pkgJson.scripts?.build) {
-			console.log(`  Building ${pkg.name}...`);
-			const buildResult = exec('npm', ['run', 'build'], { cwd: pkg.path });
-			if (buildResult.status !== 0) {
-				console.error(`❌ Build failed for ${pkg.name}`);
-				process.exit(1);
-			}
-		}
 
 		// Publish
 		const publishResult = exec('npm', ['publish', '--access', 'public'], { cwd: pkg.path });

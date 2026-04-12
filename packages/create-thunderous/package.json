@@ -1,6 +1,6 @@
 {
 	"name": "create-thunderous",
-	"version": "0.0.11",
+	"version": "0.0.12",
 	"description": "A CLI tool to scaffold a new project using the Thunderous stack.",
 	"type": "module",
 	"main": "index.js",
@@ -24,7 +24,8 @@
 	"license": "MIT",
 	"packageManager": "pnpm@10.33.0",
 	"scripts": {
-		"version": "node postversion.js"
+		"version": "node postversion.js",
+		"prepublishOnly": "echo 'No build step required for create-thunderous'"
 	},
 	"dependencies": {
 		"@inquirer/prompts": "^8.3.2",

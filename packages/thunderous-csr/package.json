@@ -1,6 +1,6 @@
 {
 	"name": "thunderous-csr",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"description": "",
 	"author": "Jonathan DeWitt <jon.dewitt@thunder.solutions>",
 	"license": "MIT",
@@ -39,12 +39,13 @@
 		"format": "prettier --check . --ignore-path ../../.gitignore",
 		"format:fix": "prettier --write . --ignore-path ../../.gitignore",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"version": "node postversion.js"
+		"version": "node postversion.js",
+		"prepublishOnly": "npm run typecheck && npm run lint && npm run build"
 	},
 	"devDependencies": {
 		"thunderous": "workspace:*"
 	},
 	"peerDependencies": {
-		"thunderous": "^2.4.4"
+		"thunderous": "^2.4.5"
 	}
 }
