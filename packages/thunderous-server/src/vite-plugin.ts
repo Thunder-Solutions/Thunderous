@@ -130,6 +130,15 @@ export const thunderousPlugin = (): Plugin => {
 	return {
 		name: 'thunderous',
 
+		config() {
+			return {
+				optimizeDeps: {
+					// Exclude underscore directories from dependency scanning
+					exclude: ['**/_*/**'],
+				},
+			};
+		},
+
 		configureServer(server: ViteDevServer) {
 			bootstrapThunderous();
 
