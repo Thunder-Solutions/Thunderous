@@ -47,7 +47,8 @@ function getGitStatus() {
 }
 
 function getCurrentBranch() {
-	const result = execQuiet('git', ['branch', '--show-current']);
+	// Always run git command (read-only, safe to run even in dry-run)
+	const result = spawnSync('git', ['branch', '--show-current'], { encoding: 'utf8' });
 	if (result.status !== 0) {
 		console.error('Failed to get current branch');
 		process.exit(1);
@@ -56,7 +57,7 @@ function getCurrentBranch() {
 }
 
 function checkNpmVersionExists(pkgName, version) {
-	const result = execQuiet('npm', ['view', `${pkgName}@${version}`, 'version'], { stdio: 'pipe' });
+	const result = execQuiet('pnpm', ['view', `${pkgName}@${version}`, 'version'], { stdio: 'pipe' });
 	return result.status === 0 && result.stdout.trim() === version;
 }
 
@@ -128,7 +129,7 @@ async function main() {
 		const pkgJson = JSON.parse(readFileSync(join(pkg.path, 'package.json'), 'utf8'));
 		if (pkgJson.scripts?.prepublishOnly) {
 			console.log(`Running prepublishOnly for ${pkg.name}...`);
-			const prepublishResult = exec('npm', ['run', 'prepublishOnly'], { cwd: pkg.path });
+			const prepublishResult = exec('pnpm', ['run', 'prepublishOnly'], { cwd: pkg.path });
 			if (prepublishResult.status !== 0) {
 				console.error(`❌ prepublishOnly failed for ${pkg.name}`);
 				process.exit(1);
@@ -144,7 +145,7 @@ async function main() {
 		console.log(`Publishing ${pkg.name}@${pkg.version}...`);
 
 		// Publish
-		const publishResult = exec('npm', ['publish', '--access', 'public'], { cwd: pkg.path });
+		const publishResult = exec('pnpm', ['publish', '--access', 'public'], { cwd: pkg.path });
 		if (publishResult.status !== 0) {
 			console.error(`❌ Publish failed for ${pkg.name}`);
 			process.exit(1);
