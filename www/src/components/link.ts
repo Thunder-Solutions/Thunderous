@@ -5,7 +5,10 @@ export const Link = customElement(({ attrSignals, adoptStyleSheet }) => {
 	adoptStyleSheet(theme);
 	adoptStyleSheet(linkStyles);
 	const [href] = attrSignals.href;
-	return html`<a href="${href}" part="a"><slot></slot></a>`;
+	const [newtab] = attrSignals.newtab;
+	const target = newtab() ? '_blank' : '_self';
+	const rel = newtab() ? 'noopener noreferrer' : '';
+	return html`<a href="${href}" target="${target}" rel="${rel}" part="a"><slot></slot></a>`;
 });
 
 const linkStyles = css`
