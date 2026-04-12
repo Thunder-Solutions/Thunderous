@@ -13,7 +13,9 @@
 		"w:server": "cd packages/thunderous-server && pnpm",
 		"w:csr": "cd packages/thunderous-csr && pnpm",
 		"w:create": "cd packages/create-thunderous && pnpm",
-		"www": "cd www && pnpm dev"
+		"www": "cd www && pnpm dev",
+		"publish:all": "node scripts/publish-all.js",
+		"publish:all:dry": "node scripts/publish-all.js --dry-run"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.3.5",

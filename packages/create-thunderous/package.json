@@ -23,6 +23,9 @@
 	"author": "Jonathan DeWitt <jon.dewitt@thunder.solutions>",
 	"license": "MIT",
 	"packageManager": "pnpm@10.33.0",
+	"scripts": {
+		"version": "node postversion.js"
+	},
 	"dependencies": {
 		"@inquirer/prompts": "^8.3.2",
 		"chalk": "^5.6.2",
