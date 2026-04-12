@@ -43,8 +43,10 @@ export const build = () => {
 	cpSync(baseDir, outDir, {
 		recursive: true,
 		filter: (src) => {
-			const name = src.split('/').pop() ?? '';
-			if (name.startsWith('_')) return false;
+			const parts = src.split('/');
+			// Exclude files/dirs starting with '_' and .server files
+			if (parts.some((p) => p.startsWith('_'))) return false;
+			const name = parts.pop() ?? '';
 			if (/\.server\.(ts|mts|cts|tsx|js|mjs|cjs|jsx)$/.test(name)) return false;
 			return true;
 		},
@@ -56,7 +58,12 @@ export const build = () => {
 	const entryFiles: string[] = [];
 	processFiles({
 		dir: outDir,
-		filter: (filePath) => /(?<!\.d|\.tmp|\.server)\.ts$/.test(filePath),
+		filter: (filePath) => {
+			const parts = filePath.split('/');
+			// Exclude underscore directories and .d.ts/.tmp.ts/.server.ts files
+			if (parts.some((p) => p.startsWith('_'))) return false;
+			return /(?<!\.d|\.tmp|\.server)\.ts$/.test(filePath);
+		},
 		callback: (filePath) => {
 			const relPath = relative(outDir, filePath);
 			console.log(`\x1b[90mTranspiling: ${relPath}\x1b[0m`);
@@ -77,7 +84,12 @@ export const build = () => {
 	const errors: string[] = [];
 	processFiles({
 		dir: baseDir,
-		filter: (filePath) => filePath.endsWith('.html') && !filePath.split('/').pop()!.startsWith('_'),
+		filter: (filePath) => {
+			if (!filePath.endsWith('.html')) return false;
+			const parts = filePath.split('/');
+			// Exclude files in directories starting with '_' and files starting with '_'
+			return !parts.some((p) => p.startsWith('_'));
+		},
 		callback: (filePath) => {
 			console.log(`\x1b[90mProcessing: ${relative(baseDir, filePath)}\x1b[0m`);
 

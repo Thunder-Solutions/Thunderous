@@ -1,6 +1,6 @@
 {
 	"name": "thunderous-server",
-	"version": "0.0.8",
+	"version": "0.0.9",
 	"description": "A simple server to enhance Thunderous components with SSR.",
 	"license": "MIT",
 	"author": "Jonathan DeWitt <jon.dewitt@thunder.solutions>",
