@@ -48,6 +48,8 @@ export const build = () => {
 			if (parts.some((p) => p.startsWith('_'))) return false;
 			const name = parts.pop() ?? '';
 			if (/\.server\.(ts|mts|cts|tsx|js|mjs|cjs|jsx)$/.test(name)) return false;
+			// Exclude temp files created during HTML rendering
+			if (name.includes('.tmp.')) return false;
 			return true;
 		},
 	});
