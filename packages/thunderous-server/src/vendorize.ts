@@ -69,7 +69,7 @@ export function processNodeModules(entryFiles: string[], outputDir?: string) {
 					packageFilter(pkg) {
 						// Prefer declared export for browser/import
 						const sub = resolveExports(pkg, '.', { conditions: CONDITIONS });
-						if (sub) {
+						if (typeof sub === 'string') {
 							pkg.main = sub;
 							return pkg;
 						}
