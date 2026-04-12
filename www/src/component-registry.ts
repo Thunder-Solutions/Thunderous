@@ -12,6 +12,7 @@ import { InvisibleLink, Link, LinkButton } from './components/link';
 import { MarketingContent } from './components/marketing-content';
 import { Page } from './components/page';
 import { Splash } from './components/splash';
+import { Table, TableBody, TableCell, TableHeader, TableHeaderSection, TableRow } from './components/table';
 import { Text } from './components/text';
 
 View.define('t-view');
@@ -33,3 +34,9 @@ Footer.define('th-footer');
 ErrorMessage.define('th-error-message');
 MarketingContent.define('th-marketing-content');
 Heading.define('th-heading');
+Table.define('th-table');
+TableRow.define('th-tr');
+TableHeader.define('th-th');
+TableCell.define('th-td');
+TableBody.define('th-tbody');
+TableHeaderSection.define('th-thead');
