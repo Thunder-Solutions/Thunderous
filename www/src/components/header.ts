@@ -83,3 +83,21 @@ const contentHeaderStyles = css`
 		margin: 0;
 	}
 `;
+
+export const SubHeader = customElement(({ adoptStyleSheet }) => {
+	adoptStyleSheet(theme);
+	adoptStyleSheet(subHeaderStyles);
+	return html`
+		<header>
+			<h4>
+				<slot></slot>
+			</h4>
+		</header>
+	`;
+});
+
+const subHeaderStyles = css`
+	h4 {
+		margin: 0;
+	}
+`;

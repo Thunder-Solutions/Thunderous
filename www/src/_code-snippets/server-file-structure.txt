@@ -1,7 +1,7 @@
 src/
-├── index.html          # → /
-├── about.html          # → /about
-├── contact.html        # → /contact
+├── index.html            # → /
+├── about.html            # → /about
+├── contact.html          # → /contact
 └── blog/
-    ├── index.html      # → /blog
-    └── hello-world.html # → /blog/hello-world
+    ├── index.html        # → /blog
+    └── hello-world.html  # → /blog/hello-world

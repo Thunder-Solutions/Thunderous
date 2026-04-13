@@ -41,8 +41,6 @@ View.define('t-view'); // Register using any custom tag you want
 <!-- On every page that should have SPA-like navigation -->
 <t-view id="main">
   <!-- Your page content -->
-  <h1>My Page</h1>
-  <a href="/other-page">Go to Other Page</a>
 </t-view>
 ```
 
@@ -180,16 +178,6 @@ By default, a semi-transparent overlay appears during navigation. Customize it w
   </div>
   <!-- Main content -->
 </t-view>
-```
-
-```css
-.my-spinner {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.8);
-}
 ```
 
 ### Native Support

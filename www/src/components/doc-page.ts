@@ -120,7 +120,7 @@ export const DocPage = customElement(({ adoptStyleSheet, connectedCallback, disc
 										<th-link href="/docs/thunderous-stack" class="link">Overview</th-link>
 									</li>
 									<li>
-										<th-link href="/docs/thunderous-stack/csr" class="link">Thunderous CSR</th-link>
+										<th-link href="/docs/thunderous-stack/client-side-rendering" class="link">Thunderous CSR</th-link>
 									</li>
 									<li>
 										<th-link href="/docs/thunderous-stack/server" class="link">Thunderous Server</th-link>

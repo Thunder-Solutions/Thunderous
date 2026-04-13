@@ -1,0 +1,11 @@
+<!-- BAD: document doesn't exist on the server -->
+<script server>
+  export default {
+    element: document.getElementById('app'), // ❌ Will error
+  };
+</script>
+<!-- BAD: isomorphic scripts do run on the client, but they also
+          run on the server where the problem occurs. -->
+<script isomorphic>
+  const app = document.getElementById('app'); // ❌ Will error
+</script>

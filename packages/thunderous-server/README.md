@@ -48,12 +48,12 @@ Routing works exactly like a static file server. Create an `about.html` file, an
 
 ```
 src/
-├── index.html          # → /
-├── about.html          # → /about
-├── contact.html        # → /contact
+├── index.html            # → /
+├── about.html            # → /about
+├── contact.html          # → /contact
 └── blog/
-    ├── index.html      # → /blog
-    └── hello-world.html # → /blog/hello-world
+    ├── index.html        # → /blog
+    └── hello-world.html  # → /blog/hello-world
 ```
 
 **Files starting with underscore (`_`) are excluded from the final output**—perfect for layouts.
@@ -64,8 +64,8 @@ Use the `<?layout>` processing instruction at the top of any HTML file to wrap i
 
 ```html
 <?layout href="_layout.html">
-<h1>My Page Content</h1>
-<p>This gets inserted into the layout's <slot></p>
+
+<p>This gets inserted into the layout's slot.</p>
 ```
 
 **`_layout.html`:**
@@ -78,8 +78,7 @@ Use the `<?layout>` processing instruction at the top of any HTML file to wrap i
   <body>
     <header>Navigation here</header>
     <main>
-      <slot></slot>
-      <!-- Page content appears here -->
+      <slot><!-- Page content appears here --></slot>
     </main>
     <footer>© 2024</footer>
   </body>
@@ -385,12 +384,6 @@ Thunderous Server is committed to keeping things simple and native, so we curren
 - **[thunderous](https://www.npmjs.com/package/thunderous)** — Web component authoring library
 - **[thunderous-csr](https://www.npmjs.com/package/thunderous-csr)** — Client-side rendering for partial updates to HTML
 - **[create-thunderous](https://www.npmjs.com/package/create-thunderous)** — Project scaffolding CLI
-
-## Roadmap
-
-- [ ] Named slots in layouts (`<slot name="sidebar">`)
-- [ ] IDE extensions for `<script expr>` and `<script server>` (autocomplete, type checking, go-to-definition)
-- [ ] Enhanced hot reload reliability
 
 ## License
 
