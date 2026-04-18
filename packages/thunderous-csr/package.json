@@ -33,12 +33,12 @@
 	"homepage": "https://github.com/Thunder-Solutions/Thunderous#readme",
 	"scripts": {
 		"build": "tsup --no-clean",
+		"clean": "rm -rf dist",
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --check . --ignore-path ../../.gitignore",
 		"format:fix": "prettier --write . --ignore-path ../../.gitignore",
-		"test": "echo \"Error: no test specified\" && exit 1",
 		"version": "node postversion.js",
 		"prepublishOnly": "npm run typecheck && npm run lint && npm run build"
 	},

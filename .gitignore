@@ -1,6 +1,7 @@
 # Builds and caches
 node_modules
 dist
+.turbo
 .vercel
 .browsers
 *.tmp.*

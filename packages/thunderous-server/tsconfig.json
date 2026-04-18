@@ -1,7 +1,6 @@
 {
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		"lib": ["ESNext"],
 		"types": ["node"],
 		"typeRoots": ["../../node_modules/@types", "./node_modules/@types", "./types"],
 		"rootDir": "./src",

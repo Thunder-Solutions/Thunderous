@@ -33,6 +33,7 @@
 		"demo": "cd demo && npm start",
 		"demo:ssr": "cd demo && npm run ssr",
 		"build": "tsup src/index.ts --format cjs,esm --dts --no-clean",
+		"clean": "rm -rf dist",
 		"test": "npm run test:server && npm run test:client",
 		"test:server": "find src/__test__/server -name '*.test.ts' | xargs c8 tsx --test",
 		"test:client": "PLAYWRIGHT_BROWSERS_PATH=../../.browsers playwright test",

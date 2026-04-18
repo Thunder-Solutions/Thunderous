@@ -14,8 +14,7 @@
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --check .",
 		"format:fix": "prettier --write . --list-different",
-		"typecheck": "tsc --noEmit",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"typecheck": "tsc --noEmit"
 	},
 	"devDependencies": {
 		"@eslint/css": "^0.13.0",

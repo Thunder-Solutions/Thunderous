@@ -11,7 +11,7 @@
 		"target": "esnext",
 
 		// For nodejs:
-		"lib": ["esnext"],
+		"lib": ["esnext", "DOM", "DOM.Iterable"],
 		"types": ["node"],
 		"typeRoots": ["./node_modules/@types", "./types"],
 		"moduleResolution": "bundler",

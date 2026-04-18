@@ -1,0 +1,52 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"globalDependencies": [".env", "tsconfig.json", "tsconfig.eslint.json"],
+	"globalEnv": ["NODE_ENV", "PLAYWRIGHT_BROWSERS_PATH"],
+	"ui": "tui",
+	"tasks": {
+		"build": {
+			"dependsOn": ["^build"],
+			"outputs": ["dist/**"],
+			"outputLogs": "hash-only"
+		},
+		"typecheck": {
+			"dependsOn": ["^build"],
+			"outputLogs": "hash-only"
+		},
+		"lint": {
+			"outputLogs": "hash-only"
+		},
+		"lint:fix": {
+			"outputLogs": "hash-only"
+		},
+		"format": {
+			"outputLogs": "hash-only"
+		},
+		"format:fix": {
+			"cache": false,
+			"outputLogs": "hash-only"
+		},
+		"test": {
+			"outputLogs": "hash-only"
+		},
+		"test:server": {
+			"outputLogs": "hash-only"
+		},
+		"test:client": {
+			"env": ["PLAYWRIGHT_BROWSERS_PATH"],
+			"outputLogs": "hash-only"
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"prepublishOnly": {
+			"dependsOn": ["^build"],
+			"cache": false
+		},
+		"clean": {
+			"cache": false,
+			"outputLogs": "hash-only"
+		}
+	}
+}
