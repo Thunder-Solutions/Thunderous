@@ -78,10 +78,10 @@ async function main() {
 	}
 	console.log('✅ Working tree is clean');
 
-	// Check 2: On trunk branch
+	// Check 2: On next branch
 	const branch = getCurrentBranch();
-	if (branch !== 'trunk') {
-		console.error(`❌ Error: Must be on trunk branch (currently on "${branch}")`);
+	if (branch !== 'next') {
+		console.error(`❌ Error: Must be on next branch (currently on "${branch}")`);
 		process.exit(1);
 	}
 	console.log(`✅ On ${branch} branch`);
