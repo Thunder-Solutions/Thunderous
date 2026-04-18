@@ -38,23 +38,5 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: pnpm install
 
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Format check
-        run: pnpm format
-
-      - name: Build packages
-        run: pnpm build
-
-      - name: Test (server)
-        run: pnpm test:server
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install
-
-      - name: Test (client)
-        run: pnpm test:client
+      - name: Run quality checks
+        run: pnpm quality

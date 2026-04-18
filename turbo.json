@@ -5,49 +5,31 @@
 	"ui": "tui",
 	"tasks": {
 		"build": {
-			"dependsOn": ["^build"],
-			"outputs": ["dist/**"],
-			"outputLogs": "hash-only"
+			"outputs": ["dist/**"]
 		},
-		"typecheck": {
-			"dependsOn": ["^build", "build"],
-			"outputLogs": "hash-only"
-		},
-		"lint": {
-			"outputLogs": "hash-only"
-		},
+		"typecheck": {},
+		"lint": {},
 		"lint:fix": {
-			"outputLogs": "hash-only"
+			"cache": false
 		},
-		"format": {
-			"outputLogs": "hash-only"
-		},
+		"format": {},
 		"format:fix": {
-			"cache": false,
-			"outputLogs": "hash-only"
+			"cache": false
 		},
-		"test": {
-			"dependsOn": ["build"],
-			"outputLogs": "hash-only"
-		},
-		"test:server": {
-			"outputLogs": "hash-only"
-		},
+		"test": {},
+		"test:server": {},
 		"test:client": {
-			"env": ["PLAYWRIGHT_BROWSERS_PATH"],
-			"outputLogs": "hash-only"
+			"env": ["PLAYWRIGHT_BROWSERS_PATH"]
 		},
 		"dev": {
 			"cache": false,
 			"persistent": true
 		},
 		"prepublishOnly": {
-			"dependsOn": ["^build"],
 			"cache": false
 		},
 		"clean": {
-			"cache": false,
-			"outputLogs": "hash-only"
+			"cache": false
 		}
 	}
 }
