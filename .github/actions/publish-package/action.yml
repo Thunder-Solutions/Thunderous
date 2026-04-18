@@ -9,6 +9,10 @@ inputs:
   path:
     description: Path to package directory (e.g., packages/thunderous)
     required: true
+  tag:
+    description: NPM dist-tag to use (e.g., latest, next, beta)
+    required: false
+    default: 'latest'
 
 runs:
   using: composite
@@ -40,6 +44,16 @@ runs:
       shell: bash
       run: pnpm turbo run build --filter=${{ inputs.package }}...
 
+    - name: Prepare prerelease version
+      shell: bash
+      if: ${{ inputs.tag != 'latest' }}
+      run: |
+        VERSION=$(jq -r '.version' ${{ inputs.path }}/package.json)
+        PRERELEASE_VERSION="${VERSION}-${{ inputs.tag }}.$(date +%s)"
+        jq ".version = \"$PRERELEASE_VERSION\"" ${{ inputs.path }}/package.json > ${{ inputs.path }}/package.json.tmp
+        mv ${{ inputs.path }}/package.json.tmp ${{ inputs.path }}/package.json
+        echo "Prepared prerelease version: $PRERELEASE_VERSION"
+
     - name: Publish
       shell: bash
       env:
@@ -50,4 +64,4 @@ runs:
           echo "${{ inputs.package }}@$VERSION already published"
           exit 0
         fi
-        pnpm publish --filter=${{ inputs.package }} --access public --no-git-checks
+        pnpm publish --filter=${{ inputs.package }} --access public --no-git-checks --tag ${{ inputs.tag }}
