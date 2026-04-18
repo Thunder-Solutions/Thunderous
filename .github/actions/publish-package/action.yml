@@ -1,0 +1,53 @@
+name: Publish Package
+
+description: Builds and publishes a package to npm
+
+inputs:
+  package:
+    description: Package name (e.g., thunderous, thunderous-csr)
+    required: true
+  path:
+    description: Path to package directory (e.g., packages/thunderous)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 10.33.0
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version-file: '.nvmrc'
+        cache: 'pnpm'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Cache node modules
+      uses: actions/cache@v5
+      id: cache
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: ${{ runner.os }}-
+
+    - name: Install dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: pnpm install
+
+    - name: Build
+      shell: bash
+      run: pnpm turbo run build --filter=${{ inputs.package }}...
+
+    - name: Publish
+      shell: bash
+      env:
+        NPM_CONFIG_PROVENANCE: 'true'
+      run: |
+        VERSION=$(jq -r '.version' ${{ inputs.path }}/package.json)
+        if pnpm view ${{ inputs.package }}@$VERSION version >/dev/null 2>&1; then
+          echo "${{ inputs.package }}@$VERSION already published"
+          exit 0
+        fi
+        pnpm publish --filter=${{ inputs.package }} --access public --no-git-checks

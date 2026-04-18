@@ -1,0 +1,32 @@
+name: Publish thunderous-server
+
+on:
+  push:
+    tags:
+      - 'thunderous-server@v*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  quality-gate:
+    uses: ./.github/workflows/quality-checks.yml
+
+  publish:
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: ./.github/actions/publish-package
+        with:
+          package: thunderous-server
+          path: packages/thunderous-server
