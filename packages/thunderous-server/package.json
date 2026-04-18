@@ -57,7 +57,7 @@
 		"resolve": "^1.22.11",
 		"resolve.exports": "^2.0.3",
 		"string-width": "^8.2.0",
-		"vite": "^6.3.5"
+		"vite": "6.4.2"
 	},
 	"peerDependencies": {
 		"thunderous": ">=2.4.5"

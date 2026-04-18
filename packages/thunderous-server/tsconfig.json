@@ -2,7 +2,6 @@
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"types": ["node"],
-		"typeRoots": ["../../node_modules/@types", "./node_modules/@types", "./types"],
 		"rootDir": "./src",
 		"noUncheckedIndexedAccess": true,
 		"exactOptionalPropertyTypes": true

@@ -2,8 +2,7 @@
 	"extends": "../../tsconfig.json",
 	"compilerOptions": {
 		"rootDir": "./src",
-		"types": ["dom-navigation"],
-		"typeRoots": ["../../node_modules/@types", "./node_modules/@types", "./types"]
+		"types": ["dom-navigation"]
 	},
 	"include": ["src"]
 }

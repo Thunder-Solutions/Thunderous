@@ -6,7 +6,6 @@
 		"moduleResolution": "bundler",
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
 		"types": ["node"],
-		"typeRoots": ["../../node_modules/@types", "./node_modules/@types", "./types"],
 
 		// Type Checking
 		"strict": true,

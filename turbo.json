@@ -10,7 +10,7 @@
 			"outputLogs": "hash-only"
 		},
 		"typecheck": {
-			"dependsOn": ["^build"],
+			"dependsOn": ["^build", "build"],
 			"outputLogs": "hash-only"
 		},
 		"lint": {
@@ -27,6 +27,7 @@
 			"outputLogs": "hash-only"
 		},
 		"test": {
+			"dependsOn": ["build"],
 			"outputLogs": "hash-only"
 		},
 		"test:server": {
