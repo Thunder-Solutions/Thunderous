@@ -9,7 +9,7 @@
 	},
 	"packageManager": "pnpm@10.33.0",
 	"scripts": {
-		"postinstall": "test -d .browsers || PLAYWRIGHT_BROWSERS_PATH=.browsers/ playwright install",
+		"postinstall": "[ \"$CI\" = \"true\" ] || test -d .browsers || PLAYWRIGHT_BROWSERS_PATH=.browsers/ playwright install",
 		"quality": "turbo run build && turbo run typecheck lint format test",
 		"quality:force": "turbo run build --force && turbo run typecheck lint format test --force",
 		"build": "turbo run build",

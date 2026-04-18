@@ -38,5 +38,8 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: pnpm install
 
+      - name: Install Playwright browsers
+        uses: microsoft/playwright-github-action@v1
+
       - name: Run quality checks
         run: pnpm quality
