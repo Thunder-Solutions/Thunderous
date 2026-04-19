@@ -1,6 +1,14 @@
 import test, { expect } from '@playwright/test';
 import { setup } from '../test-utilities';
 
+/**
+ * Tests for attribute signals when attributes are set before element upgrade/connection.
+ *
+ * When elements are created programmatically (createElement + setAttribute + append),
+ * the attributes are set BEFORE the custom element constructor runs and BEFORE
+ * connectedCallback starts the MutationObserver. This tests that attrSignals
+ * correctly reflect the actual DOM attribute values in that scenario.
+ */
 export const attributeSignalsTests = () => {
 	test('signal reflects attribute value set before element connects', async ({ page }) => {
 		await setup(page, async ({ customElement, derived, html }) => {
