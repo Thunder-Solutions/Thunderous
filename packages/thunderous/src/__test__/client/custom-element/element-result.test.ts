@@ -1,5 +1,6 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
 import { customElement, html } from '../../..';
+import { createRegistry } from '../../../registry';
 
 describe('ElementResult methods', () => {
 	test('define() registers a custom element with the given tag name', async () => {
@@ -82,5 +83,25 @@ describe('ElementResult methods', () => {
 
 		expect(typeof CustomElementClass).toBe('function');
 		expect(CustomElementClass.prototype instanceof HTMLElement).toBe(true);
+	});
+
+	test('register() after define() logs error for scoped registries', async () => {
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		const TestElement = customElement(() => html`<span>Test</span>`);
+
+		// Create a scoped registry
+		const registry = createRegistry({ scoped: true });
+
+		// Define first
+		TestElement.define('scoped-late-register-test');
+
+		// Then try to register - should error
+		TestElement.register(registry);
+
+		expect(errorSpy).toHaveBeenCalledWith('Must call `register()` before `define()` for scoped registries.');
+
+		// Cleanup
+		errorSpy.mockRestore();
 	});
 });

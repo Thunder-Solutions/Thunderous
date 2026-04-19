@@ -9,6 +9,7 @@ dist
 # Tests and reports
 coverage
 test-results
+.vitest*
 playwright-report
 blob-report
 **/**/playwright/.cache

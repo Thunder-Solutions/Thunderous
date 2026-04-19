@@ -98,4 +98,33 @@ describe('Lifecycle callbacks', () => {
 		// Cleanup
 		el.remove();
 	});
+
+	test('adoptedCallback fires when element is adopted into a new document', async () => {
+		let adopted = false;
+
+		const TestElement = customElement(({ adoptedCallback }) => {
+			adoptedCallback(() => {
+				adopted = true;
+			});
+			return html`<span>Test</span>`;
+		});
+
+		TestElement.define('lifecycle-adopted-test');
+
+		await customElements.whenDefined('lifecycle-adopted-test');
+
+		const el = document.createElement('lifecycle-adopted-test');
+		document.body.appendChild(el);
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		// Create a new document and adopt the element
+		const newDoc = document.implementation.createHTMLDocument();
+		newDoc.body.appendChild(document.adoptNode(el));
+
+		// Wait for adoptedCallback
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		expect(adopted).toBe(true);
+	});
 });

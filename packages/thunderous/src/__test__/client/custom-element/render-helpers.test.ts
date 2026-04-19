@@ -33,3 +33,34 @@ describe('Getter helper', () => {
 		el.remove();
 	});
 });
+
+describe('customCallback helper', () => {
+	test('returns a callback string for event binding', async () => {
+		let callbackExecuted = false;
+
+		const TestElement = customElement(({ customCallback }) => {
+			const clickHandler = customCallback(() => {
+				callbackExecuted = true;
+			});
+			// The callback string should be a valid JS expression
+			expect(typeof clickHandler).toBe('string');
+			expect(clickHandler).toContain('__customCallbackFns');
+			return html`<span>Test</span>`;
+		});
+
+		TestElement.define('custom-callback-test');
+
+		await customElements.whenDefined('custom-callback-test');
+
+		const el = document.createElement('custom-callback-test');
+		document.body.appendChild(el);
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		// Verify callbackExecuted is still false (callback is just registered, not executed)
+		expect(callbackExecuted).toBe(false);
+
+		// Cleanup
+		el.remove();
+	});
+});
