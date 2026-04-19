@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from 'vitest';
 import {
 	clientOnlyCallback,
 	getServerRenderArgs,
@@ -8,33 +9,27 @@ import {
 	serverDefineFns,
 	wrapTemplate,
 } from '../../server-side';
-import { describe, mock, it } from 'node:test';
-import assert from 'assert';
 import { createRegistry } from '../../registry';
 import { DEFAULT_RENDER_OPTIONS } from '../../constants';
-import type { ServerRenderOptions } from '../../types.d.ts';
+import type { ServerRenderOptions } from '../../types';
 import { NOOP } from '../../utilities';
 import { customElement } from '../../custom-element';
 import { html } from '../../render';
 
 const stripWhitespace = (template: string) => template.trim().replace(/\s\s+/g, ' ');
 
-await describe('getServerRenderArgs', async () => {
-	await it('throws on the server when accessing client-only properties', () => {
+describe('getServerRenderArgs', () => {
+	it('throws on the server when accessing client-only properties', () => {
 		const args = getServerRenderArgs('my-element-1');
-		assert.throws(() => args.elementRef.children, {
-			message: 'The `elementRef` property is not available on the server.',
-		});
-		assert.throws(() => args.root.children, { message: 'The `root` property is not available on the server.' });
-		assert.throws(() => args.internals.ariaChecked, {
-			message: 'The `internals` property is not available on the server.',
-		});
+		expect(() => args.elementRef.children).toThrow('The `elementRef` property is not available on the server.');
+		expect(() => args.root.children).toThrow('The `root` property is not available on the server.');
+		expect(() => args.internals.ariaChecked).toThrow('The `internals` property is not available on the server.');
 	});
-	await it('returns nothing from customCallback on the server', () => {
+	it('returns nothing from customCallback on the server', () => {
 		const args = getServerRenderArgs('my-element-2');
-		assert.strictEqual(args.customCallback(NOOP), '');
+		expect(args.customCallback(NOOP)).toBe('');
 	});
-	await it('tracks CSS strings on the server using adoptStyleSheet', () => {
+	it('tracks CSS strings on the server using adoptStyleSheet', () => {
 		const args = getServerRenderArgs('my-element-3');
 
 		// build the expected result
@@ -44,9 +39,9 @@ await describe('getServerRenderArgs', async () => {
 
 		// @ts-expect-error // this will be a string on the server.
 		args.adoptStyleSheet(':host { color: red; }');
-		assert.deepStrictEqual(serverCss, expectedServerCss);
+		expect(serverCss).toEqual(expectedServerCss);
 	});
-	await it('tracks CSS strings on the server with registries using adoptStyleSheet', () => {
+	it('tracks CSS strings on the server with registries using adoptStyleSheet', () => {
 		const registry = createRegistry();
 		const args = getServerRenderArgs('my-element-4', registry);
 
@@ -57,12 +52,12 @@ await describe('getServerRenderArgs', async () => {
 
 		// @ts-expect-error // this will be a string on the server.
 		args.adoptStyleSheet(cssStr1);
-		assert.deepStrictEqual(registry.__serverCss, expectedServerCss);
+		expect(registry.__serverCss).toEqual(expectedServerCss);
 	});
 });
 
-await describe('wrapTemplate', async () => {
-	await it('wraps the render result in a template tag', () => {
+describe('wrapTemplate', () => {
+	it('wraps the render result in a template tag', () => {
 		const template = stripWhitespace(
 			wrapTemplate({
 				tagName: 'my-element-5',
@@ -82,9 +77,9 @@ await describe('wrapTemplate', async () => {
 			</template>
 		`);
 
-		assert.strictEqual(template, expectedTemplate);
+		expect(template).toBe(expectedTemplate);
 	});
-	await it('wraps the render result in a template tag with CSS', () => {
+	it('wraps the render result in a template tag with CSS', () => {
 		const args = getServerRenderArgs('my-element-6');
 		// @ts-expect-error // this will be a string on the server.
 		args.adoptStyleSheet(':host { color: green; }');
@@ -108,9 +103,9 @@ await describe('wrapTemplate', async () => {
 			</template>
 		`);
 
-		assert.strictEqual(template, expectedTemplate);
+		expect(template).toBe(expectedTemplate);
 	});
-	await it('wraps the render result in a template tag when shadow root is not attached', () => {
+	it('wraps the render result in a template tag when shadow root is not attached', () => {
 		const template = stripWhitespace(
 			wrapTemplate({
 				tagName: 'my-element-7',
@@ -124,12 +119,12 @@ await describe('wrapTemplate', async () => {
 
 		const expectedTemplate = 'Hello, world!';
 
-		assert.strictEqual(template, expectedTemplate);
+		expect(template).toBe(expectedTemplate);
 	});
 });
 
-await describe('insertTemplates', async () => {
-	await it('inserts the template into the input string', () => {
+describe('insertTemplates', () => {
+	it('inserts the template into the input string', () => {
 		const inputString = /* html */ `<my-element-7></my-element-7>`;
 		const template = /* html */ `<div>Hello, world!</div>`;
 
@@ -139,9 +134,9 @@ await describe('insertTemplates', async () => {
 			<my-element-7><div>Hello, world!</div></my-element-7>
 		`);
 
-		assert.strictEqual(result, expectedResult);
+		expect(result).toBe(expectedResult);
 	});
-	await it('does NOT capture similar tags, only exact matches', () => {
+	it('does NOT capture similar tags, only exact matches', () => {
 		const inputString = /* html */ `<my-element-7-other></my-element-7-other>`;
 		const template = /* html */ `<div>Hello, world!</div>`;
 
@@ -151,9 +146,9 @@ await describe('insertTemplates', async () => {
 			<my-element-7-other></my-element-7-other>
 		`);
 
-		assert.strictEqual(result, expectedResult);
+		expect(result).toBe(expectedResult);
 	});
-	await it('inserts the template into the input string and parses attribute references', () => {
+	it('inserts the template into the input string and parses attribute references', () => {
 		const inputString = /* html */ `<my-element-8 test="Hello, world!"></my-element-8>`;
 		const template = /* html */ `<div>{{attr:test}}</div>`;
 
@@ -163,25 +158,25 @@ await describe('insertTemplates', async () => {
 			<my-element-8 test="Hello, world!"><div>Hello, world!</div></my-element-8>
 		`);
 
-		assert.strictEqual(result, expectedResult);
+		expect(result).toBe(expectedResult);
 	});
 });
 
-await describe('onServerDefine', async () => {
-	await it('adds the function to the set', () => {
+describe('onServerDefine', () => {
+	it('adds the function to the set', () => {
 		const fn = NOOP;
 		onServerDefine(fn);
-		assert.strictEqual(serverDefineFns.size, 1);
-		assert.strictEqual(serverDefineFns.has(fn), true);
+		expect(serverDefineFns.size).toBe(1);
+		expect(serverDefineFns.has(fn)).toBe(true);
 		serverDefineFns.clear();
 	});
 });
 
-await describe('serverDefine', async () => {
-	await it('calls the serverDefineFns with the result of serverRender', () => {
-		const fn = mock.fn((tagName: string, template: string) => {
-			assert.strictEqual(tagName, 'my-element-9');
-			assert.strictEqual(template, 'Hello, world!');
+describe('serverDefine', () => {
+	it('calls the serverDefineFns with the result of serverRender', () => {
+		const fn = vi.fn((tagName: string, template: string) => {
+			expect(tagName).toBe('my-element-9');
+			expect(template).toBe('Hello, world!');
 		});
 		onServerDefine(fn);
 
@@ -195,12 +190,12 @@ await describe('serverDefine', async () => {
 			elementResult: customElement(() => html`<div></div>`),
 		});
 
-		assert.strictEqual(fn.mock.calls.length, 1);
-		assert.strictEqual(fn.mock.calls[0].arguments[0], 'my-element-9');
+		expect(fn).toHaveBeenCalledTimes(1);
+		expect(fn).toHaveBeenNthCalledWith(1, 'my-element-9', 'Hello, world!');
 
 		serverDefineFns.clear();
 	});
-	await it('sets the server render options on the parent registry', () => {
+	it('sets the server render options on the parent registry', () => {
 		const parentRegistry = createRegistry();
 
 		const serverRender = () => 'Hello, world!';
@@ -216,15 +211,15 @@ await describe('serverDefine', async () => {
 			['my-element-10', { serverRender, ...DEFAULT_RENDER_OPTIONS }],
 		]);
 
-		assert.strictEqual(parentRegistry.__serverRenderOpts.size, 1);
-		assert.deepStrictEqual(parentRegistry.__serverRenderOpts, expectedServerRenderOpts);
+		expect(parentRegistry.__serverRenderOpts.size).toBe(1);
+		expect(parentRegistry.__serverRenderOpts).toEqual(expectedServerRenderOpts);
 	});
-	await it('renders scoped registries correctly', () => {
+	it('renders scoped registries correctly', () => {
 		const scopedRegistry = createRegistry({ scoped: true });
 
 		onServerDefine((tagName, template) => {
-			assert.strictEqual(tagName, 'my-element-12');
-			assert.strictEqual(template, '<my-element-11>inner</my-element-11>');
+			expect(tagName).toBe('my-element-12');
+			expect(template).toBe('<my-element-11>inner</my-element-11>');
 		});
 
 		serverDefine({
@@ -247,12 +242,12 @@ await describe('serverDefine', async () => {
 	});
 });
 
-await describe('clientOnlyCallback', async () => {
-	await it('does nothing on the server when called directly', () => {
+describe('clientOnlyCallback', () => {
+	it('does nothing on the server when called directly', () => {
 		let runCount = 0;
 		clientOnlyCallback(() => {
 			runCount++;
 		});
-		assert.strictEqual(runCount, 0);
+		expect(runCount).toBe(0);
 	});
 });

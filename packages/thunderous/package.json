@@ -31,20 +31,21 @@
 	"license": "MIT",
 	"scripts": {
 		"demo": "cd demo && npm start",
-		"demo:ssr": "cd demo && npm run ssr",
+		"demo:ssr": "cd demo && pnpm ssr",
 		"build": "tsup src/index.ts --format cjs,esm --dts --no-clean",
 		"clean": "rm -rf dist",
-		"test": "npm run test:server && npm run test:client",
-		"test:server": "find src/__test__/server -name '*.test.ts' | xargs c8 tsx --test",
-		"test:client": "vitest run",
+		"test": "pnpm test:server & pnpm test:client && pnpm coverage",
+		"test:server": "vitest run --config vitest.server.config.ts --coverage",
+		"test:client": "vitest run --config vitest.client.config.ts --coverage",
+		"coverage": "istanbul-merge --out ./coverage/merged/coverage-final.json ./coverage/server/coverage-final.json ./coverage/client/coverage-final.json && nyc report --reporter=text --reporter=html --temp-dir=./coverage/merged --report-dir=./coverage/merged",
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --check . --ignore-path ../../.gitignore",
 		"format:fix": "prettier --write . --ignore-path ../../.gitignore",
-		"preversion": "npm run typecheck && npm run lint && npm test && npm run build",
+		"preversion": "pnpm typecheck && pnpm lint && npm test && pnpm build",
 		"version": "node postversion.js",
-		"prepublishOnly": "npm run typecheck && npm run lint && npm test && npm run build"
+		"prepublishOnly": "pnpm typecheck && pnpm lint && npm test && pnpm build"
 	},
 	"peerDependencies": {
 		"@webcomponents/scoped-custom-element-registry": "^0.0.10"
@@ -58,6 +59,9 @@
 		"@playwright/test": "^1.58.2",
 		"@vitest/browser": "^4.1.4",
 		"@vitest/browser-playwright": "^4.1.4",
+		"@vitest/coverage-istanbul": "^4.1.4",
+		"istanbul-merge": "^2.0.0",
+		"nyc": "^18.0.0",
 		"vitest": "^4.1.4"
 	}
 }

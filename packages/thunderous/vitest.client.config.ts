@@ -9,6 +9,12 @@ export default defineConfig({
 			instances: [{ browser: 'chromium' }, { browser: 'firefox' }, { browser: 'webkit' }],
 			headless: true,
 		},
-		include: ['src/__test__/client/**/*.spec.ts'],
+		include: ['src/__test__/client/**/*.test.ts'],
+		coverage: {
+			provider: 'istanbul',
+			reporter: ['json'],
+			reportsDirectory: './coverage/client',
+			exclude: ['src/__test__/**', 'src/**/*.d.ts', 'src/**/index.ts', '**/*.config.*'],
+		},
 	},
 });

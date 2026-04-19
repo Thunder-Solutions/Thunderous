@@ -22,6 +22,9 @@
 		"test:client": {
 			"env": ["PLAYWRIGHT_BROWSERS_PATH"]
 		},
+		"coverage": {
+			"dependsOn": ["test:server", "test:client"]
+		},
 		"dev": {
 			"cache": false,
 			"persistent": true

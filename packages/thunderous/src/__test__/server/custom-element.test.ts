@@ -1,52 +1,47 @@
-import { describe, it, type Mock } from 'node:test';
-import assert from 'assert';
+import { describe, it, expect, vi } from 'vitest';
 import { customElement } from '../../custom-element';
 import { html } from '../../render';
 import { createRegistry } from '../../registry';
 import { NOOP } from '../../utilities';
 
-await describe('customElement', async () => {
-	await it('does not throw on the server', () => {
-		assert.doesNotThrow(() => customElement(() => html`<div></div>`));
+describe('customElement', () => {
+	it('does not throw on the server', () => {
+		expect(() => customElement(() => html`<div></div>`)).not.toThrow();
 	});
-	await it('returns an element result class', () => {
+	it('returns an element result class', () => {
 		const MyElement = customElement(() => html`<div></div>`);
-		assert.ok(MyElement);
+		expect(MyElement).toBeTruthy();
 		const keys = Object.keys(MyElement);
-		assert(keys.every((key) => ['define', 'register', 'eject'].includes(key)));
+		expect(keys.every((key) => ['define', 'register', 'eject'].includes(key))).toBe(true);
 	});
-	await it('supports scoped registries', () => {
+	it('supports scoped registries', () => {
 		const registry = createRegistry({ scoped: true });
-		assert.doesNotThrow(() => customElement(() => html`<div></div>`, { shadowRootOptions: { registry } }));
+		expect(() => customElement(() => html`<div></div>`, { shadowRootOptions: { registry } })).not.toThrow();
 	});
-	await it('returns self for chaining', () => {
+	it('returns self for chaining', () => {
 		const MyElement = customElement(() => html`<div></div>`);
 		const registry = createRegistry();
-		assert.strictEqual(MyElement.define('my-element'), MyElement);
-		assert.strictEqual(MyElement.register(registry), MyElement);
+		expect(MyElement.define('my-element')).toBe(MyElement);
+		expect(MyElement.register(registry)).toBe(MyElement);
 	});
-	await it('registers the element with a registry', () => {
+	it('registers the element with a registry', () => {
 		const registry = createRegistry();
 		const MyElement = customElement(() => html`<div></div>`)
 			.register(registry)
 			.define('my-element');
-		assert.strictEqual(registry.getTagName(MyElement), 'MY-ELEMENT');
+		expect(registry.getTagName(MyElement)).toBe('MY-ELEMENT');
 	});
-	await it('logs an error when registering after defining in a scoped registry', (testContext) => {
-		testContext.mock.method(console, 'error', NOOP);
-		const errorMock = (console.error as Mock<typeof console.error>).mock;
+	it('logs an error when registering after defining in a scoped registry', () => {
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(NOOP);
 		const registry = createRegistry({ scoped: true });
 		const MyElement = customElement(() => html`<div></div>`);
 		MyElement.define('my-element');
 		MyElement.register(registry);
-		assert.strictEqual(errorMock.callCount(), 1);
-		assert.strictEqual(
-			errorMock.calls[0].arguments[0],
-			'Must call `register()` before `define()` for scoped registries.',
-		);
+		expect(errorSpy).toHaveBeenCalledTimes(1);
+		expect(errorSpy).toHaveBeenCalledWith('Must call `register()` before `define()` for scoped registries.');
 	});
-	await it('throws an error when ejecting on the server', () => {
+	it('throws an error when ejecting on the server', () => {
 		const MyElement = customElement(() => html`<div></div>`);
-		assert.throws(() => MyElement.eject());
+		expect(() => MyElement.eject()).toThrow();
 	});
 });

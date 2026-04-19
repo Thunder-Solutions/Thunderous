@@ -1,20 +1,18 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createEffect, createSignal, derived } from '../../signals';
-import { describe, it, beforeEach, type Mock } from 'node:test';
-import assert from 'assert';
 import { NOOP } from '../../utilities';
-import type { AnyFn } from '../../types';
 
-await describe('createSignal', async () => {
-	await it('sets the initial value', () => {
+describe('createSignal', () => {
+	it('sets the initial value', () => {
 		const [count] = createSignal(0);
-		assert.strictEqual(count(), 0);
+		expect(count()).toBe(0);
 	});
-	await it('sets a new value', () => {
+	it('sets a new value', () => {
 		const [count, setCount] = createSignal(0);
 		setCount(1);
-		assert.strictEqual(count(), 1);
+		expect(count()).toBe(1);
 	});
-	await it('does not recalculate for equal primitives', () => {
+	it('does not recalculate for equal primitives', () => {
 		const [count, setCount] = createSignal(0);
 		let runCount = 0;
 		createEffect(() => {
@@ -22,10 +20,9 @@ await describe('createSignal', async () => {
 			runCount++;
 		});
 		setCount(0);
-
-		assert.strictEqual(runCount, 1);
+		expect(runCount).toBe(1);
 	});
-	await it('does not recalculate for complex data', () => {
+	it('does not recalculate for complex data', () => {
 		const [count, setCount] = createSignal({ value: 0 });
 		let runCount = 0;
 		createEffect(() => {
@@ -33,154 +30,156 @@ await describe('createSignal', async () => {
 			runCount++;
 		});
 		setCount({ value: 0 });
-		assert.strictEqual(runCount, 1);
+		expect(runCount).toBe(1);
 	});
-	await it('runs in debug mode', async (testContext) => {
-		await it('adds the label when the signal is created with one', async () => {
-			testContext.mock.method(console, 'log', NOOP);
-			const logMock = (console.log as Mock<typeof console.log>).mock;
-			beforeEach(() => logMock.resetCalls());
+	describe('runs in debug mode', () => {
+		describe('adds the label when the signal is created with one', () => {
+			const logSpy = vi.spyOn(console, 'log').mockImplementation(NOOP);
+			beforeEach(() => logSpy.mockClear());
 
 			const [count, setCount] = createSignal(0, { debugMode: true, label: 'count' });
 
-			await it('does not log when the signal is initially created', () => {
-				assert.strictEqual(logMock.callCount(), 0);
+			it('does not log when the signal is initially created', () => {
+				expect(logSpy).not.toHaveBeenCalled();
 			});
 
-			await it('logs when the signal getter is run', async () => {
+			it('logs when the signal getter is run', () => {
 				count();
-				assert.strictEqual(logMock.callCount(), 1);
-				assert.deepStrictEqual(logMock.calls[0].arguments, [
-					'Signal retrieved:',
-					{ value: 0, subscribers: [], label: '(count)' },
-				]);
+				expect(logSpy).toHaveBeenCalledTimes(1);
+				expect(logSpy).toHaveBeenCalledWith('Signal retrieved:', {
+					value: 0,
+					subscribers: [],
+					label: '(count)',
+				});
 			});
 
-			await it('logs when the signal setter is run', async () => {
+			it('logs when the signal setter is run', () => {
 				setCount(1);
-				assert.strictEqual(logMock.callCount(), 1);
-				assert.deepStrictEqual(logMock.calls[0].arguments, [
-					'Signal set:',
-					{ oldValue: 0, newValue: 1, subscribers: [], label: '(count)' },
-				]);
+				expect(logSpy).toHaveBeenCalledTimes(1);
+				expect(logSpy).toHaveBeenCalledWith('Signal set:', {
+					oldValue: 0,
+					newValue: 1,
+					subscribers: [],
+					label: '(count)',
+				});
 			});
 		});
 
-		await it('uses "anonymous signal" when the signal is created without a label', async () => {
-			testContext.mock.method(console, 'log', NOOP);
-			const logMock = (console.log as Mock<typeof console.log>).mock;
-			beforeEach(() => logMock.resetCalls());
+		describe('uses "anonymous signal" when the signal is created without a label', () => {
+			const logSpy = vi.spyOn(console, 'log').mockImplementation(NOOP);
+			beforeEach(() => logSpy.mockClear());
 			const [count, setCount] = createSignal(0, { debugMode: true });
 
-			await it('does not log when the signal is initially created', () => {
-				assert.strictEqual(logMock.callCount(), 0);
+			it('does not log when the signal is initially created', () => {
+				expect(logSpy).not.toHaveBeenCalled();
 			});
 
-			await it('logs when the signal getter is run', () => {
+			it('logs when the signal getter is run', () => {
 				count();
-				assert.strictEqual(logMock.callCount(), 1);
-				assert.deepStrictEqual(logMock.calls[0].arguments, [
-					'Signal retrieved:',
-					{ value: 0, subscribers: [], label: 'anonymous signal' },
-				]);
+				expect(logSpy).toHaveBeenCalledTimes(1);
+				expect(logSpy).toHaveBeenCalledWith('Signal retrieved:', {
+					value: 0,
+					subscribers: [],
+					label: 'anonymous signal',
+				});
 			});
 
-			await it('logs when the signal setter is run', () => {
+			it('logs when the signal setter is run', () => {
 				setCount(1);
-				assert.strictEqual(logMock.callCount(), 1);
-				assert.deepStrictEqual(logMock.calls[0].arguments, [
-					'Signal set:',
-					{ oldValue: 0, newValue: 1, subscribers: [], label: 'anonymous signal' },
-				]);
+				expect(logSpy).toHaveBeenCalledTimes(1);
+				expect(logSpy).toHaveBeenCalledWith('Signal set:', {
+					oldValue: 0,
+					newValue: 1,
+					subscribers: [],
+					label: 'anonymous signal',
+				});
 			});
 		});
 
-		await it('does not log if debugMode is false', async () => {
-			testContext.mock.method(console, 'log', NOOP);
-			const logMock = (console.log as Mock<typeof console.log>).mock;
-			beforeEach(() => logMock.resetCalls());
+		describe('does not log if debugMode is false', () => {
+			const logSpy = vi.spyOn(console, 'log').mockImplementation(NOOP);
+			beforeEach(() => logSpy.mockClear());
 			const [count, setCount] = createSignal(0, { debugMode: false, label: 'count' });
 
-			await it('does not log when the signal is initially created', () => {
-				assert.strictEqual(logMock.callCount(), 0);
+			it('does not log when the signal is initially created', () => {
+				expect(logSpy).not.toHaveBeenCalled();
 			});
 
-			await it('does not log when the signal getter is run', () => {
+			it('does not log when the signal getter is run', () => {
 				count();
-				assert.strictEqual(logMock.callCount(), 0);
+				expect(logSpy).not.toHaveBeenCalled();
 			});
 
-			await it('does not log when the signal setter is run', () => {
+			it('does not log when the signal setter is run', () => {
 				setCount(1);
-				assert.strictEqual(logMock.callCount(), 0);
+				expect(logSpy).not.toHaveBeenCalled();
 			});
 		});
 
-		await it('adds getter and setter labels in addition to the overall signal label', async () => {
-			testContext.mock.method(console, 'log', NOOP);
-			const logMock = (console.log as Mock<typeof console.log>).mock;
-			beforeEach(() => logMock.resetCalls());
+		describe('adds getter and setter labels in addition to the overall signal label', () => {
+			const logSpy = vi.spyOn(console, 'log').mockImplementation(NOOP);
+			beforeEach(() => logSpy.mockClear());
 			const [count, setCount] = createSignal(0, { debugMode: true, label: 'count' });
 
-			await it('does not log when the signal is initially created', () => {
-				assert.strictEqual(logMock.callCount(), 0);
+			it('does not log when the signal is initially created', () => {
+				expect(logSpy).not.toHaveBeenCalled();
 			});
 
-			await it('logs when the signal getter is run with a label', () => {
+			it('logs when the signal getter is run with a label', () => {
 				count({ debugMode: true, label: 'getter' });
-
-				assert.strictEqual(logMock.callCount(), 1);
-				assert.deepStrictEqual(logMock.calls[0].arguments, [
-					'Signal retrieved:',
-					{ value: 0, subscribers: [], label: '(count) getter' },
-				]);
+				expect(logSpy).toHaveBeenCalledTimes(1);
+				expect(logSpy).toHaveBeenCalledWith('Signal retrieved:', {
+					value: 0,
+					subscribers: [],
+					label: '(count) getter',
+				});
 			});
 
-			await it('logs when the signal setter is run with a label', () => {
+			it('logs when the signal setter is run with a label', () => {
 				setCount(1, { debugMode: true, label: 'setter' });
-
-				assert.strictEqual(logMock.callCount(), 1);
-				assert.deepStrictEqual(logMock.calls[0].arguments, [
-					'Signal set:',
-					{ oldValue: 0, newValue: 1, subscribers: [], label: '(count) setter' },
-				]);
+				expect(logSpy).toHaveBeenCalledTimes(1);
+				expect(logSpy).toHaveBeenCalledWith('Signal set:', {
+					oldValue: 0,
+					newValue: 1,
+					subscribers: [],
+					label: '(count) setter',
+				});
 			});
 		});
 
-		await it('adds getter and setter labels instead of the overall signal label', async () => {
-			testContext.mock.method(console, 'log', NOOP);
-			const logMock = (console.log as Mock<typeof console.log>).mock;
-			beforeEach(() => logMock.resetCalls());
+		describe('adds getter and setter labels instead of the overall signal label', () => {
+			const logSpy = vi.spyOn(console, 'log').mockImplementation(NOOP);
+			beforeEach(() => logSpy.mockClear());
 			const [count, setCount] = createSignal(0);
 
-			await it('does not log when the signal is initially created', () => {
-				assert.strictEqual(logMock.callCount(), 0);
+			it('does not log when the signal is initially created', () => {
+				expect(logSpy).not.toHaveBeenCalled();
 			});
 
-			await it('logs when the signal getter is run with a label', () => {
+			it('logs when the signal getter is run with a label', () => {
 				count({ debugMode: true, label: 'getter' });
-
-				assert.strictEqual(logMock.callCount(), 1);
-				assert.deepStrictEqual(logMock.calls[0].arguments, [
-					'Signal retrieved:',
-					{ value: 0, subscribers: [], label: 'getter' },
-				]);
+				expect(logSpy).toHaveBeenCalledTimes(1);
+				expect(logSpy).toHaveBeenCalledWith('Signal retrieved:', {
+					value: 0,
+					subscribers: [],
+					label: 'getter',
+				});
 			});
 
-			await it('logs when the signal setter is run with a label', () => {
+			it('logs when the signal setter is run with a label', () => {
 				setCount(1, { debugMode: true, label: 'setter' });
-
-				assert.strictEqual(logMock.callCount(), 1);
-				assert.deepStrictEqual(logMock.calls[0].arguments, [
-					'Signal set:',
-					{ oldValue: 0, newValue: 1, subscribers: [], label: 'setter' },
-				]);
+				expect(logSpy).toHaveBeenCalledTimes(1);
+				expect(logSpy).toHaveBeenCalledWith('Signal set:', {
+					oldValue: 0,
+					newValue: 1,
+					subscribers: [],
+					label: 'setter',
+				});
 			});
 		});
 
-		await it('handles errors in subscribers', async (testContext) => {
-			testContext.mock.method(console, 'error', NOOP);
-			const errorMock = (console.error as Mock<typeof console.error>).mock;
+		it('handles errors in subscribers', () => {
+			const errorSpy = vi.spyOn(console, 'error').mockImplementation(NOOP);
 			const [count, setCount] = createSignal(0);
 			const error = new Error('Test error');
 			createEffect(() => {
@@ -189,36 +188,38 @@ await describe('createSignal', async () => {
 				}
 			});
 			setCount(1);
-
-			assert.strictEqual(errorMock.callCount(), 1);
-			assert.deepStrictEqual(errorMock.calls[0].arguments, [
+			expect(errorSpy).toHaveBeenCalledTimes(1);
+			expect(errorSpy).toHaveBeenCalledWith(
 				'Error in subscriber:',
-				{ error, oldValue: 0, newValue: 1, fn: (errorMock.calls[0].arguments[1] as { fn: AnyFn }).fn },
-			]);
+				expect.objectContaining({
+					error,
+					oldValue: 0,
+					newValue: 1,
+				}),
+			);
 		});
 	});
 });
 
-await describe('createEffect', async () => {
-	await it('runs immediately', () => {
+describe('createEffect', () => {
+	it('runs immediately', () => {
 		const [count] = createSignal(0);
 		let result: number | undefined;
 		createEffect(() => {
 			result = count();
 		});
-		assert.strictEqual(result, 0);
+		expect(result).toBe(0);
 	});
-	await it('runs when signals change', () => {
+	it('runs when signals change', () => {
 		const [count, setCount] = createSignal(0);
 		let result: number | undefined;
 		createEffect(() => {
 			result = count();
 		});
 		setCount(1);
-
-		assert.strictEqual(result, 1);
+		expect(result).toBe(1);
 	});
-	await it('handles multiple subscribers', () => {
+	it('handles multiple subscribers', () => {
 		const [count, setCount] = createSignal(0);
 		let result1: number | undefined;
 		let result2: number | undefined;
@@ -229,42 +230,34 @@ await describe('createEffect', async () => {
 			result2 = count();
 		});
 		setCount(1);
-
-		assert.strictEqual(result1, 1);
-		assert.strictEqual(result2, 1);
+		expect(result1).toBe(1);
+		expect(result2).toBe(1);
 	});
-	await it('handles errors in effects', (testContext) => {
-		testContext.mock.method(console, 'error', NOOP);
-		const errorMock = (console.error as Mock<typeof console.error>).mock;
+	it('handles errors in effects', () => {
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(NOOP);
 		const error = new Error('Test error');
 		createEffect(() => {
 			throw error;
 		});
-
-		assert.strictEqual(errorMock.callCount(), 1);
-		assert.deepStrictEqual(errorMock.calls[0].arguments, [
-			'Error in effect:',
-			{ error, fn: (errorMock.calls[0].arguments[1] as { fn: AnyFn }).fn },
-		]);
+		expect(errorSpy).toHaveBeenCalledWith('Error in effect:', expect.objectContaining({ error }));
+		errorSpy.mockRestore();
 	});
 });
 
-await describe('derived', async () => {
-	await it('calculates the value immediately', () => {
+describe('derived', () => {
+	it('calculates the value immediately', () => {
 		const [count] = createSignal(1);
 		const doubled = derived(() => count() * 2);
-		assert.strictEqual(doubled(), 2);
+		expect(doubled()).toBe(2);
 	});
-	await it('recalculates the value upon updating', () => {
+	it('recalculates the value upon updating', () => {
 		const [count, setCount] = createSignal(1);
 		const doubled = derived(() => count() * 2);
 		setCount(2);
-
-		assert.strictEqual(doubled(), 4);
+		expect(doubled()).toBe(4);
 	});
-	await it('handles errors in derived signals', (testContext) => {
-		testContext.mock.method(console, 'error', NOOP);
-		const errorMock = (console.error as Mock<typeof console.error>).mock;
+	it('handles errors in derived signals', () => {
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(NOOP);
 		const error = new Error('Test error');
 		const [count, setCount] = createSignal(1);
 		derived(() => {
@@ -273,11 +266,7 @@ await describe('derived', async () => {
 			}
 		});
 		setCount(2);
-
-		assert.strictEqual(errorMock.callCount(), 1);
-		assert.deepStrictEqual(errorMock.calls[0].arguments, [
-			'Error in derived signal:',
-			{ error, fn: (errorMock.calls[0].arguments[1] as { fn: AnyFn }).fn },
-		]);
+		expect(errorSpy).toHaveBeenCalledWith('Error in derived signal:', expect.objectContaining({ error }));
+		errorSpy.mockRestore();
 	});
 });
