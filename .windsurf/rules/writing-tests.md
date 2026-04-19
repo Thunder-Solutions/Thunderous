@@ -17,3 +17,4 @@ If you are asked to write tests for code that already exists:
 While troubleshooting failing tests:
 
 - Do not continuously run the entire suite for every little change. Isolate one test at a time to check it individually.
+- Not a single error is ever acceptable, regardless if it's pre-existing, unhandled, or seemingly unrelated.
