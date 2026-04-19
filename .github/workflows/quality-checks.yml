@@ -34,12 +34,23 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: ${{ runner.os }}-
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        id: playwright-cache
+        with:
+          path: .browsers
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pnpm install
 
+      - name: Install Playwright system dependencies
+        run: pnpm exec playwright install-deps
+
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: PLAYWRIGHT_BROWSERS_PATH=.browsers/ pnpm exec playwright install
 
       - name: Run quality checks
         run: pnpm quality
