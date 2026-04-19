@@ -1,0 +1,10 @@
+{
+	"hooks": {
+		"post_write_code": [
+			{
+				"command": "bash .windsurf/hooks/post-write-code.sh",
+				"show_output": true
+			}
+		]
+	}
+}
