@@ -36,7 +36,7 @@
 		"clean": "rm -rf dist",
 		"test": "npm run test:server && npm run test:client",
 		"test:server": "find src/__test__/server -name '*.test.ts' | xargs c8 tsx --test",
-		"test:client": "PLAYWRIGHT_BROWSERS_PATH=../../.browsers playwright test",
+		"test:client": "vitest run",
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
@@ -53,5 +53,11 @@
 		"@webcomponents/scoped-custom-element-registry": {
 			"optional": true
 		}
+	},
+	"devDependencies": {
+		"@playwright/test": "^1.58.2",
+		"@vitest/browser": "^4.1.4",
+		"@vitest/browser-playwright": "^4.1.4",
+		"vitest": "^4.1.4"
 	}
 }

@@ -1,110 +1,101 @@
-import test, { expect } from '@playwright/test';
-import { setup } from '../test-utilities';
+import { describe, test, expect } from 'vitest';
+import { customElement, html } from '../../..';
 
-export const lifecycleTests = () => {
-	test('connectedCallback fires when element is added to DOM', async ({ page }) => {
-		const result = await setup(page, async ({ customElement, html }) => {
-			let connected = false;
+describe('Lifecycle callbacks', () => {
+	test('connectedCallback fires when element is added to DOM', async () => {
+		let connected = false;
 
-			const TestElement = customElement(({ connectedCallback }) => {
-				connectedCallback(() => {
-					connected = true;
-				});
-				return html`<span>Test</span>`;
+		const TestElement = customElement(({ connectedCallback }) => {
+			connectedCallback(() => {
+				connected = true;
 			});
-
-			TestElement.define('lifecycle-connected-test');
-
-			const el = document.createElement('lifecycle-connected-test');
-			document.body.appendChild(el);
-
-			// Wait a tick for connectedCallback to fire
-			await new Promise((resolve) => setTimeout(resolve, 0));
-
-			return { connected };
+			return html`<span>Test</span>`;
 		});
 
-		expect(result.connected).toBe(true);
+		TestElement.define('lifecycle-connected-test');
+
+		const el = document.createElement('lifecycle-connected-test');
+		document.body.appendChild(el);
+
+		// Wait a tick for connectedCallback to fire
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(connected).toBe(true);
+
+		// Cleanup
+		el.remove();
 	});
 
-	test('disconnectedCallback fires when element is removed from DOM', async ({ page }) => {
-		const result = await setup(page, async ({ customElement, html }) => {
-			let disconnected = false;
+	test('disconnectedCallback fires when element is removed from DOM', async () => {
+		let disconnected = false;
 
-			const TestElement = customElement(({ disconnectedCallback }) => {
-				disconnectedCallback(() => {
-					disconnected = true;
-				});
-				return html`<span>Test</span>`;
+		const TestElement = customElement(({ disconnectedCallback }) => {
+			disconnectedCallback(() => {
+				disconnected = true;
 			});
-
-			TestElement.define('lifecycle-disconnected-test');
-
-			const el = document.createElement('lifecycle-disconnected-test');
-			document.body.appendChild(el);
-			await new Promise((resolve) => setTimeout(resolve, 0));
-
-			el.remove();
-			await new Promise((resolve) => setTimeout(resolve, 0));
-
-			return { disconnected };
+			return html`<span>Test</span>`;
 		});
 
-		expect(result.disconnected).toBe(true);
+		TestElement.define('lifecycle-disconnected-test');
+
+		const el = document.createElement('lifecycle-disconnected-test');
+		document.body.appendChild(el);
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		el.remove();
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(disconnected).toBe(true);
 	});
 
-	test('attributeChangedCallback fires when attributes change', async ({ page }) => {
-		const result = await setup(page, async ({ customElement, html }) => {
-			const changes: Array<{ name: string; oldVal: string | null; newVal: string | null }> = [];
+	test('attributeChangedCallback fires when attributes change', async () => {
+		const changes: Array<{ name: string; oldVal: string | null; newVal: string | null }> = [];
 
-			const TestElement = customElement(({ attributeChangedCallback }) => {
-				attributeChangedCallback((name, oldValue, newValue) => {
-					changes.push({ name, oldVal: oldValue, newVal: newValue });
-				});
-				return html`<span>Test</span>`;
+		const TestElement = customElement(({ attributeChangedCallback }) => {
+			attributeChangedCallback((name, oldValue, newValue) => {
+				changes.push({ name, oldVal: oldValue, newVal: newValue });
 			});
-
-			TestElement.define('lifecycle-attr-changed-test');
-
-			const el = document.createElement('lifecycle-attr-changed-test');
-			el.setAttribute('data-test', 'initial');
-			document.body.appendChild(el);
-			await new Promise((resolve) => setTimeout(resolve, 0));
-
-			// Change attribute
-			el.setAttribute('data-test', 'changed');
-			await new Promise((resolve) => setTimeout(resolve, 0));
-
-			return { changes };
+			return html`<span>Test</span>`;
 		});
 
-		expect(result.changes.length).toBeGreaterThanOrEqual(1);
+		TestElement.define('lifecycle-attr-changed-test');
+
+		const el = document.createElement('lifecycle-attr-changed-test');
+		el.setAttribute('data-test', 'initial');
+		document.body.appendChild(el);
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		// Change attribute
+		el.setAttribute('data-test', 'changed');
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(changes.length).toBeGreaterThanOrEqual(1);
 		expect(
-			result.changes.some(
-				(c: { name: string; newVal: string | null }) => c.name === 'data-test' && c.newVal === 'changed',
-			),
+			changes.some((c: { name: string; newVal: string | null }) => c.name === 'data-test' && c.newVal === 'changed'),
 		).toBe(true);
+
+		// Cleanup
+		el.remove();
 	});
 
-	test('clientOnlyCallback fires after rendering', async ({ page }) => {
-		const result = await setup(page, async ({ customElement, html }) => {
-			let clientOnlyFired = false;
+	test('clientOnlyCallback fires after rendering', async () => {
+		let clientOnlyFired = false;
 
-			const TestElement = customElement(({ clientOnlyCallback }) => {
-				clientOnlyCallback(() => {
-					clientOnlyFired = true;
-				});
-				return html`<span>Test</span>`;
+		const TestElement = customElement(({ clientOnlyCallback }) => {
+			clientOnlyCallback(() => {
+				clientOnlyFired = true;
 			});
-
-			TestElement.define('lifecycle-client-only-test');
-
-			const el = document.createElement('lifecycle-client-only-test');
-			document.body.appendChild(el);
-
-			return { clientOnlyFired };
+			return html`<span>Test</span>`;
 		});
 
-		expect(result.clientOnlyFired).toBe(true);
+		TestElement.define('lifecycle-client-only-test');
+
+		const el = document.createElement('lifecycle-client-only-test');
+		document.body.appendChild(el);
+
+		expect(clientOnlyFired).toBe(true);
+
+		// Cleanup
+		el.remove();
 	});
-};
+});

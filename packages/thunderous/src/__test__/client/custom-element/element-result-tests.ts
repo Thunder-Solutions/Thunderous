@@ -1,113 +1,86 @@
-import test, { expect } from '@playwright/test';
-import { setup } from '../test-utilities';
+import { describe, test, expect } from 'vitest';
+import { customElement, html } from '../../..';
 
-export const elementResultTests = () => {
-	test('define() registers a custom element with the given tag name', async ({ page }) => {
-		await setup(page, async ({ customElement, html }) => {
-			const TestElement = customElement(() => html`<span>Hello</span>`, {
-				shadowRootOptions: { mode: 'open' },
-			});
-			TestElement.define('test-define-element');
-
-			await customElements.whenDefined('test-define-element');
-
-			const el = document.createElement('test-define-element');
-			document.body.appendChild(el);
+describe('ElementResult methods', () => {
+	test('define() registers a custom element with the given tag name', async () => {
+		const TestElement = customElement(() => html`<span>Hello</span>`, {
+			shadowRootOptions: { mode: 'open' },
 		});
+		TestElement.define('test-define-element');
 
-		await page.waitForTimeout(100);
+		await customElements.whenDefined('test-define-element');
 
-		const result = await page.evaluate(() => {
-			const el = document.querySelector('test-define-element');
-			return {
-				found: !!el,
-				text: el?.shadowRoot?.textContent,
-			};
-		});
+		const el = document.createElement('test-define-element');
+		document.body.appendChild(el);
 
-		expect(result.found).toBe(true);
-		expect(result.text).toBe('Hello');
+		// Wait for render
+		await new Promise((resolve) => setTimeout(resolve, 100));
+
+		expect(document.querySelector('test-define-element')).toBeTruthy();
+		expect(el.shadowRoot?.textContent).toBe('Hello');
+
+		// Cleanup
+		el.remove();
 	});
 
-	test('define() returns the ElementResult for chaining', async ({ page }) => {
-		const setupResult = await setup(page, async ({ customElement, html }) => {
-			const TestElement = customElement(() => html`<span>Chained</span>`, {
-				shadowRootOptions: { mode: 'open' },
-			});
-			const result = TestElement.define('chain-define-test');
-
-			// Verify the returned object has the expected methods
-			const hasDefine = typeof result.define === 'function';
-			const hasRegister = typeof result.register === 'function';
-			const hasEject = typeof result.eject === 'function';
-
-			await customElements.whenDefined('chain-define-test');
-
-			const el = document.createElement('chain-define-test');
-			document.body.appendChild(el);
-
-			return { hasDefine, hasRegister, hasEject };
+	test('define() returns the ElementResult for chaining', async () => {
+		const TestElement = customElement(() => html`<span>Chained</span>`, {
+			shadowRootOptions: { mode: 'open' },
 		});
+		const result = TestElement.define('chain-define-test');
 
-		expect(setupResult.hasDefine).toBe(true);
-		expect(setupResult.hasRegister).toBe(true);
-		expect(setupResult.hasEject).toBe(true);
+		// Verify the returned object has the expected methods
+		expect(typeof result.define).toBe('function');
+		expect(typeof result.register).toBe('function');
+		expect(typeof result.eject).toBe('function');
 
-		await page.waitForTimeout(100);
+		await customElements.whenDefined('chain-define-test');
 
-		const textResult = await page.evaluate(() => {
-			return document.querySelector('chain-define-test')?.shadowRoot?.textContent;
-		});
+		const el = document.createElement('chain-define-test');
+		document.body.appendChild(el);
 
-		expect(textResult).toBe('Chained');
+		// Wait for render
+		await new Promise((resolve) => setTimeout(resolve, 100));
+
+		expect(document.querySelector('chain-define-test')?.shadowRoot?.textContent).toBe('Chained');
+
+		// Cleanup
+		el.remove();
 	});
 
-	test('define() skips already-defined elements with warning', async ({ page }) => {
-		await setup(page, async ({ customElement, html }) => {
-			const TestElement = customElement(() => html`<span>First</span>`, {
-				shadowRootOptions: { mode: 'open' },
-			});
-			TestElement.define('duplicate-define-test');
-
-			// Try to define again with same tag name
-			const SecondElement = customElement(() => html`<span>Second</span>`, {
-				shadowRootOptions: { mode: 'open' },
-			});
-			SecondElement.define('duplicate-define-test');
-
-			await customElements.whenDefined('duplicate-define-test');
-
-			const el = document.createElement('duplicate-define-test');
-			document.body.appendChild(el);
+	test('define() skips already-defined elements with warning', async () => {
+		const TestElement = customElement(() => html`<span>First</span>`, {
+			shadowRootOptions: { mode: 'open' },
 		});
+		TestElement.define('duplicate-define-test');
 
-		await page.waitForTimeout(100);
-
-		const result = await page.evaluate(() => {
-			const el = document.querySelector('duplicate-define-test');
-			return {
-				found: !!el,
-				text: el?.shadowRoot?.textContent,
-			};
+		// Try to define again with same tag name
+		const SecondElement = customElement(() => html`<span>Second</span>`, {
+			shadowRootOptions: { mode: 'open' },
 		});
+		SecondElement.define('duplicate-define-test');
+
+		await customElements.whenDefined('duplicate-define-test');
+
+		const el = document.createElement('duplicate-define-test');
+		document.body.appendChild(el);
+
+		// Wait for render
+		await new Promise((resolve) => setTimeout(resolve, 100));
 
 		// Should still have the first definition
-		expect(result.found).toBe(true);
-		expect(result.text).toBe('First');
+		expect(document.querySelector('duplicate-define-test')).toBeTruthy();
+		expect(el.shadowRoot?.textContent).toBe('First');
+
+		// Cleanup
+		el.remove();
 	});
 
-	test('eject() returns the underlying CustomElement class', async ({ page }) => {
-		const result = await setup(page, async ({ customElement, html }) => {
-			const TestElement = customElement(() => html`<span>Ejected</span>`);
-			const CustomElementClass = TestElement.eject();
+	test('eject() returns the underlying CustomElement class', () => {
+		const TestElement = customElement(() => html`<span>Ejected</span>`);
+		const CustomElementClass = TestElement.eject();
 
-			return {
-				isFunction: typeof CustomElementClass === 'function',
-				extendsHTMLElement: CustomElementClass.prototype instanceof HTMLElement,
-			};
-		});
-
-		expect(result.isFunction).toBe(true);
-		expect(result.extendsHTMLElement).toBe(true);
+		expect(typeof CustomElementClass).toBe('function');
+		expect(CustomElementClass.prototype instanceof HTMLElement).toBe(true);
 	});
-};
+});

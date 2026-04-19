@@ -1,121 +1,78 @@
-import test, { expect } from '@playwright/test';
-import { setup } from '../test-utilities';
+import { describe, test, expect } from 'vitest';
+import { customElement, html } from '../../..';
 
-export const shadowDomTests = () => {
-	test('shadowRootOptions.mode=open creates open shadow root', async ({ page }) => {
-		await setup(page, async ({ customElement, html }) => {
-			const TestElement = customElement(() => html`<span>Open Shadow</span>`, {
-				shadowRootOptions: { mode: 'open' },
-			});
-
-			TestElement.define('shadow-open-test');
-
-			await customElements.whenDefined('shadow-open-test');
-
-			const el = document.createElement('shadow-open-test');
-			document.body.appendChild(el);
+describe('Shadow DOM options', () => {
+	test('shadowRootOptions.mode=open creates open shadow root', async () => {
+		const TestElement = customElement(() => html`<span>Open Shadow</span>`, {
+			shadowRootOptions: { mode: 'open' },
 		});
 
-		await page.waitForTimeout(100);
+		TestElement.define('shadow-open-test');
 
-		const result = await page.evaluate(() => {
-			const el = document.querySelector('shadow-open-test');
-			return {
-				hasShadow: !!el?.shadowRoot,
-				text: el?.shadowRoot?.textContent,
-			};
-		});
+		await customElements.whenDefined('shadow-open-test');
 
-		expect(result.hasShadow).toBe(true);
-		expect(result.text).toBe('Open Shadow');
+		const el = document.createElement('shadow-open-test');
+		document.body.appendChild(el);
+
+		// Wait for render
+		await new Promise((resolve) => setTimeout(resolve, 100));
+
+		expect(el.shadowRoot).toBeTruthy();
+		expect(el.shadowRoot?.textContent).toBe('Open Shadow');
+
+		// Cleanup
+		el.remove();
 	});
 
-	test('shadowRootOptions.mode=closed creates closed shadow root', async ({ page }) => {
-		await setup(page, async ({ customElement, html }) => {
-			const TestElement = customElement(() => html`<span>Closed Shadow</span>`, {
-				shadowRootOptions: { mode: 'closed' },
-			});
-
-			TestElement.define('shadow-closed-test');
-
-			await customElements.whenDefined('shadow-closed-test');
-
-			const el = document.createElement('shadow-closed-test');
-			document.body.appendChild(el);
+	test('shadowRootOptions.mode=closed creates closed shadow root', async () => {
+		const TestElement = customElement(() => html`<span>Closed Shadow</span>`, {
+			shadowRootOptions: { mode: 'closed' },
 		});
 
-		await page.waitForTimeout(100);
+		TestElement.define('shadow-closed-test');
 
-		const result = await page.evaluate(() => {
-			const el = document.querySelector('shadow-closed-test');
-			return {
-				// Closed shadow root is not directly accessible via .shadowRoot
-				hasShadow: !!el?.shadowRoot,
-				// With closed shadow root, content is not visible from outside
-				hasContent: el?.textContent !== '',
-			};
-		});
+		await customElements.whenDefined('shadow-closed-test');
 
-		// For closed shadow DOM, shadowRoot property is null from outside
-		expect(result.hasShadow).toBe(false);
+		const el = document.createElement('shadow-closed-test');
+		document.body.appendChild(el);
+
+		// Wait for render
+		await new Promise((resolve) => setTimeout(resolve, 100));
+
+		// For closed shadow root, shadowRoot property is null from outside
+		expect(el.shadowRoot).toBeNull();
 		// Content is encapsulated in closed shadow root and not visible externally
-		expect(result.hasContent).toBe(false);
+		expect(el.textContent).toBe('');
+
+		// Cleanup
+		el.remove();
 	});
 
-	test('attachShadow=false renders to element instead of shadow root', async ({ page }) => {
-		// Capture console errors
-		const errors: string[] = [];
-		page.on('console', (msg) => {
-			if (msg.type() === 'error') {
-				errors.push(msg.text());
-			}
+	test('attachShadow=false renders to element instead of shadow root', async () => {
+		const TestElement = customElement(() => html`<span class="light-dom-content">No Shadow</span>`, {
+			attachShadow: false,
 		});
 
-		await setup(page, async ({ customElement, html }) => {
-			try {
-				const TestElement = customElement(() => html`<span class="light-dom-content">No Shadow</span>`, {
-					attachShadow: false,
-				});
+		TestElement.define('no-shadow-test');
 
-				TestElement.define('no-shadow-test');
+		// Wait for definition to register
+		await customElements.whenDefined('no-shadow-test');
 
-				// Small delay for definition to register
-				await new Promise((resolve) => setTimeout(resolve, 50));
+		// Create element via HTML parsing to ensure proper upgrade timing
+		const container = document.createElement('div');
+		container.innerHTML = '<no-shadow-test></no-shadow-test>';
+		document.body.appendChild(container);
 
-				await customElements.whenDefined('no-shadow-test');
+		const el = container.querySelector('no-shadow-test')!;
 
-				const el = document.createElement('no-shadow-test');
-				document.body.appendChild(el);
+		// Wait for render
+		await new Promise((resolve) => setTimeout(resolve, 200));
 
-				// Wait for render
-				await new Promise((resolve) => setTimeout(resolve, 200));
-			} catch (e) {
-				console.error('Error in setup:', e);
-			}
-		});
+		expect(el.shadowRoot).toBeNull();
+		// Content is in light DOM - the element itself contains the content
+		expect(el.textContent).toBe('No Shadow');
 
-		await page.waitForTimeout(100);
-
-		const result = await page.evaluate(() => {
-			const el = document.querySelector('no-shadow-test');
-			return {
-				found: !!el,
-				hasShadow: !!(el as unknown as { shadowRoot?: ShadowRoot })?.shadowRoot,
-				content: el?.textContent,
-				hasSpan: !!el?.querySelector('.light-dom-content'),
-				html: el?.innerHTML,
-				childCount: el?.childNodes.length,
-			};
-		});
-
-		console.log('attachShadow=false result:', result);
-		console.log('Console errors:', errors);
-
-		expect(result.found).toBe(true);
-		expect(result.hasShadow).toBe(false);
-		// If there are rendering issues, we'll at least verify the element exists
-		if (result.content === '') {
-			console.warn('Content is empty - attachShadow=false may have rendering issues');
-		}
+		// Cleanup
+		container.remove();
 	});
-};
+});

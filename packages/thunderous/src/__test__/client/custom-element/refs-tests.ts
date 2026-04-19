@@ -1,37 +1,36 @@
-import test, { expect } from '@playwright/test';
-import { setup } from '../test-utilities';
+import { describe, test, expect } from 'vitest';
+import { customElement, html } from '../../..';
 
-export const refsTests = () => {
-	test('refs provide access to elements with ref attribute', async ({ page }) => {
-		await setup(page, async ({ customElement, html }) => {
-			const TestElement = customElement(
-				({ refs, connectedCallback: cb }) => {
-					cb(() => {
-						const refResult = refs.myButton;
-						// Store on window for retrieval
-						(window as unknown as { refTagName: string | undefined }).refTagName = refResult?.tagName;
-					});
-					return html`<button ref="myButton">Click me</button>`;
-				},
-				{
-					shadowRootOptions: { mode: 'open' },
-				},
-			);
+describe('Refs', () => {
+	test('refs provide access to elements with ref attribute', async () => {
+		let refTagName: string | undefined;
 
-			TestElement.define('refs-test');
+		const TestElement = customElement(
+			({ refs, connectedCallback: cb }) => {
+				cb(() => {
+					const refResult = refs.myButton;
+					refTagName = refResult?.tagName;
+				});
+				return html`<button ref="myButton">Click me</button>`;
+			},
+			{
+				shadowRootOptions: { mode: 'open' },
+			},
+		);
 
-			await customElements.whenDefined('refs-test');
+		TestElement.define('refs-test');
 
-			const el = document.createElement('refs-test');
-			document.body.appendChild(el);
-		});
+		await customElements.whenDefined('refs-test');
 
-		await page.waitForTimeout(300);
+		const el = document.createElement('refs-test');
+		document.body.appendChild(el);
 
-		const result = await page.evaluate(() => {
-			return (window as unknown as { refTagName: string | undefined }).refTagName;
-		});
+		// Wait for connectedCallback
+		await new Promise((resolve) => setTimeout(resolve, 300));
 
-		expect(result).toBe('BUTTON');
+		expect(refTagName).toBe('BUTTON');
+
+		// Cleanup
+		el.remove();
 	});
-};
+});
