@@ -10,6 +10,7 @@ dist
 coverage
 test-results
 .vitest*
+__screenshots__
 playwright-report
 blob-report
 **/**/playwright/.cache
