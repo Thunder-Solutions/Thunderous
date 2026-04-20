@@ -1,0 +1,9 @@
+{
+	"temp-dir": "./coverage/merged",
+	"report-dir": "./coverage/merged",
+	"reporter": ["text", "html"],
+	"branches": 100,
+	"lines": 100,
+	"functions": 100,
+	"statements": 100
+}

@@ -37,7 +37,7 @@
 		"test": "pnpm test:server & pnpm test:client && pnpm coverage",
 		"test:server": "vitest run --config vitest.server.config.ts --coverage",
 		"test:client": "vitest run --config vitest.client.config.ts --coverage",
-		"coverage": "istanbul-merge --out ./coverage/merged/coverage-final.json ./coverage/server/coverage-final.json ./coverage/client/coverage-final.json && nyc report --reporter=text --reporter=html --temp-dir=./coverage/merged --report-dir=./coverage/merged",
+		"coverage": "istanbul-merge --out ./coverage/merged/coverage-final.json ./coverage/server/coverage-final.json ./coverage/client/coverage-final.json && nyc report && nyc check-coverage",
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
