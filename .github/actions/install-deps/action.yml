@@ -4,23 +4,15 @@ runs:
   using: 'composite'
   steps:
     - uses: actions/checkout@v6
-    - uses: pnpm/action-setup@v4
+    - uses: pnpm/action-setup@v6
       with:
         version: 10.33.0
     - uses: actions/setup-node@v6
       with:
         node-version-file: '.nvmrc'
         cache: 'pnpm'
-    - name: Cache node modules
-      uses: actions/cache@v5
-      id: cache
-      with:
-        path: node_modules
-        key: ${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-        restore-keys: ${{ runner.os }}-
     - name: Install dependencies
-      if: steps.cache.outputs.cache-hit != 'true'
-      run: pnpm install
+      run: pnpm install --frozen-lockfile
       shell: bash
     - name: Validate versions
       run: |
