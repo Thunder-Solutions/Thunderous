@@ -70,13 +70,14 @@ export const createSignal = <T = undefined>(initVal?: T, options?: SignalOptions
 			const effectRef = effects.get(sym);
 			if (effectRef !== undefined) {
 				try {
-					effectRef.fn({
+					const result = effectRef.fn({
 						lastValue: effectRef.value,
 						destroy: () => {
 							effects.delete(sym);
 							queueMicrotask(() => subscribers.delete(sym));
 						},
 					});
+					if (result !== undefined) effectRef.value = result;
 				} catch (error) {
 					console.error('Error in subscriber:', { error, oldValue, newValue, fn: effectRef.fn });
 				}
@@ -138,14 +139,16 @@ export const derived = <T>(fn: () => T, options?: SignalOptions): SignalGetter<T
  */
 export const createEffect = <T = unknown>(fn: Effect<T>, value?: T) => {
 	const privateIdent = (ident = {});
-	effects.set(ident, { fn, value });
+	const effectRef = { fn, value } as { fn: Effect; value: unknown };
+	effects.set(ident, effectRef);
 	try {
-		fn({
+		const result = fn({
 			lastValue: value as T,
 			destroy: () => {
 				effects.delete(privateIdent);
 			},
 		});
+		if (result !== undefined) effectRef.value = result;
 	} catch (error) {
 		console.error('Error in effect:', { error, fn });
 	}

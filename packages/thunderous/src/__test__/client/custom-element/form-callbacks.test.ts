@@ -137,4 +137,42 @@ describe('Form-associated lifecycle callbacks', () => {
 		// Cleanup
 		form.remove();
 	});
+
+	test('formStateRestoreCallback calls registered callbacks when invoked', async () => {
+		let _formStateRestored = false;
+
+		const TestElement = customElement(
+			({ formStateRestoreCallback }) => {
+				formStateRestoreCallback(() => {
+					_formStateRestored = true;
+				});
+				return html`<input type="text" />`;
+			},
+			{ formAssociated: true },
+		);
+
+		TestElement.define('form-state-restore-invoke-test');
+
+		await customElements.whenDefined('form-state-restore-invoke-test');
+
+		const form = document.createElement('form');
+		const el = document.createElement('form-state-restore-invoke-test') as HTMLElement & {
+			formStateRestoreCallback?: () => void;
+		};
+		form.appendChild(el);
+		document.body.appendChild(form);
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		// Invoke the formStateRestoreCallback method directly to cover lines 430-431
+		if (el.formStateRestoreCallback) {
+			el.formStateRestoreCallback();
+		}
+
+		// Verify the callback was called
+		expect(_formStateRestored).toBe(true);
+
+		// Cleanup
+		form.remove();
+	});
 });

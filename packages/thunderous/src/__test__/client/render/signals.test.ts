@@ -259,14 +259,16 @@ describe('signals', () => {
 		});
 
 		test('renders a DocumentFragment with a Signal<Array<DocumentFragment>> that updates', () => {
-			const child1 = html`<span>Initial</span>`;
+			// Use explicit unique keys so each update produces a fresh element
+			// (persistence only reuses elements when the key matches across renders)
+			const child1 = html`<span key="a">Initial</span>`;
 			const [signal, setSignal] = createSignal([child1]);
 			const result = html`<div>${signal}</div>`;
-			const child2 = html`<span>Updated</span>`;
-			const child3 = html`<span>Final</span>`;
+			const child2 = html`<span key="b">Updated</span>`;
+			const child3 = html`<span key="c">Final</span>`;
 			setSignal([child2, child3]);
 			const content = getContentWithoutComments(assertDocumentFragment(result));
-			expect(content).toBe('<div><span key="0">Updated</span><span key="1">Final</span></div>');
+			expect(content).toBe('<div><span key="b">Updated</span><span key="c">Final</span></div>');
 		});
 
 		test('toggles between Signal<Array<DocumentFragment>> and Signal<null | undefined>', async () => {

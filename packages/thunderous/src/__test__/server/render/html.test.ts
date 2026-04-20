@@ -33,4 +33,20 @@ describe('html', () => {
 		const result = html`<div>${mockGetter}</div>`;
 		expect(result).toBe('<div>Hello, world!</div>');
 	});
+
+	it('renders a string with a real signal getter (marked with getter: true)', () => {
+		// Simulate a signal getter by tagging the function with `getter = true`.
+		// This exercises the SIGNAL path in `processValue` on the server, which coerces the result to a string.
+		const signalGetter = Object.assign(() => 'signal-value', { getter: true as const });
+		const result = html`<div>${signalGetter}</div>`;
+		expect(result).toBe('<div>signal-value</div>');
+	});
+
+	it('renders an array of values interpolated through a signal getter on the server', () => {
+		// Signal getter whose value is an array; the server-side path maps each item through processValue and joins them.
+		const signalGetter = Object.assign(() => ['a', 'b', 'c'], { getter: true as const });
+		// prettier-ignore
+		const result = html`<ul>${signalGetter}</ul>`;
+		expect(result).toBe('<ul>abc</ul>');
+	});
 });

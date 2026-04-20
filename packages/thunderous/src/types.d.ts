@@ -117,7 +117,7 @@ export type ElementParent = Element | DocumentFragment | ShadowRoot;
 
 export type Styles = CSSStyleSheet | HTMLStyleElement;
 
-export type SignalOptions = { debugMode: boolean; label?: string };
+export type SignalOptions = { debugMode?: boolean; label?: string };
 export type SignalGetter<T> = {
 	(options?: SignalOptions): T;
 	getter: true;

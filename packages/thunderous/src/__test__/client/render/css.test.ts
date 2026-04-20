@@ -69,4 +69,24 @@ describe('css', () => {
 		// Result should be either CSSStyleSheet or HTMLStyleElement
 		expect(result instanceof CSSStyleSheet || result instanceof HTMLStyleElement).toBe(true);
 	});
+
+	test('writes cssText to a <style> element when CSSStyleSheet.prototype.replace is unavailable', () => {
+		// Temporarily hide the `replace` method so that `isAdoptedStylesSupported()` returns false,
+		// forcing `css()` to fall back to an HTMLStyleElement and write into its `textContent`.
+		const originalDescriptor = Object.getOwnPropertyDescriptor(CSSStyleSheet.prototype, 'replace');
+		delete (CSSStyleSheet.prototype as unknown as Record<string, unknown>).replace;
+		try {
+			const result = css`
+				.fallback-style {
+					color: magenta;
+				}
+			`;
+			expect(result).toBeInstanceOf(HTMLStyleElement);
+			expect((result as HTMLStyleElement).textContent).toContain('color: magenta');
+		} finally {
+			if (originalDescriptor !== undefined) {
+				Object.defineProperty(CSSStyleSheet.prototype, 'replace', originalDescriptor);
+			}
+		}
+	});
 });

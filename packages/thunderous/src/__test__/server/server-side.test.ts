@@ -56,6 +56,29 @@ describe('getServerRenderArgs', () => {
 	});
 });
 
+describe('wrapTemplate - scoped registries', () => {
+	it('uses the scoped registry when shadowRootOptions.registry is a RegistryResult', () => {
+		const scopedRegistry = createRegistry({ scoped: true });
+		scopedRegistry.__serverCss.set('my-scoped-element', [':host { color: orange; }']);
+
+		const result = stripWhitespace(
+			wrapTemplate({
+				tagName: 'my-scoped-element',
+				serverRender: () => 'scoped-body',
+				options: {
+					...DEFAULT_RENDER_OPTIONS,
+					attachShadow: false,
+					shadowRootOptions: { ...DEFAULT_RENDER_OPTIONS.shadowRootOptions, registry: scopedRegistry },
+				},
+			}),
+		);
+
+		// The scoped registry's CSS entry for this tag must be inlined, confirming the scopedRegistry branch ran.
+		expect(result).toContain('<style>:host { color: orange; }</style>');
+		expect(result).toContain('scoped-body');
+	});
+});
+
 describe('wrapTemplate', () => {
 	it('wraps the render result in a template tag', () => {
 		const template = stripWhitespace(
@@ -160,6 +183,22 @@ describe('insertTemplates', () => {
 
 		expect(result).toBe(expectedResult);
 	});
+
+	it('handles boolean-style attributes (no "=value") without throwing', () => {
+		// A solitary boolean attribute should fall through the `_value?.replace(...) ?? ''` binary-expression
+		// branch where `_value` is undefined. The resulting attr value is the empty string.
+		const inputString = /* html */ `<my-element-8b disabled></my-element-8b>`;
+		const template = /* html */ `<div>[{{attr:disabled}}]</div>`;
+
+		const result = stripWhitespace(insertTemplates('my-element-8b', template, inputString));
+
+		// The attribute value resolves to the empty string, leaving `[]` in the rendered template.
+		const expectedResult = stripWhitespace(/* html */ `
+			<my-element-8b disabled><div>[]</div></my-element-8b>
+		`);
+
+		expect(result).toBe(expectedResult);
+	});
 });
 
 describe('onServerDefine', () => {
@@ -249,5 +288,26 @@ describe('clientOnlyCallback', () => {
 			runCount++;
 		});
 		expect(runCount).toBe(0);
+	});
+});
+
+describe('getServerRenderArgs additional coverage', () => {
+	it('returns a getter function that wraps the provided function', () => {
+		const args = getServerRenderArgs('my-element-getter');
+		const mockFn = vi.fn(() => 'test-value');
+		const getter = args.getter(mockFn);
+
+		expect(getter.getter).toBe(true);
+		expect(getter()).toBe('test-value');
+		expect(mockFn).toHaveBeenCalled();
+	});
+
+	it('returns attrSignals proxy that creates signal placeholders', () => {
+		const args = getServerRenderArgs('my-element-attrs');
+		const attrSignal = args.attrSignals.testAttr;
+		const [getter] = attrSignal;
+
+		// The getter should return the placeholder string
+		expect(getter()).toBe('{{attr:testAttr}}');
 	});
 });

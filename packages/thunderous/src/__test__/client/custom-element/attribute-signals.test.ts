@@ -90,6 +90,32 @@ describe('Attribute signals', () => {
 		container.remove();
 	});
 
+	test('attrSignals setter reflects changes back to the element attribute', async () => {
+		let captured: ((value: string) => void) | undefined;
+		const TestElement = customElement(
+			({ attrSignals }) => {
+				const [value, setValue] = attrSignals.mirrored;
+				captured = setValue;
+				return html`<span class="display">${value}</span>`;
+			},
+			{ shadowRootOptions: { mode: 'open' } },
+		);
+
+		TestElement.define('attr-signal-setter-test');
+		await customElements.whenDefined('attr-signal-setter-test');
+
+		const el = document.createElement('attr-signal-setter-test');
+		document.body.appendChild(el);
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		// Invoke the setter returned by the attrSignals proxy – this should set the attribute on the element.
+		captured?.('mirrored-value');
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		expect(el.getAttribute('mirrored')).toBe('mirrored-value');
+		el.remove();
+	});
+
 	test('multiple attributes set before connection all resolve correctly', async () => {
 		const MultiAttr = customElement(
 			({ attrSignals }) => {
