@@ -3,8 +3,6 @@ name: Publish thunderous-csr (next)
 on:
   push:
     branches: [next]
-    paths:
-      - 'packages/thunderous-csr/package.json'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

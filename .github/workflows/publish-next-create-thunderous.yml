@@ -3,8 +3,6 @@ name: Publish create-thunderous (next)
 on:
   push:
     branches: [next]
-    paths:
-      - 'packages/create-thunderous/package.json'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
