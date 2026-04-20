@@ -22,6 +22,15 @@
 	],
 	"author": "Jonathan DeWitt <jon.dewitt@thunder.solutions>",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Thunder-Solutions/Thunderous",
+		"directory": "packages/create-thunderous"
+	},
+	"bugs": {
+		"url": "https://github.com/Thunder-Solutions/Thunderous/issues"
+	},
+	"homepage": "https://thunderous.dev/docs/thunderous-stack",
 	"packageManager": "pnpm@10.33.0",
 	"scripts": {
 		"version": "node postversion.js",

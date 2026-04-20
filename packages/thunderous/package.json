@@ -15,7 +15,8 @@
 	"author": "Jonathan DeWitt <jon.dewitt@thunder.solutions>",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Thunder-Solutions/Thunderous"
+		"url": "https://github.com/Thunder-Solutions/Thunderous",
+		"directory": "packages/thunderous"
 	},
 	"keywords": [
 		"thunderous",
@@ -27,7 +28,7 @@
 	"bugs": {
 		"url": "https://github.com/Thunder-Solutions/Thunderous/issues"
 	},
-	"homepage": "https://github.com/Thunder-Solutions/Thunderous#readme",
+	"homepage": "https://thunderous.dev",
 	"license": "MIT",
 	"scripts": {
 		"demo": "cd demo && npm start",
