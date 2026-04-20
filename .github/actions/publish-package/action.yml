@@ -1,6 +1,6 @@
 name: Publish Package
 
-description: Builds and publishes a package to npm
+description: Builds, tags, and publishes a package to npm
 
 inputs:
   package:
@@ -9,10 +9,9 @@ inputs:
   path:
     description: Path to package directory (e.g., packages/thunderous)
     required: true
-  tag:
-    description: NPM dist-tag to use (e.g., latest, next, beta)
-    required: false
-    default: 'latest'
+  channel:
+    description: Release channel ('stable' for latest, 'next' for prerelease)
+    required: true
 
 runs:
   using: composite
@@ -43,24 +42,106 @@ runs:
       shell: bash
       run: pnpm turbo run build --filter=${{ inputs.package }}...
 
-    - name: Prepare prerelease version
+    - name: Determine version and dist-tag
+      id: version
       shell: bash
-      if: ${{ inputs.tag != 'latest' }}
       run: |
-        VERSION=$(jq -r '.version' ${{ inputs.path }}/package.json)
-        PRERELEASE_VERSION="${VERSION}-${{ inputs.tag }}.$(date +%s)"
-        jq ".version = \"$PRERELEASE_VERSION\"" ${{ inputs.path }}/package.json > ${{ inputs.path }}/package.json.tmp
+        BASE_VERSION=$(jq -r '.version' ${{ inputs.path }}/package.json)
+        case "${{ inputs.channel }}" in
+          stable)
+            VERSION="$BASE_VERSION"
+            DIST_TAG="latest"
+            ;;
+          next)
+            VERSION="${BASE_VERSION}-next.$(date +%s)"
+            DIST_TAG="next"
+            ;;
+          *)
+            echo "Unknown channel: ${{ inputs.channel }}" >&2
+            exit 1
+            ;;
+        esac
+        TAG="${{ inputs.package }}@v${VERSION}"
+        echo "base_version=$BASE_VERSION" >> "$GITHUB_OUTPUT"
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "dist_tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+        echo "Resolved ${{ inputs.package }}@$VERSION (dist-tag: $DIST_TAG)"
+
+    - name: Check if already published
+      id: check
+      shell: bash
+      run: |
+        if pnpm view ${{ inputs.package }}@${{ steps.version.outputs.version }} version >/dev/null 2>&1; then
+          echo "Already published ${{ inputs.package }}@${{ steps.version.outputs.version }}; skipping"
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Apply version to package.json
+      if: steps.check.outputs.skip != 'true'
+      shell: bash
+      run: |
+        jq ".version = \"${{ steps.version.outputs.version }}\"" ${{ inputs.path }}/package.json > ${{ inputs.path }}/package.json.tmp
         mv ${{ inputs.path }}/package.json.tmp ${{ inputs.path }}/package.json
-        echo "Prepared prerelease version: $PRERELEASE_VERSION"
+
+    - name: Configure git
+      if: steps.check.outputs.skip != 'true'
+      shell: bash
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Create and push tag
+      if: steps.check.outputs.skip != 'true'
+      shell: bash
+      run: |
+        TAG="${{ steps.version.outputs.tag }}"
+        if git rev-parse "$TAG" >/dev/null 2>&1; then
+          echo "$TAG already exists"
+        else
+          git tag -a "$TAG" -m "Release ${{ inputs.package }} v${{ steps.version.outputs.version }}"
+          git push origin "$TAG"
+        fi
 
     - name: Publish
+      if: steps.check.outputs.skip != 'true'
       shell: bash
       env:
         NPM_CONFIG_PROVENANCE: 'true'
       run: |
-        VERSION=$(jq -r '.version' ${{ inputs.path }}/package.json)
-        if pnpm view ${{ inputs.package }}@$VERSION version >/dev/null 2>&1; then
-          echo "${{ inputs.package }}@$VERSION already published"
+        pnpm publish --filter=${{ inputs.package }} --access public --no-git-checks --tag ${{ steps.version.outputs.dist_tag }}
+
+    - name: Cut release branch for major/minor bumps
+      if: steps.check.outputs.skip != 'true' && inputs.channel == 'stable'
+      shell: bash
+      run: |
+        NEW_VERSION="${{ steps.version.outputs.base_version }}"
+
+        LAST_STABLE_TAG=$(git tag -l "${{ inputs.package }}@v*" --sort=-v:refname | grep -v -- '-' | grep -v "v${NEW_VERSION}$" | head -1)
+        if [ -z "$LAST_STABLE_TAG" ]; then
+          echo "No previous stable tag found, skipping branch cut"
           exit 0
         fi
-        pnpm publish --filter=${{ inputs.package }} --access public --no-git-checks --tag ${{ inputs.tag }}
+
+        OLD_VERSION=$(echo "$LAST_STABLE_TAG" | sed 's/.*@v//')
+        OLD_MAJOR_MINOR=$(echo "$OLD_VERSION" | cut -d. -f1,2)
+        NEW_MAJOR_MINOR=$(echo "$NEW_VERSION" | cut -d. -f1,2)
+
+        if [ "$OLD_MAJOR_MINOR" = "$NEW_MAJOR_MINOR" ]; then
+          echo "Only patch bump ($OLD_VERSION -> $NEW_VERSION), no branch needed"
+          exit 0
+        fi
+
+        BRANCH="release/${{ inputs.package }}-${OLD_MAJOR_MINOR}"
+
+        if git rev-parse --verify "$BRANCH" >/dev/null 2>&1 || \
+           git ls-remote --heads origin "$BRANCH" | grep -q "."; then
+          echo "$BRANCH already exists"
+          exit 0
+        fi
+
+        echo "Creating maintenance branch $BRANCH for v${OLD_MAJOR_MINOR}"
+        git checkout -b "$BRANCH" "$LAST_STABLE_TAG"
+        git push origin "$BRANCH"

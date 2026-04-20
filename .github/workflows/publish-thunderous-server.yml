@@ -2,8 +2,13 @@ name: Publish thunderous-server
 
 on:
   push:
-    tags:
-      - 'thunderous-server@v*'
+    branches: [main, next]
+    paths:
+      - 'packages/thunderous-server/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/publish-thunderous-server.yml'
+      - '.github/workflows/quality-checks.yml'
+      - '.github/actions/publish-package/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -11,15 +16,16 @@ concurrency:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   quality-gate:
     uses: ./.github/workflows/quality-checks.yml
 
-  publish:
+  release:
     needs: quality-gate
     runs-on: ubuntu-latest
+    environment: Production
     steps:
       - uses: actions/checkout@v6
         with:
@@ -30,3 +36,4 @@ jobs:
         with:
           package: thunderous-server
           path: packages/thunderous-server
+          channel: ${{ github.ref == 'refs/heads/main' && 'stable' || 'next' }}
