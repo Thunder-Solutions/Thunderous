@@ -3,7 +3,7 @@ name: Version thunderous
 on:
   workflow_run:
     workflows: ['Quality Checks']
-    branches: [main]
+    branches: [main, next]
     types:
       - completed
 
