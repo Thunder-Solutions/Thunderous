@@ -15,8 +15,13 @@ jobs:
     # Keep this tag in sync with the `@playwright/test` version pinned in packages/thunderous/package.json.
     container:
       image: mcr.microsoft.com/playwright:v1.58.2-noble
+    env:
+      HOME: /root
     steps:
       - uses: actions/checkout@v6
+
+      - name: Mark workspace as safe for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: pnpm/action-setup@v6
         with:
