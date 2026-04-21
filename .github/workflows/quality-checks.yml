@@ -2,8 +2,6 @@ name: Quality Checks
 
 on:
   workflow_call:
-  push:
-    branches: [main, next]
   pull_request:
     branches: [main]
 
