@@ -119,7 +119,7 @@ runs:
       run: |
         NEW_VERSION="${{ steps.version.outputs.base_version }}"
 
-        LAST_STABLE_TAG=$(git tag -l "${{ inputs.package }}@v*" --sort=-v:refname | grep -v -- '-' | grep -v "v${NEW_VERSION}$" | head -1)
+        LAST_STABLE_TAG=$(git tag -l "${{ inputs.package }}@v*" --sort=-v:refname | grep -v -- '-' | grep -v "v${NEW_VERSION}$" | head -1) || true
         if [ -z "$LAST_STABLE_TAG" ]; then
           echo "No previous stable tag found, skipping branch cut"
           exit 0
