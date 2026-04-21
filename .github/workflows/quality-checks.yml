@@ -12,6 +12,9 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    # Keep this tag in sync with the `@playwright/test` version pinned in packages/thunderous/package.json.
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
     steps:
       - uses: actions/checkout@v6
 
@@ -24,17 +27,10 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v5
-        id: playwright-cache
-        with:
-          path: .browsers
-          key: ${{ runner.os }}-playwright-v2-${{ hashFiles('pnpm-lock.yaml') }}
-
       - name: Cache turbo
         uses: actions/cache@v5
         with:
-          path: .turbo
+          path: .turbo/cache
           key: ${{ runner.os }}-turbo-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-turbo-
@@ -42,12 +38,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright system dependencies
-        run: pnpm exec playwright install-deps
-
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: PLAYWRIGHT_BROWSERS_PATH=.browsers/ pnpm exec playwright install chromium chromium-headless-shell firefox webkit
-
       - name: Run quality checks
+        env:
+          TURBO_SUMMARIZE: 'true'
         run: pnpm quality

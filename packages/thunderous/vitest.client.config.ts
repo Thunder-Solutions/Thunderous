@@ -2,8 +2,9 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 
-// Set Playwright's browser cache to the monorepo-local `.browsers/` directory
-process.env.PLAYWRIGHT_BROWSERS_PATH = resolve(import.meta.dirname, '../../.browsers');
+// Default to repo's `.browsers`, but let an external PLAYWRIGHT_BROWSERS_PATH win
+// (e.g., CI running inside the Playwright Docker image)
+process.env.PLAYWRIGHT_BROWSERS_PATH ??= resolve(import.meta.dirname, '../../.browsers');
 
 export default defineConfig({
 	test: {
