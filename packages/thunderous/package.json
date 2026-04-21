@@ -1,6 +1,6 @@
 {
 	"name": "thunderous",
-	"version": "2.4.5",
+	"version": "2.4.6",
 	"description": "A lightweight, functional web components library that brings the power of signals to your UI.",
 	"type": "module",
 	"main": "./dist/index.cjs",
