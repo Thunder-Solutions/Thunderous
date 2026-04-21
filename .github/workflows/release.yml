@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  push:
+    branches: [main, next]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  quality-gate:
+    uses: ./.github/workflows/quality-checks.yml
+
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      thunderous: ${{ steps.filter.outputs.thunderous }}
+      thunderous-csr: ${{ steps.filter.outputs.thunderous-csr }}
+      thunderous-server: ${{ steps.filter.outputs.thunderous-server }}
+      create-thunderous: ${{ steps.filter.outputs.create-thunderous }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            thunderous:
+              - 'packages/thunderous/**'
+              - 'pnpm-lock.yaml'
+              - '.github/workflows/release.yml'
+              - '.github/actions/publish-package/**'
+            thunderous-csr:
+              - 'packages/thunderous-csr/**'
+              - 'pnpm-lock.yaml'
+              - '.github/workflows/release.yml'
+              - '.github/actions/publish-package/**'
+            thunderous-server:
+              - 'packages/thunderous-server/**'
+              - 'pnpm-lock.yaml'
+              - '.github/workflows/release.yml'
+              - '.github/actions/publish-package/**'
+            create-thunderous:
+              - 'packages/create-thunderous/**'
+              - 'pnpm-lock.yaml'
+              - '.github/workflows/release.yml'
+              - '.github/actions/publish-package/**'
+
+  publish-thunderous:
+    needs: [quality-gate, changes]
+    if: needs.changes.outputs.thunderous == 'true'
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: ./.github/actions/publish-package
+        with:
+          package: thunderous
+          path: packages/thunderous
+          channel: ${{ github.ref == 'refs/heads/main' && 'stable' || 'next' }}
+
+  publish-thunderous-csr:
+    needs: [quality-gate, changes]
+    if: needs.changes.outputs['thunderous-csr'] == 'true'
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: ./.github/actions/publish-package
+        with:
+          package: thunderous-csr
+          path: packages/thunderous-csr
+          channel: ${{ github.ref == 'refs/heads/main' && 'stable' || 'next' }}
+
+  publish-thunderous-server:
+    needs: [quality-gate, changes]
+    if: needs.changes.outputs['thunderous-server'] == 'true'
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: ./.github/actions/publish-package
+        with:
+          package: thunderous-server
+          path: packages/thunderous-server
+          channel: ${{ github.ref == 'refs/heads/main' && 'stable' || 'next' }}
+
+  publish-create-thunderous:
+    needs: [quality-gate, changes]
+    if: needs.changes.outputs['create-thunderous'] == 'true'
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: ./.github/actions/publish-package
+        with:
+          package: create-thunderous
+          path: packages/create-thunderous
+          channel: ${{ github.ref == 'refs/heads/main' && 'stable' || 'next' }}
