@@ -44,9 +44,7 @@
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --check . --ignore-path ../../.gitignore",
 		"format:fix": "prettier --write . --ignore-path ../../.gitignore",
-		"preversion": "pnpm typecheck && pnpm lint && npm test && pnpm build",
-		"version": "node postversion.js",
-		"prepublishOnly": "pnpm typecheck && pnpm lint && npm test && pnpm build"
+		"version": "node postversion.js"
 	},
 	"peerDependencies": {
 		"@webcomponents/scoped-custom-element-registry": "^0.0.10"

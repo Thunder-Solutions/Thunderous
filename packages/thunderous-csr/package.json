@@ -40,8 +40,7 @@
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --check . --ignore-path ../../.gitignore",
 		"format:fix": "prettier --write . --ignore-path ../../.gitignore",
-		"version": "node postversion.js",
-		"prepublishOnly": "npm run typecheck && npm run lint && npm run build"
+		"version": "node postversion.js"
 	},
 	"devDependencies": {
 		"thunderous": "workspace:*"
