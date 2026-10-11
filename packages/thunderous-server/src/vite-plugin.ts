@@ -133,8 +133,13 @@ export const thunderousPlugin = (): Plugin => {
 		config() {
 			return {
 				optimizeDeps: {
-					// Exclude underscore directories from dependency scanning
-					exclude: ['**/_*/**'],
+					entries: [
+						'**/*.html',
+						'!**/__tests__/**',
+						'!**/coverage/**',
+						// Exclude underscore directories from dependency scanning
+						'!**/_*/**',
+					],
 				},
 			};
 		},
