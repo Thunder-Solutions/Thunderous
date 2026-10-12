@@ -261,7 +261,7 @@ export const generateStaticTemplate = (filePath: string) => {
 	const breadcrumbs: Breadcrumb[] = [
 		{
 			// always add the home page
-			name: toTitleFormat(config.name),
+			name: config.name,
 			pathname: '/',
 		},
 	];
