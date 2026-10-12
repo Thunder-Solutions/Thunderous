@@ -1,6 +1,5 @@
 {
 	"name": "thunderous-monorepo",
-	"version": "0.0.0",
 	"private": true,
 	"type": "module",
 	"description": "Thunderous monorepo",
