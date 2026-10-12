@@ -47,7 +47,7 @@ const resolveConfig = (): ThunderousConfig => {
 		}
 		if (rootDir !== undefined && configDir !== undefined) {
 			const configPath = join(configDir, 'thunderous.config.ts');
-			const configOverrides: Partial<ThunderousConfig> = require(configPath);
+			const configOverrides: Partial<ThunderousConfig> = require(configPath).default;
 			return {
 				name: configOverrides.name ?? DEFAULT_CONFIG.name,
 				baseDir: configOverrides.baseDir?.replace(/^\/*/, '') ?? DEFAULT_CONFIG.baseDir,
